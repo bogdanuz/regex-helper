@@ -194,21 +194,31 @@
         <section class="panel" id="visualizerPanel">
             <div class="panel-header">
                 <h2 class="panel-title">Визуализация</h2>
-                <div class="panel-actions">
-                    <button class="btn-icon" id="visualizerHelpBtn" title="Помощь">?</button>
-                    <button class="btn-secondary btn-sm" id="toggleVisualizerBtn">
-                        Свернуть
+                <button class="btn-icon" id="visualizerHelpBtn" title="Помощь">?</button>
+            </div>
+            <div class="panel-body">
+                
+                <label for="visualizerInput" class="label">Регулярное выражение</label>
+                <div class="input-with-button">
+                    <input 
+                        type="text" 
+                        id="visualizerInput" 
+                        class="input input-code" 
+                        placeholder="Вставьте regex для визуализации"
+                    >
+                    <button class="btn-primary" id="visualizeBtn">
+                        📊 Визуализировать
                     </button>
                 </div>
-            </div>
-            <div class="panel-body" id="visualizerBody">
-                <div id="visualizerContainer" class="visualizer-container">
-                    <p class="placeholder-text">Визуализация появится после конвертации</p>
+
+                <div id="visualizerContainer" class="visualizer-container mt-2">
+                    <p class="placeholder-text">Диаграмма появится после визуализации</p>
                 </div>
+
             </div>
         </section>
 
-        <!-- Tester Section -->
+               <!-- Tester Section -->
         <section class="panel" id="testerPanel">
             <div class="panel-header">
                 <h2 class="panel-title">Тестирование</h2>
@@ -216,18 +226,33 @@
             </div>
             <div class="panel-body">
                 
-                <label for="testInput" class="label">Текст для проверки</label>
-                <textarea 
-                    id="testInput" 
-                    class="textarea" 
-                    placeholder="Введите текст для тестирования regex"
-                    rows="6"
-                ></textarea>
+                <!-- Regex Input -->
+                <div class="input-section">
+                    <label for="testerRegex" class="label">Регулярное выражение</label>
+                    <input 
+                        type="text" 
+                        id="testerRegex" 
+                        class="input input-code" 
+                        placeholder="Вставьте regex для тестирования"
+                    >
+                </div>
 
-                <button class="btn-primary mt-1" id="testBtn" disabled>
+                <!-- Text Input -->
+                <div class="input-section mt-2">
+                    <label for="testText" class="label">Текст для проверки</label>
+                    <textarea 
+                        id="testText" 
+                        class="textarea" 
+                        placeholder="Введите текст для тестирования regex"
+                        rows="6"
+                    ></textarea>
+                </div>
+
+                <button class="btn-primary mt-1" id="testBtn">
                     🔍 Тестировать
                 </button>
 
+                <!-- Test Result -->
                 <div class="test-result mt-2" id="testResult" style="display: none;">
                     <div class="result-header">
                         <span class="label">Результат:</span>
@@ -238,7 +263,7 @@
 
             </div>
         </section>
-
+        
         <!-- Reverse Converter Section -->
         <section class="panel" id="reversePanel">
             <div class="panel-header">
@@ -247,18 +272,22 @@
             </div>
             <div class="panel-body">
                 
-                <label for="reverseInput" class="label">Regex → Триггеры</label>
-                <textarea 
-                    id="reverseInput" 
-                    class="textarea input-code" 
-                    placeholder="Вставьте regex для декомпозиции"
-                    rows="4"
-                ></textarea>
+                <!-- Regex Input -->
+                <div class="input-section">
+                    <label for="reverseInput" class="label">Регулярное выражение</label>
+                    <input 
+                        type="text" 
+                        id="reverseInput" 
+                        class="input input-code" 
+                        placeholder="Вставьте regex для декомпозиции"
+                    >
+                </div>
 
-                <button class="btn-secondary mt-1" id="reverseBtn">
+                <button class="btn-primary mt-1" id="reverseBtn">
                     🔄 Конвертировать
                 </button>
 
+                <!-- Triggers Output -->
                 <div class="reverse-result mt-2" id="reverseResult" style="display: none;">
                     <label class="label">Извлеченные триггеры:</label>
                     <textarea 
@@ -268,7 +297,7 @@
                         readonly
                     ></textarea>
                     <button class="btn-secondary btn-sm mt-1" id="loadReversedBtn">
-                        ↑ Загрузить в Панель 1
+                        ↑ Загрузить в Конвертер
                     </button>
                 </div>
 
