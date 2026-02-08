@@ -48,7 +48,7 @@
     <!-- Header -->
     <header class="header">
         <div class="logo">
-            <img src="images/logo.png" alt="RegexHelper" height="40">
+            <img src="images/logo.png" alt="RegexHelper" height="32">
         </div>
         <div class="header-actions">
             <button class="btn-icon" id="helpBtn" title="Справка">?</button>
@@ -357,6 +357,45 @@
         ym(XXXXXX, "init", { clickmap:true, trackLinks:true, accurateTrackBounce:true });
     </script>
     -->
+
+        <!-- Header Hide/Show Script -->
+    <script>
+        (function() {
+            let lastScrollTop = 0;
+            const header = document.querySelector('.header');
+            const threshold = 100; // Скрывать после 100px скролла
+            
+            window.addEventListener('scroll', function() {
+                let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                
+                if (scrollTop > threshold) {
+                    if (scrollTop > lastScrollTop) {
+                        // Скроллим вниз - скрываем header
+                        header.classList.add('hidden');
+                        header.classList.remove('visible');
+                    } else {
+                        // Скроллим вверх - показываем header
+                        header.classList.add('visible');
+                        header.classList.remove('hidden');
+                    }
+                } else {
+                    // Вверху страницы - всегда показываем
+                    header.classList.remove('hidden');
+                    header.classList.add('visible');
+                }
+                
+                lastScrollTop = scrollTop;
+            });
+            
+            // Показываем header при наведении вверху экрана
+            document.addEventListener('mousemove', function(e) {
+                if (e.clientY < 100) {
+                    header.classList.add('visible');
+                    header.classList.remove('hidden');
+                }
+            });
+        })();
+    </script>
 
 </body>
 </html>
