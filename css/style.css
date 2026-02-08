@@ -15,10 +15,10 @@
     --light-text: #8b95a1;
     
    /* Background Colors */
-    --white: #fafbfc;
-    --gray-bg: #f0f2f5;
-    --gray-light: #e4e6eb;
-    --gray-border: #ced0d4;
+    --white: #f8f9fa;
+    --gray-bg: #e9ecef;
+    --gray-light: #dee2e6;
+    --gray-border: #ced4da;
     
     /* Status Colors */
     --success: #4caf50;
@@ -815,6 +815,18 @@ button {
     .panel-header {
         flex-wrap: wrap;
         gap: 8px;
+    }
+       
+    .header-nav {
+        display: none; /* Скрываем навигацию на мобильных */
+    }
+    
+    .scroll-top-btn {
+        bottom: 16px;
+        left: 16px;
+        width: 44px;
+        height: 44px;
+        font-size: 20px;
     }
 }
 
