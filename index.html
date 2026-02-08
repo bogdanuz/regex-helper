@@ -50,6 +50,16 @@
         <div class="logo">
             <img src="images/logo.png" alt="RegexHelper" height="32">
         </div>
+        
+        <!-- Navigation -->
+        <nav class="header-nav">
+            <a href="#converterSection" class="nav-link">Конвертер</a>
+            <a href="#visualizerPanel" class="nav-link">Визуализация</a>
+            <a href="#testerPanel" class="nav-link">Тестирование</a>
+            <a href="#reversePanel" class="nav-link">Обратный конвертер</a>
+            <a href="#historyPanel" class="nav-link">История</a>
+        </nav>
+        
         <div class="header-actions">
             <button class="btn-icon" id="helpBtn" title="Справка">?</button>
             <button class="btn-danger btn-sm" id="resetBtn">Сбросить всё</button>
@@ -60,7 +70,7 @@
     <main class="container">
 
                 <!-- Converter Section Title -->
-        <div class="section-header">
+        <div class="section-header" id="converterSection">
             <h1 class="section-title">Конвертер</h1>
             <p class="section-description">Преобразование триггеров в регулярное выражение</p>
         </div>
@@ -331,7 +341,12 @@
         </section>
 
     </main>
+    <!-- Scroll to Top Button -->
+    <button id="scrollTopBtn" class="scroll-top-btn" title="Наверх">
+        ↑
+    </button>
 
+    
     <!-- Footer -->
     <footer class="footer">
         <p class="footer-text">
