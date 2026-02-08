@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="RegexHelper - Инструмент для автоматизации создания регулярных выражений для модерации контента">
+    <meta name="keywords" content="regex, регулярные выражения, генератор, модерация">
+    <meta name="author" content="RegexHelper">
+    
+    <!-- Security -->
+    <meta http-equiv="Content-Security-Policy" 
+          content="default-src 'self'; 
+                   script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://mc.yandex.ru; 
+                   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+                   font-src 'self' https://fonts.gstatic.com;
+                   img-src 'self' data:;">
+    
+    <title>RegexHelper - Генератор регулярных выражений</title>
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="images/favicon/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="images/favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="images/favicon/web-app-manifest-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="images/favicon/web-app-manifest-512x512.png">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/popup.css">
+    <link rel="stylesheet" href="css/spinner.css">
+    
+    <!-- External Libraries (CDN + Fallback) -->
+    <script src="https://cdn.jsdelivr.net/npm/russian-nouns-js@2.3.0/RussianNouns.min.js" 
+            onerror="this.onerror=null; this.src='lib/russian-nouns/RussianNouns.min.js'"></script>
+    <script src="https://unpkg.com/railroad-diagrams@1.0.0/railroad-diagrams.js" 
+            onerror="this.onerror=null; this.src='lib/railroad-diagrams/railroad-diagrams.js'"></script>
+</head>
+<body>
+    <!-- Loading Spinner (hidden by default) -->
+    <div id="spinnerOverlay" class="spinner-overlay" style="display: none;">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <img src="images/logo.png" alt="RegexHelper" height="40">
+        </div>
+        <div class="header-actions">
+            <button class="btn-icon" id="helpBtn" title="Справка">?</button>
+            <button class="btn-danger btn-sm" id="resetBtn">Сбросить всё</button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        
+        <!-- Three Columns Layout -->
+        <section class="three-columns">
+            
+            <!-- Panel 1: Input Triggers -->
+            <div class="panel" id="panelInput">
+                <div class="panel-header">
+                    <h2 class="panel-title">1. Триггеры</h2>
+                    <button class="btn-icon" id="inputHelpBtn" title="Помощь">?</button>
+                </div>
+                <div class="panel-body">
+                    
+                    <!-- Simple Triggers -->
+                    <div class="input-section">
+                        <label for="simpleTriggers" class="label">
+                            Простые триггеры
+                            <span class="label-hint">(по одному на строку, макс 200)</span>
+                        </label>
+                        <textarea 
+                            id="simpleTriggers" 
+                            class="textarea" 
+                            placeholder="яблоко&#10;груша&#10;апельсин"
+                            rows="8"
+                        ></textarea>
+                        <div class="input-footer">
+                            <span id="simpleCount" class="counter">0 триггеров</span>
+                        </div>
+                    </div>
+
+                    <!-- Linked Triggers -->
+                    <div class="input-section mt-2">
+                        <label class="label">
+                            Связанные триггеры
+                            <span class="label-hint">(комбинации слов)</span>
+                        </label>
+                        <div id="linkedTriggersContainer">
+                            <!-- Динамически добавляются группы -->
+                        </div>
+                        <button class="btn-secondary btn-sm mt-1" id="addLinkedGroupBtn">
+                            + Добавить группу
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Panel 2: Optimization Suggestions -->
+            <div class="panel" id="panelOptimization">
+                <div class="panel-header">
+                    <h2 class="panel-title">2. Оптимизация</h2>
+                    <button class="btn-icon" id="optimizationHelpBtn" title="Помощь">?</button>
+                </div>
+                <div class="panel-body">
+                    
+                    <p class="hint-text">Выберите типы оптимизации:</p>
+
+                    <!-- Optimization Type 1 -->
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" class="checkbox" id="optType1" checked>
+                        <span class="checkbox-label">
+                            Оптимизация повторов
+                            <span class="hint">(джефри, джеффри → джефф?ри)</span>
+                        </span>
+                    </label>
+
+                    <!-- Optimization Type 2 -->
+                    <label class="checkbox-wrapper mt-1">
+                        <input type="checkbox" class="checkbox" id="optType2" checked>
+                        <span class="checkbox-label">
+                            Общий корень
+                            <span class="hint">(книга, книги → книг[аи])</span>
+                        </span>
+                    </label>
+
+                    <!-- Optimization Type 3 -->
+                    <label class="checkbox-wrapper mt-1">
+                        <input type="checkbox" class="checkbox" id="optType3" checked>
+                        <span class="checkbox-label">
+                            Замена латиница↔кириллица
+                            <span class="hint">([eе][pр]stein)</span>
+                        </span>
+                    </label>
+
+                    <!-- Optimization Type 4 -->
+                    <label class="checkbox-wrapper mt-1">
+                        <input type="checkbox" class="checkbox" id="optType4" checked>
+                        <span class="checkbox-label">
+                            Группировка
+                            <span class="hint">((чер|клуб)ника)</span>
+                        </span>
+                    </label>
+
+                    <!-- Convert Button -->
+                    <button class="btn-primary mt-2" id="convertBtn" style="width: 100%;">
+                        Конвертировать
+                    </button>
+
+                </div>
+            </div>
+
+            <!-- Panel 3: Result -->
+            <div class="panel" id="panelResult">
+                <div class="panel-header">
+                    <h2 class="panel-title">3. Результат</h2>
+                    <button class="btn-icon" id="resultHelpBtn" title="Помощь">?</button>
+                </div>
+                <div class="panel-body">
+                    
+                    <label for="resultRegex" class="label">Регулярное выражение</label>
+                    <textarea 
+                        id="resultRegex" 
+                        class="textarea input-code" 
+                        placeholder="Здесь появится regex после конвертации"
+                        rows="8"
+                        readonly
+                    ></textarea>
+                    
+                    <div class="result-info mt-1">
+                        <span id="regexLength" class="info-text">Длина: 0 символов</span>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="button-group mt-2">
+                        <button class="btn-primary" id="copyBtn" disabled>
+                            📋 Копировать
+                        </button>
+                        <button class="btn-secondary" id="exportBtn" disabled>
+                            💾 Скачать
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Visualizer Section -->
+        <section class="panel" id="visualizerPanel">
+            <div class="panel-header">
+                <h2 class="panel-title">Визуализация</h2>
+                <div class="panel-actions">
+                    <button class="btn-icon" id="visualizerHelpBtn" title="Помощь">?</button>
+                    <button class="btn-secondary btn-sm" id="toggleVisualizerBtn">
+                        Свернуть
+                    </button>
+                </div>
+            </div>
+            <div class="panel-body" id="visualizerBody">
+                <div id="visualizerContainer" class="visualizer-container">
+                    <p class="placeholder-text">Визуализация появится после конвертации</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tester Section -->
+        <section class="panel" id="testerPanel">
+            <div class="panel-header">
+                <h2 class="panel-title">Тестирование</h2>
+                <button class="btn-icon" id="testerHelpBtn" title="Помощь">?</button>
+            </div>
+            <div class="panel-body">
+                
+                <label for="testInput" class="label">Текст для проверки</label>
+                <textarea 
+                    id="testInput" 
+                    class="textarea" 
+                    placeholder="Введите текст для тестирования regex"
+                    rows="6"
+                ></textarea>
+
+                <button class="btn-primary mt-1" id="testBtn" disabled>
+                    🔍 Тестировать
+                </button>
+
+                <div class="test-result mt-2" id="testResult" style="display: none;">
+                    <div class="result-header">
+                        <span class="label">Результат:</span>
+                        <span id="matchCount" class="match-count">0 совпадений</span>
+                    </div>
+                    <div id="testOutput" class="test-output"></div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Reverse Converter Section -->
+        <section class="panel" id="reversePanel">
+            <div class="panel-header">
+                <h2 class="panel-title">Обратный конвертер</h2>
+                <button class="btn-icon" id="reverseHelpBtn" title="Помощь">?</button>
+            </div>
+            <div class="panel-body">
+                
+                <label for="reverseInput" class="label">Regex → Триггеры</label>
+                <textarea 
+                    id="reverseInput" 
+                    class="textarea input-code" 
+                    placeholder="Вставьте regex для декомпозиции"
+                    rows="4"
+                ></textarea>
+
+                <button class="btn-secondary mt-1" id="reverseBtn">
+                    🔄 Конвертировать
+                </button>
+
+                <div class="reverse-result mt-2" id="reverseResult" style="display: none;">
+                    <label class="label">Извлеченные триггеры:</label>
+                    <textarea 
+                        id="reverseOutput" 
+                        class="textarea" 
+                        rows="6"
+                        readonly
+                    ></textarea>
+                    <button class="btn-secondary btn-sm mt-1" id="loadReversedBtn">
+                        ↑ Загрузить в Панель 1
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- History Section -->
+        <section class="panel" id="historyPanel">
+            <div class="panel-header">
+                <h2 class="panel-title">История (последние 10)</h2>
+                <button class="btn-danger btn-sm" id="clearHistoryBtn">
+                    Очистить
+                </button>
+            </div>
+            <div class="panel-body">
+                <div id="historyContainer" class="history-container">
+                    <p class="placeholder-text">История пуста</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p class="footer-text">
+            RegexHelper © 2026 | 
+            <a href="https://github.com/bogdanuz/regex-helper" target="_blank">GitHub</a>
+        </p>
+    </footer>
+
+    <!-- Modal: Help -->
+    <div id="helpModal" class="modal-overlay" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Справка</h3>
+                <button class="modal-close" id="closeHelpModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Содержимое справки будет добавлено позже...</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" id="closeHelpModalBtn">Понятно</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Export Options -->
+    <div id="exportModal" class="modal-overlay" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Экспорт</h3>
+                <button class="modal-close" id="closeExportModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Выберите формат экспорта:</p>
+                <div class="export-options">
+                    <button class="btn-secondary" id="exportTxtBtn">📄 TXT</button>
+                    <button class="btn-secondary" id="exportJsonBtn">📋 JSON</button>
+                    <button class="btn-secondary" id="exportCsvBtn">📊 CSV</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Modules -->
+    <script src="js/utils.js"></script>
+    <script src="js/errors.js"></script>
+    <script src="js/converter.js"></script>
+    <script src="js/optimizer.js"></script>
+    <script src="js/suggestions.js"></script>
+    <script src="js/linked-triggers.js"></script>
+    <script src="js/visualizer.js"></script>
+    <script src="js/tester.js"></script>
+    <script src="js/reverse.js"></script>
+    <script src="js/history.js"></script>
+    <script src="js/export.js"></script>
+    <script src="js/main.js"></script>
+
+    <!-- Yandex.Metrika (will be added later) -->
+    <!-- 
+    <script type="text/javascript">
+        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+        m[i].l=1*new Date();k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+        (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+        ym(XXXXXX, "init", { clickmap:true, trackLinks:true, accurateTrackBounce:true });
+    </script>
+    -->
+
+</body>
+</html>
