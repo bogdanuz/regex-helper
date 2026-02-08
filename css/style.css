@@ -201,6 +201,14 @@ body {
 /* ============================================
    PANELS
    ============================================ */
+/* Scroll offset for navigation links */
+#converterSection,
+#visualizerPanel,
+#testerPanel,
+#reversePanel,
+#historyPanel {
+    scroll-margin-top: 100px;
+}
 
 .panel {
     background-color: var(--white);
