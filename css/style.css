@@ -152,21 +152,23 @@ body {
 
 /* Section Headers */
 .section-header {
-    margin-bottom: 24px;
-    padding-bottom: 16px;
-    border-bottom: 2px solid var(--gray-border);
+    margin-bottom: 16px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--gray-border);
 }
 
 .section-title {
-    font-size: 24px;
+    font-size: 16px;
     font-weight: 700;
     color: var(--dark-text);
-    margin-bottom: 4px;
+    display: inline;
+    margin-right: 12px;
 }
 
 .section-description {
-    font-size: 14px;
+    font-size: 13px;
     color: var(--medium-text);
+    display: inline;
 }
 
 /* ============================================
