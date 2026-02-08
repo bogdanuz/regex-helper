@@ -455,37 +455,59 @@
         <!-- Header Hide/Show Script -->
     <script>
         (function() {
-            let lastScrollTop = 0;
             const header = document.querySelector('.header');
             const threshold = 100; // Скрывать после 100px скролла
+            let hideTimeout;
             
+            // Скрывать header при скролле вниз
             window.addEventListener('scroll', function() {
                 let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
                 
                 if (scrollTop > threshold) {
-                    if (scrollTop > lastScrollTop) {
-                        // Скроллим вниз - скрываем header
-                        header.classList.add('hidden');
-                        header.classList.remove('visible');
-                    } else {
-                        // Скроллим вверх - показываем header
-                        header.classList.add('visible');
-                        header.classList.remove('hidden');
-                    }
+                    // Скрываем header если проскроллили больше 100px
+                    header.classList.add('hidden');
+                    header.classList.remove('visible');
                 } else {
                     // Вверху страницы - всегда показываем
                     header.classList.remove('hidden');
                     header.classList.add('visible');
                 }
-                
-                lastScrollTop = scrollTop;
             });
             
-            // Показываем header при наведении вверху экрана
+            // Показываем header при наведении на верх экрана
             document.addEventListener('mousemove', function(e) {
-                if (e.clientY < 100) {
+                let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                
+                if (e.clientY < 80 && scrollTop > threshold) {
+                    // Навели курсор вверху - показываем
+                    clearTimeout(hideTimeout);
                     header.classList.add('visible');
                     header.classList.remove('hidden');
+                } else if (scrollTop > threshold) {
+                    // Убрали курсор - скрываем через 1 секунду
+                    clearTimeout(hideTimeout);
+                    hideTimeout = setTimeout(function() {
+                        header.classList.add('hidden');
+                        header.classList.remove('visible');
+                    }, 1000);
+                }
+            });
+            
+            // Держим header видимым когда курсор на нем
+            header.addEventListener('mouseenter', function() {
+                clearTimeout(hideTimeout);
+                header.classList.add('visible');
+                header.classList.remove('hidden');
+            });
+            
+            header.addEventListener('mouseleave', function() {
+                let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                if (scrollTop > threshold) {
+                    clearTimeout(hideTimeout);
+                    hideTimeout = setTimeout(function() {
+                        header.classList.add('hidden');
+                        header.classList.remove('visible');
+                    }, 1000);
                 }
             });
         })();
