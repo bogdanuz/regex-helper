@@ -9,16 +9,16 @@
     --light-blue: #70c4fc;
     --primary-hover: #1a8fd4;
     
-    /* Text Colors */
-    --dark-text: #2f425a;
-    --medium-text: #707c88;
-    --light-text: #9ca7b3;
+   /* Text Colors */
+    --dark-text: #1c2b3a;
+    --medium-text: #5a6774;
+    --light-text: #8b95a1;
     
-    /* Background Colors */
-    --white: #ffffff;
-    --gray-bg: #f7f7f7;
-    --gray-light: #e8ebee;
-    --gray-border: #d9dde1;
+   /* Background Colors */
+    --white: #fafbfc;
+    --gray-bg: #f0f2f5;
+    --gray-light: #e4e6eb;
+    --gray-border: #ced0d4;
     
     /* Status Colors */
     --success: #4caf50;
@@ -133,6 +133,25 @@ a:hover {
     margin-bottom: 20px;
 }
 
+/* Section Headers */
+.section-header {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--gray-border);
+}
+
+.section-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--dark-text);
+    margin-bottom: 4px;
+}
+
+.section-description {
+    font-size: 14px;
+    color: var(--medium-text);
+}
+
 /* ============================================
    PANELS
    ============================================ */
@@ -143,11 +162,13 @@ a:hover {
     box-shadow: var(--shadow-sm);
     padding: 20px;
     margin-bottom: 20px;
-    transition: box-shadow 0.2s ease;
+    transition: all 0.2s ease;
+    border: 1px solid var(--gray-border);
 }
 
 .panel:hover {
     box-shadow: var(--shadow-md);
+    border-color: var(--primary-blue);
 }
 
 .panel-header {
