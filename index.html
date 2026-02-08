@@ -458,46 +458,63 @@
             const header = document.querySelector('.header');
             const threshold = 100; // Скрывать после 100px скролла
             let hideTimeout;
+            let lastMouseY = 0;
             
-            // Скрывать header при скролле вниз
-            window.addEventListener('scroll', function() {
+            function updateHeaderVisibility() {
                 let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
                 
-                if (scrollTop > threshold) {
-                    // Скрываем header если проскроллили больше 100px
-                    header.classList.add('hidden');
-                    header.classList.remove('visible');
-                } else {
+                if (scrollTop <= threshold) {
                     // Вверху страницы - всегда показываем
+                    clearTimeout(hideTimeout);
                     header.classList.remove('hidden');
                     header.classList.add('visible');
+                } else {
+                    // Внизу страницы - скрываем
+                    header.classList.add('hidden');
+                    header.classList.remove('visible');
                 }
+            }
+            
+            // Следим за скроллом
+            window.addEventListener('scroll', function() {
+                updateHeaderVisibility();
             });
             
             // Показываем header при наведении на верх экрана
             document.addEventListener('mousemove', function(e) {
                 let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
                 
-                if (e.clientY < 80 && scrollTop > threshold) {
+                // Показываем только если:
+                // 1. Мы ниже threshold (100px)
+                // 2. Курсор в верхней зоне (< 80px)
+                // 3. Курсор движется ВВЕРХ (не вниз)
+                if (scrollTop > threshold && e.clientY < 80 && e.clientY < lastMouseY) {
                     // Навели курсор вверху - показываем
                     clearTimeout(hideTimeout);
                     header.classList.add('visible');
                     header.classList.remove('hidden');
-                } else if (scrollTop > threshold) {
-                    // Убрали курсор - скрываем через 1 секунду
+                } else if (scrollTop > threshold && e.clientY > 80) {
+                    // Курсор ушел вниз - скрываем через 1 секунду
                     clearTimeout(hideTimeout);
                     hideTimeout = setTimeout(function() {
-                        header.classList.add('hidden');
-                        header.classList.remove('visible');
+                        if (window.pageYOffset > threshold) {
+                            header.classList.add('hidden');
+                            header.classList.remove('visible');
+                        }
                     }, 1000);
                 }
+                
+                lastMouseY = e.clientY;
             });
             
             // Держим header видимым когда курсор на нем
             header.addEventListener('mouseenter', function() {
-                clearTimeout(hideTimeout);
-                header.classList.add('visible');
-                header.classList.remove('hidden');
+                let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                if (scrollTop > threshold) {
+                    clearTimeout(hideTimeout);
+                    header.classList.add('visible');
+                    header.classList.remove('hidden');
+                }
             });
             
             header.addEventListener('mouseleave', function() {
@@ -505,11 +522,16 @@
                 if (scrollTop > threshold) {
                     clearTimeout(hideTimeout);
                     hideTimeout = setTimeout(function() {
-                        header.classList.add('hidden');
-                        header.classList.remove('visible');
+                        if (window.pageYOffset > threshold) {
+                            header.classList.add('hidden');
+                            header.classList.remove('visible');
+                        }
                     }, 1000);
                 }
             });
+            
+            // Инициализация при загрузке
+            updateHeaderVisibility();
         })();
     </script>
 
