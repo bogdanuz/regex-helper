@@ -412,7 +412,46 @@
         ym(XXXXXX, "init", { clickmap:true, trackLinks:true, accurateTrackBounce:true });
     </script>
     -->
+    <!-- Smooth Scroll & Scroll to Top Script -->
+    <script>
+        (function() {
+            // Smooth scroll для навигации
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href').substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    
+                    if (targetElement) {
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+            
+            // Кнопка "Наверх"
+            const scrollTopBtn = document.getElementById('scrollTopBtn');
+            
+            window.addEventListener('scroll', function() {
+                if (window.pageYOffset > 300) {
+                    scrollTopBtn.classList.add('visible');
+                } else {
+                    scrollTopBtn.classList.remove('visible');
+                }
+            });
+            
+            scrollTopBtn.addEventListener('click', function() {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        })();
+    </script>
 
+    
         <!-- Header Hide/Show Script -->
     <script>
         (function() {
