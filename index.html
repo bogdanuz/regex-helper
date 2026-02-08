@@ -58,7 +58,13 @@
 
     <!-- Main Content -->
     <main class="container">
-        
+
+                <!-- Converter Section Title -->
+        <div class="section-header">
+            <h1 class="section-title">Конвертер</h1>
+            <p class="section-description">Преобразование триггеров в регулярное выражение</p>
+        </div>
+
         <!-- Three Columns Layout -->
         <section class="three-columns">
             
@@ -104,22 +110,12 @@
                 </div>
             </div>
 
-            <!-- Panel 2: Optimization Suggestions -->
-            <div class="panel" id="panelOptimization">
-                <div class="panel-header">
-                    <h2 class="panel-title">2. Оптимизация</h2>
-                    <button class="btn-icon" id="optimizationHelpBtn" title="Помощь">?</button>
-                </div>
-                <div class="panel-body">
-                    
-                    <p class="hint-text">Выберите типы оптимизации:</p>
-
-                    <!-- Optimization Type 1 -->
+                               <!-- Optimization Type 1 -->
                     <label class="checkbox-wrapper">
                         <input type="checkbox" class="checkbox" id="optType1" checked>
                         <span class="checkbox-label">
                             Оптимизация повторов
-                            <span class="hint">(джефри, джеффри → джефф?ри)</span>
+                            <span class="hint">(товар, товарр → товарр?)</span>
                         </span>
                     </label>
 
@@ -128,7 +124,7 @@
                         <input type="checkbox" class="checkbox" id="optType2" checked>
                         <span class="checkbox-label">
                             Общий корень
-                            <span class="hint">(книга, книги → книг[аи])</span>
+                            <span class="hint">(машина, машины → машин[аы])</span>
                         </span>
                     </label>
 
@@ -137,7 +133,7 @@
                         <input type="checkbox" class="checkbox" id="optType3" checked>
                         <span class="checkbox-label">
                             Замена латиница↔кириллица
-                            <span class="hint">([eе][pр]stein)</span>
+                            <span class="hint">([tт][eе]st)</span>
                         </span>
                     </label>
 
@@ -146,7 +142,7 @@
                         <input type="checkbox" class="checkbox" id="optType4" checked>
                         <span class="checkbox-label">
                             Группировка
-                            <span class="hint">((чер|клуб)ника)</span>
+                            <span class="hint">((красн|син)ий)</span>
                         </span>
                     </label>
 
