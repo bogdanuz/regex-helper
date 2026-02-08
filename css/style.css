@@ -126,6 +126,33 @@ body {
     display: block;
 }
 
+/* Navigation */
+.header-nav {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.nav-link {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--medium-text);
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+
+.nav-link:hover {
+    color: var(--primary-blue);
+    background-color: var(--gray-light);
+}
+
+.nav-link:active {
+    transform: scale(0.95);
+}
+
 .header-actions {
     display: flex;
     align-items: center;
@@ -664,6 +691,46 @@ button {
 .footer-text {
     font-size: 13px;
     color: var(--medium-text);
+}
+
+/* ============================================
+   SCROLL TO TOP BUTTON
+   ============================================ */
+
+.scroll-top-btn {
+    position: fixed;
+    bottom: 24px;
+    left: 24px;
+    width: 48px;
+    height: 48px;
+    background-color: var(--primary-blue);
+    color: var(--white);
+    border: none;
+    border-radius: 50%;
+    font-size: 24px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: var(--shadow-lg);
+    transition: all 0.3s ease;
+    z-index: 99;
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.8);
+}
+
+.scroll-top-btn.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+}
+
+.scroll-top-btn:hover {
+    background-color: var(--primary-hover);
+    transform: scale(1.1);
+}
+
+.scroll-top-btn:active {
+    transform: scale(0.95);
 }
 
 /* ============================================
