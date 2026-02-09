@@ -111,11 +111,6 @@ a:hover {
     transform: translateY(0);
 }
 
-/* Отступ для body чтобы контент не залезал под header */
-body {
-    padding-top: 60px;
-}
-
 .logo {
     display: flex;
     align-items: center;
@@ -201,6 +196,7 @@ body {
 /* ============================================
    PANELS
    ============================================ */
+
 /* Scroll offset for navigation links */
 #converterSection,
 #visualizerPanel,
@@ -247,7 +243,6 @@ body {
 }
 
 .panel-body {
-    /* Content area */
 }
 
 /* ============================================
@@ -376,8 +371,7 @@ button {
 .textarea {
     width: 100%;
     min-height: 100px;
-    resize: vertical; /* Позволяет растягивать вручную */
-    /* ... остальное */
+    resize: vertical;
 }
 
 .input::placeholder,
@@ -553,7 +547,7 @@ button {
 }
 
 /* ============================================
-   RESULT INFO
+   RESULT INFO & STATS
    ============================================ */
 
 .result-info {
@@ -562,10 +556,6 @@ button {
     align-items: center;
 }
 
-/* ============================================
-   ДОБАВЛЕНО: Стили для статистики
-   ============================================ */
-
 .result-stats {
     margin-top: 12px;
     padding: 12px;
@@ -573,11 +563,11 @@ button {
     border-radius: 6px;
     font-size: 14px;
     color: #616161;
-    display: none; /* Скрыто по умолчанию */
+    display: none;
 }
 
 .result-stats.visible {
-    display: block;
+    display: block !important;
 }
 
 /* ============================================
@@ -845,7 +835,7 @@ button {
     }
        
     .header-nav {
-        display: none; /* Скрываем навигацию на мобильных */
+        display: none;
     }
     
     .scroll-top-btn {
@@ -956,14 +946,16 @@ button {
     scrollbar-color: var(--gray-border) var(--gray-light);
 }
 
-/* Стили для header controls */
+/* ============================================
+   HEADER CONTROLS
+   ============================================ */
+
 .header-controls {
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
-/* Действия в заголовке панели */
 .panel-header-actions {
     display: flex;
     gap: 5px;
@@ -986,7 +978,6 @@ button {
     font-weight: bold;
 }
 
-/* Стили для result actions */
 .result-actions {
     display: flex;
     align-items: center;
@@ -994,10 +985,9 @@ button {
 }
 
 /* ============================================
-   ВЫДЕЛЕНИЕ ТЕКСТА
+   TEXT SELECTION
    ============================================ */
 
-/* Разрешаем выделение текста в полях ввода */
 input,
 textarea,
 input::placeholder,
@@ -1017,14 +1007,12 @@ div {
     cursor: text;
 }
 
-/* Специально для textarea - убираем все ограничения */
 textarea,
 .textarea {
     user-select: text !important;
     -webkit-user-select: text !important;
 }
 
-/* Запрещаем выделение только для кнопок и UI элементов */
 button,
 .btn,
 .btn-primary,
@@ -1042,7 +1030,7 @@ button,
 }
 
 /* ============================================
-   СВЯЗАННЫЕ ТРИГГЕРЫ - УЛУЧШЕННЫЕ СТИЛИ
+   LINKED TRIGGERS
    ============================================ */
 
 .linked-group {
@@ -1091,7 +1079,6 @@ button,
     flex: 1;
 }
 
-/* Кнопки в группе - компактные */
 .linked-group .btn-icon {
     width: 28px;
     height: 28px;
@@ -1126,49 +1113,14 @@ button,
     background-color: #d32f2f;
 }
 
-/* Кнопка удаления поля - по правому краю */
 .linked-field .btn-icon {
     margin-left: auto;
 }
 
-/* Стили для кнопок в группах */
-.group-actions {
-    display: flex;
-    gap: 5px;
-}
-
-.btn-icon-sm {
-    font-size: 14px;
-    width: 24px;
-    height: 24px;
-    padding: 0;
-}
-
-.btn-icon-warning {
-    background-color: #ff9800;
-    color: white;
-}
-
-.btn-icon-warning:hover {
-    background-color: #f57c00;
-}
-
-.btn-icon-danger {
-    background-color: #f44336;
-    color: white;
-    font-size: 18px;
-    font-weight: bold;
-}
-
-.btn-icon-danger:hover {
-    background-color: #d32f2f;
-}
-
 /* ============================================
-   МГНОВЕННЫЕ ПОДСКАЗКИ
+   TOOLTIPS
    ============================================ */
 
-/* Убираем задержку появления подсказок */
 button[title],
 .btn[title],
 .btn-icon[title],
@@ -1176,23 +1128,19 @@ button[title],
     position: relative;
 }
 
-/* Браузерные подсказки - мгновенно */
 * {
-    /* Для Firefox */
     -moz-tooltip-delay: 0ms !important;
 }
 
-/* CSS подсказки (если используются) */
 button[title]:hover::after,
 .btn[title]:hover::after {
     transition-delay: 0s !important;
 }
 
 /* ============================================
-   БЕЗОПАСНЫЕ ОТСТУПЫ МЕЖДУ ЭЛЕМЕНТАМИ
+   SAFE SPACING
    ============================================ */
 
-/* Отступы для всех основных элементов */
 .input-section {
     margin-bottom: 20px;
 }
@@ -1205,7 +1153,6 @@ button[title]:hover::after,
     margin-top: 15px;
 }
 
-/* Отступы внутри полей */
 .input-footer {
     display: flex;
     align-items: center;
@@ -1214,7 +1161,6 @@ button[title]:hover::after,
     padding-top: 8px;
 }
 
-/* Кнопки действий - отступы */
 .button-group {
     display: flex;
     gap: 10px;
@@ -1228,7 +1174,6 @@ button[title]:hover::after,
     margin-top: 20px;
 }
 
-/* Отступы для результата */
 .result-info {
     margin-top: 12px;
     padding-top: 12px;
@@ -1236,10 +1181,9 @@ button[title]:hover::after,
 }
 
 /* ============================================
-   ИСТОРИЯ КОНВЕРТАЦИЙ
+   HISTORY MODAL
    ============================================ */
 
-/* Overlay модалки */
 #historyModal {
     position: fixed;
     top: 0;
@@ -1258,7 +1202,6 @@ button[title]:hover::after,
     display: flex;
 }
 
-/* Контент модалки */
 #historyModal .modal-content {
     background: white;
     border-radius: 12px;
@@ -1271,7 +1214,6 @@ button[title]:hover::after,
     animation: scaleIn 0.3s ease;
 }
 
-/* Заголовок */
 #historyModal .modal-header {
     padding: 24px 24px 16px;
     border-bottom: 2px solid #E0E0E0;
@@ -1306,21 +1248,18 @@ button[title]:hover::after,
     color: #212121;
 }
 
-/* Тело модалки */
 #historyModal .modal-body {
     padding: 24px;
     overflow-y: auto;
     flex: 1;
 }
 
-/* Список истории */
 .history-list {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
-/* Карточка записи */
 .history-item {
     background: #FAFAFA;
     border: 2px solid #E0E0E0;
@@ -1335,7 +1274,6 @@ button[title]:hover::after,
     box-shadow: 0 2px 8px rgba(33, 150, 243, 0.15);
 }
 
-/* Заголовок карточки */
 .history-item-header {
     display: flex;
     justify-content: space-between;
@@ -1354,7 +1292,6 @@ button[title]:hover::after,
     gap: 8px;
 }
 
-/* Превью regex */
 .history-item-regex {
     background: white;
     border: 1px solid #BDBDBD;
@@ -1370,7 +1307,6 @@ button[title]:hover::after,
     max-width: 100%;
 }
 
-/* Метаданные */
 .history-item-meta {
     display: flex;
     gap: 16px;
@@ -1384,7 +1320,6 @@ button[title]:hover::after,
     gap: 4px;
 }
 
-/* Пустая история */
 .history-empty {
     text-align: center;
     padding: 60px 24px;
@@ -1403,7 +1338,6 @@ button[title]:hover::after,
     margin-top: 8px;
 }
 
-/* Футер модалки */
 .modal-footer {
     padding: 16px 24px;
     border-top: 2px solid #E0E0E0;
@@ -1414,7 +1348,6 @@ button[title]:hover::after,
     border-bottom-right-radius: 12px;
 }
 
-/* Кнопки в карточке */
 .history-item .btn-icon {
     width: 32px;
     height: 32px;
@@ -1426,12 +1359,6 @@ button[title]:hover::after,
 .history-item .btn-icon:hover {
     background: #F5F5F5;
     border-color: #757575;
-}
-
-/* Анимации */
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
 }
 
 @keyframes scaleIn {
@@ -1446,16 +1373,14 @@ button[title]:hover::after,
 }
 
 /* ============================================
-   ТЕСТЕР REGEX
+   TESTER PANEL
    ============================================ */
 
-/* Панель тестера */
 #testerPanel {
     background: #F0F4FF;
     border: 2px solid #2196F3;
 }
 
-/* Статистика */
 .test-stats {
     display: flex;
     gap: 24px;
@@ -1484,7 +1409,6 @@ button[title]:hover::after,
     color: #2196F3;
 }
 
-/* Контейнер с подсветкой */
 .test-highlight-container {
     margin-bottom: 16px;
 }
@@ -1510,7 +1434,6 @@ button[title]:hover::after,
     overflow-y: auto;
 }
 
-/* Подсветка совпадения */
 .test-match {
     background: #FFEB3B;
     color: #000;
@@ -1520,7 +1443,6 @@ button[title]:hover::after,
     border: 1px solid #FBC02D;
 }
 
-/* Список совпадений */
 .test-matches-container {
     margin-top: 16px;
 }
@@ -1566,7 +1488,6 @@ button[title]:hover::after,
     font-size: 12px;
 }
 
-/* Пустое состояние */
 .test-empty {
     text-align: center;
     padding: 48px 24px;
@@ -1584,20 +1505,3 @@ button[title]:hover::after,
     color: #757575;
     margin-top: 8px;
 }
-/* ============================================
-   Статистика результата
-   ============================================ */
-
-.result-stats {
-    margin-top: 12px;
-    padding: 12px;
-    background: #F5F5F5;
-    border-radius: 6px;
-    font-size: 14px;
-    color: #616161;
-}
-
-.result-stats.visible {
-    display: block !important;
-}
-
