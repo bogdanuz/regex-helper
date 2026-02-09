@@ -99,15 +99,24 @@
     margin-bottom: 0;
 }
 
-.modal-body h3 {
-    font-size: 16px;
+.modal-body h3,
+.modal-body h4 {
     font-weight: 700;
     margin-top: 20px;
     margin-bottom: 12px;
     color: var(--dark-text);
 }
 
-.modal-body h3:first-child {
+.modal-body h3 {
+    font-size: 16px;
+}
+
+.modal-body h4 {
+    font-size: 15px;
+}
+
+.modal-body h3:first-child,
+.modal-body h4:first-child {
     margin-top: 0;
 }
 
@@ -130,6 +139,11 @@
     color: var(--primary-blue);
 }
 
+.modal-body strong {
+    font-weight: 700;
+    color: var(--dark-text);
+}
+
 /* Modal Footer */
 .modal-footer {
     padding: 16px 24px;
@@ -140,7 +154,7 @@
 }
 
 /* ============================================
-   EXPORT OPTIONS (специальный layout)
+   EXPORT OPTIONS
    ============================================ */
 
 .export-options {
@@ -279,7 +293,7 @@
 }
 
 /* ============================================
-   TOOLTIPS (подсказки при hover)
+   TOOLTIPS
    ============================================ */
 
 .tooltip {
@@ -323,7 +337,7 @@
 }
 
 /* ============================================
-   CONFIRMATION DIALOG (подтверждение действий)
+   CONFIRMATION DIALOG
    ============================================ */
 
 .confirm-dialog {
@@ -363,7 +377,7 @@
 }
 
 /* ============================================
-   LOADING INDICATOR (внутри модалок)
+   LOADING INDICATOR
    ============================================ */
 
 .modal-loading {
@@ -384,6 +398,12 @@
 .modal-loading-text {
     font-size: 14px;
     color: var(--medium-text);
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* ============================================
@@ -438,24 +458,5 @@
     
     .confirm-dialog-actions button {
         width: 100%;
-    }
-}
-
-/* ============================================
-   ANIMATIONS
-   ============================================ */
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
     }
 }
