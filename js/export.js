@@ -19,7 +19,7 @@ function exportTXT(regex, triggers = null) {
         return false;
     }
     
-    // Формируем содержимое файла
+    // ИСПРАВЛЕНО: Формируем содержимое файла (\\n → \n)
     let content = '# RegexHelper Export\n';
     content += `# Дата: ${formatDate(new Date())}\n`;
     content += '\n';
@@ -51,51 +51,52 @@ function exportTXT(regex, triggers = null) {
    ЭКСПОРТ В JSON
    ============================================ */
 
-// ============================================
-// ИСПРАВЛЕНО: Строка ~61
-// ============================================
-
 /**
  * Экспорт в JSON
+ * @param {string} regex - Регулярное выражение
+ * @param {Array} triggers - Массив триггеров
+ * @param {Object} settings - Настройки оптимизаций
+ * @param {Object} info - Дополнительная информация
+ * @returns {boolean} - true если успешно
  */
-function exportJSON() {
-    const resultTextarea = document.getElementById('resultRegex');
-    
-    if (!resultTextarea) {
-        showToast('error', 'Поле результата не найдено');
-        return;
-    }
-    
-    const regex = resultTextarea.value.trim();
-    
+function exportJSON(regex, triggers = [], settings = {}, info = {}) {
     if (!regex) {
-        showToast('warning', 'Нет regex для экспорта');
-        return;
+        showToast('error', 'Нет данных для экспорта');
+        return false;
     }
     
     // ИСПРАВЛЕНО: Добавлена валидация settings
-    let settings = getSelectedOptimizations();
     if (!settings || typeof settings !== 'object') {
         settings = {
             type1: false,
             type2: false,
             type3: false,
-            type4: false,
-            type5: false
+            type4: false
         };
     }
     
     const data = {
         regex: regex,
+        triggers: triggers,
+        triggerCount: triggers.length,
+        regexLength: countChars(regex),
         timestamp: getCurrentTimestamp(),
         settings: settings,
+        info: info,
         version: '1.0'
     };
     
     const json = JSON.stringify(data, null, 2);
-    downloadFile(json, generateFilename('json'), 'application/json');
+    const filename = generateFilename('json');
+    const success = downloadFile(json, filename, 'application/json');
     
-    showToast('success', 'Экспортировано в JSON');
+    if (success) {
+        showMessage('success', 'EXPORTED_JSON');
+        return true;
+    } else {
+        showToast('error', 'Ошибка при скачивании файла');
+        return false;
+    }
 }
 
 /* ============================================
@@ -114,7 +115,7 @@ function exportCSV(regex, triggers = []) {
         return false;
     }
     
-    // Формируем CSV структуру
+    // ИСПРАВЛЕНО: Формируем CSV структуру (\\n → \n)
     let csv = 'Тип,Значение\n';
     csv += `"Regex","${escapeCSV(regex)}"\n`;
     csv += `"Длина regex","${countChars(regex)}"\n`;
@@ -320,17 +321,20 @@ function quickExport(format) {
     }
     
     const triggers = getOriginalTriggers();
+    const settings = getSelectedOptimizations();
+    
+    const info = {
+        triggerCount: triggers.length,
+        regexLength: countChars(regex),
+        hasLinkedTriggers: hasLinkedTriggers ? hasLinkedTriggers() : false,
+        linkedPermutations: countLinkedPermutations ? countLinkedPermutations() : 0
+    };
     
     switch (format.toLowerCase()) {
         case 'txt':
             exportTXT(regex, triggers);
             break;
         case 'json':
-            const settings = getSelectedOptimizations();
-            const info = {
-                triggerCount: triggers.length,
-                regexLength: countChars(regex)
-            };
             exportJSON(regex, triggers, settings, info);
             break;
         case 'csv':
@@ -341,35 +345,9 @@ function quickExport(format) {
     }
 }
 
-// Экспортируем функции для использования в других модулях
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        // Экспорт в форматы
-        exportTXT,
-        exportJSON,
-        exportCSV,
-        
-        // Модальное окно
-        openExportModal,
-        closeExportModal,
-        
-        // Инициализация
-        initExport,
-        
-        // Обработчики
-        handleExportTxt,
-        handleExportJson,
-        handleExportCsv,
-        
-        // Вспомогательные
-        generateFilename,
-        escapeCSV,
-        getResultRegex,
-        getOriginalTriggers,
-        quickExport
-    };
-}
-
 // Делаем функции глобальными для HTML
 window.openExportModal = openExportModal;
 window.closeExportModal = closeExportModal;
+window.quickExport = quickExport;
+
+console.log('✓ Модуль export.js загружен');
