@@ -298,3 +298,5 @@ if (typeof module !== 'undefined' && module.exports) {
         loadOptimizationPreferences
     };
 }
+console.log('✓ Модуль suggestions.js загружен');
+
