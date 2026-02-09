@@ -29,7 +29,7 @@ function escapeHTML(str) {
  * @returns {string} - Экранированная строка
  */
 function escapeRegex(str) {
-    // ИСПРАВЛЕНО: убран лишний экранирующий слэш
+    // ИСПРАВЛЕНО: правильный regex паттерн
     return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
@@ -263,6 +263,7 @@ function cleanString(str) {
 function splitLines(text) {
     if (!text) return [];
     
+    // ИСПРАВЛЕНО: '\\n' → '\n' (настоящий перенос строки)
     return String(text)
         .split('\n')
         .map(line => line.trim())
@@ -369,31 +370,4 @@ function parseISODate(isoString) {
     }
 }
 
-// Экспортируем функции для использования в других модулях
-// (В браузере они станут глобальными)
-if (typeof module !== 'undefined' && module.exports) {
-    // Node.js окружение (для тестов)
-    module.exports = {
-        escapeHTML,
-        escapeRegex,
-        factorial,
-        debounce,
-        copyToClipboard,
-        downloadFile,
-        formatDate,
-        generateID,
-        isValidRegex,
-        getPermutations,
-        removeDuplicates,
-        countChars,
-        isEmpty,
-        cleanString,
-        splitLines,
-        checkArrayLimit,
-        checkLengthLimit,
-        pluralize,
-        truncate,
-        getCurrentTimestamp,
-        parseISODate
-    };
-}
+console.log('✓ Модуль utils.js загружен');
