@@ -180,9 +180,12 @@
 
             <div class="panel" id="panelResult">
                 <div class="panel-header">
-                    <h2 class="panel-title">3. Результат</h2>
-                    <button class="btn-icon" id="resultHelpBtn" title="Помощь">?</button>
-                </div>
+    <h2 class="panel-title">3. Результат</h2>
+    <div class="panel-header-actions">
+        <button class="btn-icon" onclick="clearResultRegex()" title="Очистить результат">×</button>
+        <button class="btn-icon" id="resultHelpBtn" title="Помощь">?</button>
+    </div>
+</div>
                 <div class="panel-body">
                     
                     <label for="resultRegex" class="label">Регулярное выражение</label>
