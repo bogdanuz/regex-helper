@@ -159,21 +159,60 @@ function showToast(type, message, duration = 4000) {
     });
 }
 
+// ============================================
+// ДОБАВЛЕНО: Функция showMessage()
+// ============================================
+
 /**
- * Закрыть Toast
- * @param {string} toastId - ID Toast элемента
+ * Показать сообщение через Toast (обертка над showToast)
+ * @param {string} type - Тип (success, error, warning, info)
+ * @param {string} messageKey - Ключ из констант (SUCCESS_MESSAGES, ERROR_MESSAGES, etc.)
+ * @param {...any} args - Аргументы для подстановки в плейсхолдеры {0}, {1}, etc.
  */
-function closeToast(toastId) {
-    const toast = document.getElementById(toastId);
-    if (toast) {
-        toast.style.animation = 'slideOut 0.3s ease forwards';
-        setTimeout(() => {
-            if (toast.parentNode) {
-                toast.parentNode.removeChild(toast);
-            }
-        }, 300);
+function showMessage(type, messageKey, ...args) {
+    let message = '';
+    
+    // Поиск сообщения в константах
+    if (type === 'success' && SUCCESS_MESSAGES[messageKey]) {
+        message = SUCCESS_MESSAGES[messageKey];
+    } else if (type === 'error' && ERROR_MESSAGES[messageKey]) {
+        message = ERROR_MESSAGES[messageKey];
+    } else if (type === 'warning' && WARNING_MESSAGES[messageKey]) {
+        message = WARNING_MESSAGES[messageKey];
+    } else if (type === 'info' && INFO_MESSAGES[messageKey]) {
+        message = INFO_MESSAGES[messageKey];
+    } else {
+        // Fallback: использовать ключ как есть
+        message = messageKey;
     }
+    
+    // Подстановка аргументов (если есть плейсхолдеры {0}, {1})
+    if (args.length > 0) {
+        message = message.replace(/\{(\d+)\}/g, (match, index) => {
+            return args[index] !== undefined ? args[index] : match;
+        });
+    }
+    
+    showToast(type, message);
 }
+
+// ============================================
+// ИСПРАВЛЕНО: Строка ~75
+// ============================================
+
+function hideToast(toastElement) {
+    if (!toastElement) return;
+    
+    // ИСПРАВЛЕНО: slideOut → toastSlideOut
+    toastElement.style.animation = 'toastSlideOut 0.3s ease forwards';
+    
+    setTimeout(() => {
+        if (toastElement.parentNode) {
+            toastElement.parentNode.removeChild(toastElement);
+        }
+    }, 300);
+}
+
 
 /* ============================================
    INLINE ОШИБКИ
