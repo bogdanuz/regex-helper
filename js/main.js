@@ -26,6 +26,18 @@ function initApp() {
         initSuggestions();
         initLinkedTriggers();
         initExport();
+        initHistory();
+        initTester();
+        
+        // ДОБАВЛЕНО: Инициализация визуализатора (если есть)
+        if (typeof initVisualizer === 'function') {
+            initVisualizer();
+        }
+        
+        // ДОБАВЛЕНО: Инициализация обратного конвертера (если есть)
+        if (typeof initReverse === 'function') {
+            initReverse();
+        }
         
         console.log('[Main] Все модули инициализированы');
     } catch (error) {
@@ -33,25 +45,7 @@ function initApp() {
         showToast('error', 'Ошибка загрузки приложения. Перезагрузите страницу.');
         return;
     }
-
-    // Инициализация истории
-    initHistory();
     
-    // Инициализация тестера
-    initTester();
-
-    // ДОБАВЛЕНО: Инициализация визуализатора
-    if (typeof initVisualizer === 'function') {
-        initVisualizer();
-    }
-    
-    // ДОБАВЛЕНО: Инициализация обратного конвертера
-    if (typeof initReverse === 'function') {
-        initReverse();
-    }
-    
-    console.log('✓ RegexHelper готов к работе');
-}   
     // Установка event listeners
     setupEventListeners();
     
@@ -130,13 +124,13 @@ function setupEventListeners() {
         helpBtn.addEventListener('click', () => showModal('helpModal'));
     }
 
-   // Кнопка тестера
-const testRegexBtn = document.getElementById('testRegexBtn');
-if (testRegexBtn) {
-    testRegexBtn.addEventListener('click', toggleTester);
-}
+    // Кнопка тестера
+    const testRegexBtn = document.getElementById('testRegexBtn');
+    if (testRegexBtn) {
+        testRegexBtn.addEventListener('click', toggleTester);
+    }
 
-   // ДОБАВЛЕНО: Кнопка "Визуализация"
+    // ДОБАВЛЕНО: Кнопка "Визуализация"
     const visualizeBtn = document.getElementById('visualizeBtn');
     if (visualizeBtn) {
         visualizeBtn.addEventListener('click', () => {
@@ -159,7 +153,7 @@ if (testRegexBtn) {
             }
         });
     }
-}
+    
     // Закрытие модалок по крестику
     setupModalCloseButtons();
     
@@ -271,41 +265,24 @@ function handleConvert() {
 
         let text = simpleTextarea.value;
 
-       // Установить результат
-    resultTextarea.value = regex;
-    
-    // ДОБАВЛЕНО: Обновляем счетчик длины
-    const regexLengthSpan = document.getElementById('regexLength');
-    if (regexLengthSpan) {
-        const length = regex.length;
-        regexLengthSpan.textContent = `Длина: ${length} ${pluralize(length, ['символ', 'символа', 'символов'])}`;
-        
-        // Цвет в зависимости от длины
-        if (length > 9000) {
-            regexLengthSpan.style.color = '#F44336'; // Красный (критично)
-        } else if (length > 5000) {
-            regexLengthSpan.style.color = '#FF9800'; // Оранжевый (предупреждение)
-        } else {
-            regexLengthSpan.style.color = '#4CAF50'; // Зеленый (норма)
+        // ИСПРАВЛЕНО: обработка пустых строк (было '\\n', стало '\n')
+        if (text && text.includes('\n')) {
+            const lines = text
+                .split('\n')
+                .map(line => line.trim())
+                .filter(line => line.length > 0);
+            
+            // ДОБАВЛЕНО: проверка, что остались строки
+            if (lines.length === 0) {
+                // Все строки были пустыми - очищаем поле
+                simpleTextarea.value = '';
+                text = '';
+            } else {
+                text = lines.join('\n');
+                simpleTextarea.value = text;
+            }
         }
-    }
-        // ИСПРАВЛЕНО: добавлена проверка после фильтрации
-    if (text && text.includes('\n')) {
-        const lines = text
-            .split('\n')
-            .map(line => line.trim())
-            .filter(line => line.length > 0);
-        
-        // ДОБАВЛЕНО: проверка, что остались строки
-        if (lines.length === 0) {
-            // Все строки были пустыми - очищаем поле
-            simpleTextarea.value = '';
-            text = '';
-        } else {
-            text = lines.join('\n');
-            simpleTextarea.value = text;
-        }
-    }
+
         // Проверяем наличие триггеров
         const hasSimple = hasTriggersInText(text);
         const hasLinked = hasLinkedTriggers();
@@ -356,8 +333,24 @@ function handleConvert() {
             console.log(`[Main] Добавлено ${permutationCount} перестановок`);
         }
 
-        // Записываем результат
+        // Установить результат
         resultTextarea.value = regex;
+        
+        // ДОБАВЛЕНО: Обновляем счетчик длины
+        const regexLengthSpan = document.getElementById('regexLength');
+        if (regexLengthSpan) {
+            const length = regex.length;
+            regexLengthSpan.textContent = `Длина: ${length} ${pluralize(length, ['символ', 'символа', 'символов'])}`;
+            
+            // Цвет в зависимости от длины
+            if (length > 9000) {
+                regexLengthSpan.style.color = '#F44336'; // Красный (критично)
+            } else if (length > 5000) {
+                regexLengthSpan.style.color = '#FF9800'; // Оранжевый (предупреждение)
+            } else {
+                regexLengthSpan.style.color = '#4CAF50'; // Зеленый (норма)
+            }
+        }
 
         // Обновляем статистику
         if (result) {
@@ -418,7 +411,7 @@ function updateResultStats(result) {
     
     const info = result.info;
     
-    let html = '<div class="result-stats">';
+    let html = '<div class="result-stats-content">';
     html += `<span>Триггеров: ${info.finalCount}</span>`;
     
     if (info.duplicatesRemoved > 0) {
@@ -434,6 +427,8 @@ function updateResultStats(result) {
     html += '</div>';
     
     statsDiv.innerHTML = html;
+    statsDiv.style.display = 'block';
+    statsDiv.classList.add('visible');
 }
 
 /* ============================================
@@ -443,13 +438,8 @@ function updateResultStats(result) {
 /**
  * Обработчик кнопки "Сбросить всё"
  */
-// ============================================
-// ИСПРАВЛЕНИЕ 2: confirmAction() в handleReset()
-// Строка ~478
-// ============================================
-
 function handleReset() {
-    // ИСПРАВЛЕНО: 2 параметра → 4 параметра
+    // ИСПРАВЛЕНО: confirmAction с 4 параметрами
     confirmAction(
         'Подтверждение',
         'Вы уверены, что хотите очистить все данные? Это действие нельзя отменить.',
@@ -458,6 +448,7 @@ function handleReset() {
             const simpleTextarea = document.getElementById('simpleTriggers');
             if (simpleTextarea) {
                 simpleTextarea.value = '';
+                updateSimpleTriggerCount();
             }
             
             // Очистка результата
@@ -466,8 +457,24 @@ function handleReset() {
                 resultTextarea.value = '';
             }
             
+            // Очистка статистики
+            const statsDiv = document.getElementById('resultStats');
+            if (statsDiv) {
+                statsDiv.innerHTML = '';
+                statsDiv.style.display = 'none';
+            }
+            
+            // Сброс счетчика длины
+            const regexLengthSpan = document.getElementById('regexLength');
+            if (regexLengthSpan) {
+                regexLengthSpan.textContent = 'Длина: 0 символов';
+                regexLengthSpan.style.color = '';
+            }
+            
             // Очистка связанных триггеров
-            clearAllLinkedGroups();
+            if (typeof clearAllLinkedGroups === 'function') {
+                clearAllLinkedGroups();
+            }
             
             // Очистка inline ошибок
             clearAllInlineErrors();
@@ -531,6 +538,69 @@ async function handleCopyRegex() {
 }
 
 /* ============================================
+   ОЧИСТКА ПОЛЕЙ
+   ============================================ */
+
+/**
+ * Очистить поле простых триггеров
+ */
+function clearSimpleTriggers() {
+    const textarea = document.getElementById('simpleTriggers');
+    
+    if (!textarea) return;
+    
+    if (textarea.value.trim()) {
+        // ИСПРАВЛЕНО: confirmAction с 4 параметрами
+        confirmAction(
+            'Подтверждение',
+            'Очистить поле простых триггеров?',
+            () => {
+                textarea.value = '';
+                clearInlineError('simpleTriggers');
+                updateSimpleTriggerCount();
+                showToast('info', 'Поле очищено');
+            },
+            null
+        );
+    }
+}
+
+/**
+ * Очистить результат
+ */
+function clearResultRegex() {
+    const textarea = document.getElementById('resultRegex');
+    const statsDiv = document.getElementById('resultStats');
+    
+    if (!textarea) return;
+    
+    if (textarea.value.trim()) {
+        // ИСПРАВЛЕНО: confirmAction с 4 параметрами
+        confirmAction(
+            'Подтверждение',
+            'Очистить результат?',
+            () => {
+                textarea.value = '';
+                if (statsDiv) {
+                    statsDiv.innerHTML = '';
+                    statsDiv.style.display = 'none';
+                }
+                
+                // Сброс счетчика длины
+                const regexLengthSpan = document.getElementById('regexLength');
+                if (regexLengthSpan) {
+                    regexLengthSpan.textContent = 'Длина: 0 символов';
+                    regexLengthSpan.style.color = '';
+                }
+                
+                showToast('info', 'Результат очищен');
+            },
+            null
+        );
+    }
+}
+
+/* ============================================
    ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
    ============================================ */
 
@@ -569,65 +639,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initApp();
 });
 
-/* ============================================
-   ОЧИСТКА ПОЛЕЙ
-   ============================================ */
-
-/**
- * Очистить поле простых триггеров
- */
-function clearSimpleTriggers() {
-    const textarea = document.getElementById('simpleTriggers');
-    
-    if (!textarea) return;
-    
-    if (textarea.value.trim()) {
-        confirmAction(
-            'Очистить поле простых триггеров?',
-            () => {
-                textarea.value = '';
-                clearInlineError('simpleTriggers');
-                updateSimpleTriggerCount();
-                showToast('info', 'Поле очищено');
-            }
-        );
-    }
-}
-
-/**
- * Очистить результат
- */
-function clearResultRegex() {
-    const textarea = document.getElementById('resultRegex');
-    const statsDiv = document.getElementById('resultStats');
-    
-    if (!textarea) return;
-    
-    if (textarea.value.trim()) {
-        confirmAction(
-            'Очистить результат?',
-            () => {
-                textarea.value = '';
-                if (statsDiv) statsDiv.innerHTML = '';
-                showToast('info', 'Результат очищен');
-            }
-        );
-    }
-}
-
 // Делаем функции глобальными
 window.clearSimpleTriggers = clearSimpleTriggers;
 window.clearResultRegex = clearResultRegex;
 
-// Экспортируем функции для использования в других модулях
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        initApp,
-        checkBrowserCompatibility,
-        handleConvert,
-        handleReset,
-        handleCopyRegex,
-        updateSimpleTriggerCount,
-        updateResultStats
-    };
-}
+console.log('✓ Модуль main.js загружен');
