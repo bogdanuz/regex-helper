@@ -188,18 +188,19 @@
                 </div>
             </div>
 
-            <!-- Panel 3: Result -->
-
+                     <!-- Panel 3: Result -->
             <div class="panel" id="panelResult">
                 <div class="panel-header">
-    <h2 class="panel-title">3. Результат</h2>
-    <div class="panel-header-actions">
-        <button class="btn-icon" onclick="clearResultRegex()" title="Очистить поле 'Результат'">🗑️</button>
-        <button class="btn-icon" id="resultHelpBtn" title="Помощь">?</button>
-    </div>
-</div>
+                    <h2 class="panel-title">3. Результат</h2>
+                    <div class="panel-header-actions">
+                        <button class="btn-icon" onclick="clearResultRegex()" title="Очистить поле 'Результат'">🗑️</button>
+                        <button class="btn-icon" id="resultHelpBtn" title="Помощь">?</button>
+                    </div>
+                </div>
+                
                 <div class="panel-body">
                     
+                    <!-- Поле результата -->
                     <label for="resultRegex" class="label">Регулярное выражение</label>
                     <textarea 
                         id="resultRegex" 
@@ -208,40 +209,27 @@
                         rows="8"
                         readonly
                     ></textarea>
-
-                    <!-- ============================================
-     ДОБАВЛЕНО: Статистика результата
-     ============================================ -->
-
-<textarea id="resultRegex" class="textarea" rows="8" readonly
-          placeholder="Результат появится здесь..."></textarea>
-
-<!-- ДОБАВЛЕНО -->
-<div id="resultStats" class="result-stats"></div>
-
-<div class="button-group">
-    <button id="copyBtn" class="btn btn-primary">
-        📋 Копировать
-    </button>
-    <!-- ... остальные кнопки -->
-</div>
-                  
+                    
+                    <!-- Статистика (скрыта по умолчанию) -->
+                    <div id="resultStats" class="result-stats" style="display: none;"></div>
+                    
+                    <!-- Инфо о длине -->
                     <div class="result-info mt-1">
                         <span id="regexLength" class="info-text">Длина: 0 символов</span>
                     </div>
 
-                    <!-- Action Buttons -->
-<div class="button-group mt-2">
-    <button class="btn-primary" id="copyRegexBtn">
-        📋 Копировать
-    </button>
-    <button class="btn btn-secondary" id="testRegexBtn">
-        🧪 Тестер
-    </button>
-    <button class="btn-secondary" id="exportBtn">
-        💾 Экспорт
-    </button>
-</div>
+                    <!-- Кнопки действий -->
+                    <div class="button-group mt-2">
+                        <button class="btn-primary" id="copyRegexBtn">
+                            📋 Копировать
+                        </button>
+                        <button class="btn-secondary" id="testRegexBtn">
+                            🧪 Тестер
+                        </button>
+                        <button class="btn-secondary" id="exportBtn">
+                            💾 Экспорт
+                        </button>
+                    </div>
 
                 </div>
             </div>
@@ -249,6 +237,7 @@
         </section>
 
         <!-- Visualizer Section -->
+
         <section class="panel" id="visualizerPanel">
             <div class="panel-header">
                 <h2 class="panel-title">Визуализация</h2>
