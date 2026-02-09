@@ -114,6 +114,12 @@ function setupEventListeners() {
     if (helpBtn) {
         helpBtn.addEventListener('click', () => showModal('helpModal'));
     }
+
+   // Кнопка тестера
+const testRegexBtn = document.getElementById('testRegexBtn');
+if (testRegexBtn) {
+    testRegexBtn.addEventListener('click', toggleTester);
+}
     
     // Закрытие модалок по крестику
     setupModalCloseButtons();
