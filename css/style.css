@@ -944,6 +944,13 @@ button {
     gap: 10px;
 }
 
+/* Действия в заголовке панели */
+.panel-header-actions {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
 .duplicate-note {
     font-size: 0.85rem;
     color: #ff9800;
