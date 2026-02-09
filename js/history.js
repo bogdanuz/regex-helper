@@ -103,8 +103,8 @@ function loadHistory() {
 function saveHistoryToStorage(history) {
     try {
         localStorage.setItem(HISTORY_CONFIG.STORAGE_KEY, JSON.stringify(history));
-    } catch (error) {
-        logError('saveHistoryToStorage', error);
+        } catch (error) {
+        console.error('Ошибка saveHistoryToStorage:', error);
         showToast('error', ERROR_MESSAGES.STORAGE_ERROR || 'Ошибка сохранения истории');
     }
 }
@@ -147,8 +147,8 @@ function saveToHistory(regex, triggers, settings, info) {
         saveHistoryToStorage(history);
 
         console.log('✓ Конвертация сохранена в историю');
-    } catch (error) {
-        logError('saveToHistory', error);
+       } catch (error) {
+        console.error('Ошибка saveToHistory:', error);
     }
 }
 
@@ -166,8 +166,8 @@ function deleteFromHistory(id) {
         renderHistory();
         
         showToast('success', SUCCESS_MESSAGES.HISTORY_DELETED || 'Запись удалена');
-    } catch (error) {
-        logError('deleteFromHistory', error);
+        } catch (error) {
+        console.error('Ошибка deleteFromHistory:', error);
         showToast('error', ERROR_MESSAGES.UNKNOWN_ERROR || 'Ошибка удаления');
     }
 }
@@ -326,8 +326,8 @@ function loadFromHistory(id) {
         }
 
         showToast('success', SUCCESS_MESSAGES.HISTORY_LOADED || 'Конвертация загружена');
-    } catch (error) {
-        logError('loadFromHistory', error);
+        } catch (error) {
+        console.error('Ошибка loadFromHistory:', error);
         showToast('error', ERROR_MESSAGES.UNKNOWN_ERROR || 'Ошибка загрузки');
     }
 }
