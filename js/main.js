@@ -34,8 +34,11 @@ function initApp() {
         return;
     }
 
-   // Инициализация истории
-initHistory();
+    // Инициализация истории
+    initHistory();
+    
+    // Инициализация тестера
+    initTester();
    
     // Установка event listeners
     setupEventListeners();
