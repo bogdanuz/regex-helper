@@ -304,26 +304,27 @@ function handleConvert() {
         let totalDuplicatesRemoved = 0;
 
         // ========================================
-// КОНВЕРТАЦИЯ ПРОСТЫХ ТРИГГЕРОВ
-// ========================================
-if (hasSimple) {
-    // Получаем глобальные настройки оптимизаций
-    const globalTypes = getGlobalOptimizationStates();
-    
-    console.log('[Main] Глобальные настройки:', globalTypes);
-    
-    // Парсим триггеры
-    const triggers = parseSimpleTriggers(text);
-    
-    // ГРУППА 5: Применяем индивидуальные или глобальные настройки для каждого триггера
-    const triggersWithSettings = triggers.map(trigger => {
-        const effectiveSettings = getEffectiveSettings(trigger, globalTypes);
-        console.log(`[Main] Триггер "${trigger}" использует настройки:`, effectiveSettings);
-        return {
-            text: trigger,
-            types: effectiveSettings
-        };
-    });            
+        // КОНВЕРТАЦИЯ ПРОСТЫХ ТРИГГЕРОВ
+        // ========================================
+        if (hasSimple) {
+            // Получаем глобальные настройки оптимизаций
+            const globalTypes = getGlobalOptimizationStates();
+            
+            console.log('[Main] Глобальные настройки:', globalTypes);
+            
+            // Парсим триггеры
+            const triggers = parseSimpleTriggers(text);
+            
+            // ГРУППА 5: Применяем индивидуальные или глобальные настройки для каждого триггера
+            const triggersWithSettings = triggers.map(trigger => {
+                const effectiveSettings = getEffectiveSettings(trigger, globalTypes);
+                console.log(`[Main] Триггер "${trigger}" использует настройки:`, effectiveSettings);
+                return {
+                    text: trigger,
+                    types: effectiveSettings
+                };
+            });
+            
             // Группируем триггеры по настройкам
             const groups = new Map();
             
@@ -471,59 +472,70 @@ if (hasSimple) {
  * Обработчик кнопки "Сбросить всё"
  */
 function handleReset() {
-    confirmAction(
-        'Подтверждение',
-        'Вы уверены, что хотите очистить все данные? Это действие нельзя отменить.',
-        () => {
-            // Очистка простых триггеров
-            const simpleTextarea = document.getElementById('simpleTriggers');
-            if (simpleTextarea) {
-                simpleTextarea.value = '';
-                updateSimpleTriggerCount();
-            }
-            
-            // Очистка результата
-            const resultTextarea = document.getElementById('resultRegex');
-            if (resultTextarea) {
-                resultTextarea.value = '';
-            }
-            
-            // Очистка статистики
-            const statsDiv = document.getElementById('resultStats');
-            if (statsDiv) {
-                statsDiv.innerHTML = '';
-                statsDiv.style.display = 'none';
-            }
-            
-            // Сброс счетчика длины
-            const regexLengthSpan = document.getElementById('regexLength');
-            if (regexLengthSpan) {
-                regexLengthSpan.textContent = 'Длина: 0 символов';
-                regexLengthSpan.style.color = '';
-            }
-            
-            // Очистка связанных триггеров
-            if (typeof clearAllLinkedGroups === 'function') {
-                clearAllLinkedGroups();
-            }
-            
-            // ДОБАВЛЕНО: Очистка индивидуальных настроек триггеров
-            if (typeof clearAllTriggerSettings === 'function') {
-                clearAllTriggerSettings();
-            }
-            
-            // ДОБАВЛЕНО: Обновляем UI кнопок настроек
-            if (typeof updateTriggerSettingsUI === 'function') {
-                updateTriggerSettingsUI();
-            }
-            
-            // Очистка inline ошибок
-            clearAllInlineErrors();
-            
-            showToast('success', 'Все данные очищены');
-        },
-        null
-    );
+    // Функция сброса
+    const performReset = () => {
+        // Очистка простых триггеров
+        const simpleTextarea = document.getElementById('simpleTriggers');
+        if (simpleTextarea) {
+            simpleTextarea.value = '';
+            updateSimpleTriggerCount();
+        }
+        
+        // Очистка результата
+        const resultTextarea = document.getElementById('resultRegex');
+        if (resultTextarea) {
+            resultTextarea.value = '';
+        }
+        
+        // Очистка статистики
+        const statsDiv = document.getElementById('resultStats');
+        if (statsDiv) {
+            statsDiv.innerHTML = '';
+            statsDiv.style.display = 'none';
+        }
+        
+        // Сброс счетчика длины
+        const regexLengthSpan = document.getElementById('regexLength');
+        if (regexLengthSpan) {
+            regexLengthSpan.textContent = 'Длина: 0 символов';
+            regexLengthSpan.style.color = '';
+        }
+        
+        // Очистка связанных триггеров
+        if (typeof clearAllLinkedGroups === 'function') {
+            clearAllLinkedGroups();
+        }
+        
+        // Очистка индивидуальных настроек триггеров
+        if (typeof clearAllTriggerSettings === 'function') {
+            clearAllTriggerSettings();
+        }
+        
+        // Обновляем UI кнопок настроек
+        if (typeof updateTriggerSettingsUI === 'function') {
+            updateTriggerSettingsUI();
+        }
+        
+        // Очистка inline ошибок
+        clearAllInlineErrors();
+        
+        showToast('success', 'Все данные очищены');
+    };
+    
+    // Проверяем наличие confirmAction
+    if (typeof confirmAction === 'function') {
+        confirmAction(
+            'Подтверждение',
+            'Вы уверены, что хотите очистить все данные? Это действие нельзя отменить.',
+            performReset,
+            null
+        );
+    } else {
+        // Fallback на стандартный confirm
+        if (window.confirm('Вы уверены, что хотите очистить все данные? Это действие нельзя отменить.')) {
+            performReset();
+        }
+    }
 }
 
 /* ============================================
@@ -599,7 +611,7 @@ function clearSimpleTriggers() {
                 clearInlineError('simpleTriggers');
                 updateSimpleTriggerCount();
                 
-                // ДОБАВЛЕНО: Обновляем UI кнопок настроек
+                // Обновляем UI кнопок настроек
                 if (typeof updateTriggerSettingsUI === 'function') {
                     updateTriggerSettingsUI();
                 }
