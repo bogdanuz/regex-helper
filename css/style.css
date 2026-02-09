@@ -967,3 +967,32 @@ button {
     gap: 10px;
 }
 
+/* ============================================
+   ВЫДЕЛЕНИЕ ТЕКСТА
+   ============================================ */
+
+/* Разрешаем выделение текста везде */
+* {
+    user-select: text;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+}
+
+/* Запрещаем выделение только для кнопок и UI элементов */
+button,
+.btn,
+.btn-primary,
+.btn-secondary,
+.btn-danger,
+.btn-icon,
+.modal-header,
+.linked-group-header,
+.counter,
+.label {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
