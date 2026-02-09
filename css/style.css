@@ -1584,4 +1584,20 @@ button[title]:hover::after,
     color: #757575;
     margin-top: 8px;
 }
+/* ============================================
+   Статистика результата
+   ============================================ */
+
+.result-stats {
+    margin-top: 12px;
+    padding: 12px;
+    background: #F5F5F5;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #616161;
+}
+
+.result-stats.visible {
+    display: block !important;
+}
 
