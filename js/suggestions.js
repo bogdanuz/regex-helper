@@ -368,7 +368,7 @@ function openTriggerSettingsModal(trigger) {
         // Удаляем старые обработчики
         resetBtn.onclick = null;
         resetBtn.onclick = () => {
-            // ИСПРАВЛЕНИЕ: Убираем confirmAction - сразу удаляем настройки
+            // Сразу удаляем настройки без подтверждения
             removeTriggerSettings(trigger);
             closeModal('triggerSettingsModal');
             
@@ -378,48 +378,6 @@ function openTriggerSettingsModal(trigger) {
             }, 100);
             
             showToast('info', `Настройки сброшены для "${trigger}". Используются глобальные.`);
-        };
-    }
-}
-    
-    // Обработчик кнопки "Сбросить настройки"
-    const resetBtn = document.getElementById('resetTriggerSettingsBtn');
-    if (resetBtn) {
-        // Удаляем старые обработчики
-        resetBtn.onclick = null;
-        resetBtn.onclick = () => {
-            // Проверяем наличие confirmAction
-            if (typeof confirmAction !== 'function') {
-                // Если нет - используем стандартный confirm
-                if (window.confirm(`Сбросить индивидуальные настройки для "${trigger}"?`)) {
-                    removeTriggerSettings(trigger);
-                    closeModal('triggerSettingsModal');
-                    
-                    // Обновляем UI после закрытия модалки
-                    setTimeout(() => {
-                        updateTriggerSettingsUI();
-                    }, 100);
-                    
-                    showToast('info', `Настройки сброшены для "${trigger}"`);
-                }
-            } else {
-                confirmAction(
-                    'Подтверждение',
-                    `Сбросить индивидуальные настройки для "${trigger}"? Будут использоваться глобальные настройки.`,
-                    () => {
-                        removeTriggerSettings(trigger);
-                        closeModal('triggerSettingsModal');
-                        
-                        // Обновляем UI после закрытия модалки
-                        setTimeout(() => {
-                            updateTriggerSettingsUI();
-                        }, 100);
-                        
-                        showToast('info', `Настройки сброшены для "${trigger}"`);
-                    },
-                    null
-                );
-            }
         };
     }
 }
