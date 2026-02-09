@@ -340,14 +340,14 @@ function generateDeclensions(word) {
             gender: gender
         };
         
-        // Генерируем все падежи
+        // Генерируем все падежи ЕДИНСТВЕННОГО числа
         const cases = [
-            'NOMINATIVE',    // именительный
-            'GENITIVE',      // родительный
-            'DATIVE',        // дательный
-            'ACCUSATIVE',    // винительный
-            'INSTRUMENTAL',  // творительный
-            'PREPOSITIONAL'  // предложный
+            'NOMINATIVE',    // именительный (дрон)
+            'GENITIVE',      // родительный (дрона)
+            'DATIVE',        // дательный (дрону)
+            'ACCUSATIVE',    // винительный (дрон/дрона)
+            'INSTRUMENTAL',  // творительный (дроном)
+            'PREPOSITIONAL'  // предложный (дроне)
         ];
         
         for (let caseName of cases) {
@@ -358,33 +358,59 @@ function generateDeclensions(word) {
                 const singular = engine.decline(lemma, caseValue);
                 if (Array.isArray(singular)) {
                     singular.forEach(form => {
-                        if (form && form !== word) {
+                        if (form && typeof form === 'string') {
                             declensions.add(form);
                         }
                     });
-                } else if (singular && singular !== word) {
+                } else if (singular && typeof singular === 'string') {
                     declensions.add(singular);
-                }
-                
-                // Склоняем во множественном числе
-                try {
-                    const plural = engine.pluralize(lemma);
-                    if (Array.isArray(plural)) {
-                        plural.forEach(form => {
-                            if (form && form !== word) {
-                                declensions.add(form);
-                            }
-                        });
-                    } else if (plural && plural !== word) {
-                        declensions.add(plural);
-                    }
-                } catch (e) {
-                    // Игнорируем ошибки множественного числа
                 }
                 
             } catch (e) {
                 console.warn(`[Optimizer Type 4] Ошибка склонения "${word}" в ${caseName}:`, e.message);
             }
+        }
+        
+        // Генерируем МНОЖЕСТВЕННОЕ число
+        try {
+            const pluralForms = engine.pluralize(lemma);
+            
+            if (Array.isArray(pluralForms) && pluralForms.length > 0) {
+                // Получили формы множественного числа (именительный падеж)
+                pluralForms.forEach(pluralForm => {
+                    if (pluralForm && typeof pluralForm === 'string') {
+                        declensions.add(pluralForm);
+                        
+                        // Теперь склоняем каждую форму множественного числа по падежам
+                        const pluralLemma = {
+                            text: pluralForm,
+                            gender: gender,
+                            pluraleTantum: true // Указываем что это множественное число
+                        };
+                        
+                        for (let caseName of cases) {
+                            try {
+                                const caseValue = RussianNouns.Case[caseName];
+                                const pluralCase = engine.decline(pluralLemma, caseValue);
+                                
+                                if (Array.isArray(pluralCase)) {
+                                    pluralCase.forEach(form => {
+                                        if (form && typeof form === 'string') {
+                                            declensions.add(form);
+                                        }
+                                    });
+                                } else if (pluralCase && typeof pluralCase === 'string') {
+                                    declensions.add(pluralCase);
+                                }
+                            } catch (e) {
+                                // Игнорируем ошибки склонения множественного числа
+                            }
+                        }
+                    }
+                });
+            }
+        } catch (e) {
+            console.warn(`[Optimizer Type 4] Ошибка генерации множественного числа для "${word}":`, e.message);
         }
         
         const result = Array.from(declensions);
