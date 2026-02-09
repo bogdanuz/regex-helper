@@ -117,8 +117,26 @@
                     
                     <p class="hint-text">Выберите оптимизации для всех триггеров:</p>
 
+                    <!-- ИСПРАВЛЕНО: Правильные ID и названия -->
+                    
                     <label class="checkbox-wrapper">
-                        <input type="checkbox" class="checkbox" id="type1" checked>
+                        <input type="checkbox" class="checkbox" id="optType1" checked>
+                        <div class="checkbox-content">
+                            <span class="checkbox-label">Повторы (префиксы)</span>
+                            <span class="checkbox-hint">джефф, джеффри → джефф(ри)?</span>
+                        </div>
+                    </label>
+
+                    <label class="checkbox-wrapper mt-1">
+                        <input type="checkbox" class="checkbox" id="optType2" checked>
+                        <div class="checkbox-content">
+                            <span class="checkbox-label">Общий корень (окончания 1-2 буквы)</span>
+                            <span class="checkbox-hint">книга, книги → книг[аи]</span>
+                        </div>
+                    </label>
+
+                    <label class="checkbox-wrapper mt-1">
+                        <input type="checkbox" class="checkbox" id="optType3" checked>
                         <div class="checkbox-content">
                             <span class="checkbox-label">Вариации букв (латиница ↔ кириллица)</span>
                             <span class="checkbox-hint">test → [tт][eе][sѕ][tт]</span>
@@ -126,15 +144,7 @@
                     </label>
 
                     <label class="checkbox-wrapper mt-1">
-                        <input type="checkbox" class="checkbox" id="type2" checked>
-                        <div class="checkbox-content">
-                            <span class="checkbox-label">Опциональные буквы (окончания слов)</span>
-                            <span class="checkbox-hint">слон, слоны → слон(ы)?</span>
-                        </div>
-                    </label>
-
-                    <label class="checkbox-wrapper mt-1">
-                        <input type="checkbox" class="checkbox" id="type4" checked>
+                        <input type="checkbox" class="checkbox" id="optType4" checked>
                         <div class="checkbox-content">
                             <span class="checkbox-label">Склонения (русские падежи)</span>
                             <span class="checkbox-hint">дрон → дрон(а|у|ом|е|ов)</span>
@@ -142,9 +152,9 @@
                     </label>
 
                     <label class="checkbox-wrapper mt-1">
-                        <input type="checkbox" class="checkbox" id="type5" checked>
+                        <input type="checkbox" class="checkbox" id="optType5" checked>
                         <div class="checkbox-content">
-                            <span class="checkbox-label">Опциональный символ ? (в середине)</span>
+                            <span class="checkbox-label">Опциональный символ ?</span>
                             <span class="checkbox-hint">пассивный, пасивный → пасс?ивный</span>
                         </div>
                     </label>
@@ -289,7 +299,7 @@
         </p>
     </footer>
 
-    <!-- ДОБАВЛЕНО: Modal - Confirm Clear (подтверждение очистки) -->
+    <!-- Modal: Confirm Clear -->
     <div id="confirmModal" class="modal-overlay" style="display: none;">
         <div class="modal modal-small">
             <div class="modal-header">
@@ -418,7 +428,7 @@
         </div>
     </div>
 
-    <!-- Modal: Panel Help (Помощь по панелям) -->
+    <!-- Modal: Panel Help -->
     <div id="panelHelpModal" class="modal-overlay" style="display: none;">
         <div class="modal">
             <div class="modal-header">
@@ -449,23 +459,28 @@
                     <h4>Оптимизации:</h4>
                     
                     <label class="checkbox-wrapper">
-                        <input type="checkbox" class="checkbox" id="triggerType1" checked>
-                        <span class="checkbox-label">Вариации букв (латиница ↔ кириллица)</span>
+                        <input type="checkbox" class="checkbox" id="triggerOptType1" checked>
+                        <span class="checkbox-label">Повторы (префиксы)</span>
                     </label>
 
                     <label class="checkbox-wrapper mt-1">
-                        <input type="checkbox" class="checkbox" id="triggerType2" checked>
-                        <span class="checkbox-label">Опциональные буквы (окончания)</span>
+                        <input type="checkbox" class="checkbox" id="triggerOptType2" checked>
+                        <span class="checkbox-label">Общий корень</span>
                     </label>
 
                     <label class="checkbox-wrapper mt-1">
-                        <input type="checkbox" class="checkbox" id="triggerType4">
-                        <span class="checkbox-label">Склонения (русские падежи)</span>
+                        <input type="checkbox" class="checkbox" id="triggerOptType3" checked>
+                        <span class="checkbox-label">Вариации букв</span>
                     </label>
 
                     <label class="checkbox-wrapper mt-1">
-                        <input type="checkbox" class="checkbox" id="triggerType5" checked>
-                        <span class="checkbox-label">Опциональный символ ?</span>
+                        <input type="checkbox" class="checkbox" id="triggerOptType4">
+                        <span class="checkbox-label">Склонения</span>
+                    </label>
+
+                    <label class="checkbox-wrapper mt-1">
+                        <input type="checkbox" class="checkbox" id="triggerOptType5" checked>
+                        <span class="checkbox-label">Опциональный ?</span>
                     </label>
                 </div>
 
@@ -552,18 +567,28 @@
                     <h4>Оптимизации для триггеров группы:</h4>
                     
                     <label class="checkbox-wrapper">
-                        <input type="checkbox" class="checkbox" id="groupType1" checked>
+                        <input type="checkbox" class="checkbox" id="groupOptType1" checked>
+                        <span class="checkbox-label">Повторы</span>
+                    </label>
+
+                    <label class="checkbox-wrapper mt-1">
+                        <input type="checkbox" class="checkbox" id="groupOptType2" checked>
+                        <span class="checkbox-label">Общий корень</span>
+                    </label>
+
+                    <label class="checkbox-wrapper mt-1">
+                        <input type="checkbox" class="checkbox" id="groupOptType3" checked>
                         <span class="checkbox-label">Вариации букв</span>
                     </label>
 
                     <label class="checkbox-wrapper mt-1">
-                        <input type="checkbox" class="checkbox" id="groupType2" checked>
-                        <span class="checkbox-label">Опциональные буквы</span>
+                        <input type="checkbox" class="checkbox" id="groupOptType4">
+                        <span class="checkbox-label">Склонения</span>
                     </label>
 
                     <label class="checkbox-wrapper mt-1">
-                        <input type="checkbox" class="checkbox" id="groupType4">
-                        <span class="checkbox-label">Склонения</span>
+                        <input type="checkbox" class="checkbox" id="groupOptType5" checked>
+                        <span class="checkbox-label">Опциональный ?</span>
                     </label>
                 </div>
 
