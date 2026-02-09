@@ -200,7 +200,6 @@ function optimizeType3(triggers) {
             
             if (replacement) {
                 // Символ есть в карте - создаем группу [латиница|кириллица]
-                // Внутри [] не нужно экранировать большинство символов
                 pattern += '[' + char + replacement + ']';
             } else {
                 // Обычный символ - экранируем
@@ -215,8 +214,8 @@ function optimizeType3(triggers) {
 }
 
 /* ============================================
-   ТИП 4: ГРУППИРОВКА
-   красный, синий → (красн|син)ий
+   ТИП 4: СКЛОНЕНИЯ
+   книга, книги, книге → книг(а|и|е)
    ============================================ */
 
 /**
@@ -234,9 +233,78 @@ function findCommonSuffix(str1, str2) {
     return str1.substring(str1.length - i);
 }
 
-// ============================================
-// КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: optimizeType4()
-// ============================================
+/**
+ * ДОБАВЛЕНО: Найти общую основу слов
+ * @param {Array} words - Массив слов
+ * @returns {string} - Общая основа
+ */
+function findCommonBase(words) {
+    if (!words || words.length === 0) return '';
+    if (words.length === 1) return words[0];
+    
+    // Начинаем с первого слова
+    let base = words[0];
+    
+    // Сокращаем базу, сравнивая с остальными словами
+    for (let i = 1; i < words.length; i++) {
+        const word = words[i];
+        let j = 0;
+        
+        // Находим общий префикс
+        while (j < base.length && j < word.length && base[j] === word[j]) {
+            j++;
+        }
+        
+        base = base.substring(0, j);
+        
+        // Если база стала пустой, прекращаем
+        if (base.length === 0) break;
+    }
+    
+    return base;
+}
+
+/**
+ * ДОБАВЛЕНО: Генерация склонений русского слова
+ * @param {string} word - Исходное слово
+ * @returns {Array} - Массив склонений
+ */
+function generateDeclensions(word) {
+    // Проверка: доступна ли библиотека russian-nouns-js
+    if (typeof RussianNouns !== 'undefined' && RussianNouns.decline) {
+        try {
+            // Используем библиотеку для генерации склонений
+            const declensions = [];
+            const cases = ['nominative', 'genitive', 'dative', 'accusative', 'instrumental', 'prepositional'];
+            
+            for (let caseType of cases) {
+                try {
+                    const declined = RussianNouns.decline(word, caseType);
+                    if (declined && declined !== word) {
+                        declensions.push(declined);
+                    }
+                } catch (e) {
+                    // Игнорируем ошибки для отдельных падежей
+                }
+            }
+            
+            // Добавляем исходное слово
+            if (!declensions.includes(word)) {
+                declensions.push(word);
+            }
+            
+            // Удаляем дубликаты
+            return [...new Set(declensions)];
+        } catch (error) {
+            console.warn('[Optimizer] Ошибка генерации склонений:', error);
+            return [word];
+        }
+    }
+    
+    // FALLBACK: Если библиотека недоступна, возвращаем только исходное слово
+    console.warn('[Optimizer] Библиотека russian-nouns-js недоступна. Type 4 работает в ограниченном режиме.');
+    return [word];
+}
 
 /**
  * Оптимизация Type 4: Склонения русских слов
@@ -253,7 +321,7 @@ function optimizeType4(triggers) {
     for (let trigger of triggers) {
         // Проверка: только русские слова
         if (!/^[а-яё]+$/i.test(trigger)) {
-            result.push(trigger);
+            result.push(escapeRegex(trigger));
             continue;
         }
         
@@ -266,22 +334,22 @@ function optimizeType4(triggers) {
                 const base = findCommonBase(declensions);
                 
                 // Извлечь окончания
-                const suffixes = declensions.map(word => word.slice(base.length));
+                const suffixes = declensions.map(word => word.slice(base.length)).filter(s => s.length > 0);
                 
-                // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ:
-                // БЫЛО: const pattern = escapeRegex(base) + '[' + suffixes.map(s => escapeRegex(s)).join('') + ']';
-                // ПРОБЛЕМА: [...] работает только для ОДИНОЧНЫХ символов!
-                
-                // СТАЛО: Используем (...|...) для многобуквенных окончаний
-                const pattern = escapeRegex(base) + '(' + suffixes.map(s => escapeRegex(s)).join('|') + ')';
-                
-                result.push(pattern);
+                // ИСПРАВЛЕНО: используем (...|...) для многобуквенных окончаний
+                if (suffixes.length > 0) {
+                    const pattern = escapeRegex(base) + '(' + suffixes.map(s => escapeRegex(s)).join('|') + ')';
+                    result.push(pattern);
+                } else {
+                    // Если нет окончаний (все слова одинаковые), используем исходное
+                    result.push(escapeRegex(trigger));
+                }
             } else {
-                result.push(trigger);
+                result.push(escapeRegex(trigger));
             }
         } catch (error) {
             console.warn('[Optimizer] Ошибка Type 4 для триггера:', trigger, error);
-            result.push(trigger);
+            result.push(escapeRegex(trigger));
         }
     }
     
@@ -446,26 +514,8 @@ function performConversionWithOptimizations(text, types, showWarnings = true) {
     }
 }
 
-// Экспортируем функции для использования в других модулях
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        // Карты
-        LATIN_CYRILLIC_MAP,
-        
-        // Отдельные оптимизации
-        optimizeType1,
-        optimizeType2,
-        optimizeType3,
-        optimizeType4,
-        
-        // Применение оптимизаций
-        applyOptimizations,
-        convertToRegexWithOptimizations,
-        performConversionWithOptimizations,
-        
-        // Вспомогательные
-        findCommonPrefix,
-        findCommonSuffix,
-        hasReplaceableChars
-    };
-}
+/* ============================================
+   ЭКСПОРТ
+   ============================================ */
+
+console.log('✓ Модуль optimizer.js загружен');
