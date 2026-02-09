@@ -51,49 +51,51 @@ function exportTXT(regex, triggers = null) {
    ЭКСПОРТ В JSON
    ============================================ */
 
+// ============================================
+// ИСПРАВЛЕНО: Строка ~61
+// ============================================
+
 /**
- * Экспорт в JSON с полной структурой
- * @param {string} regex - Регулярное выражение
- * @param {Array} triggers - Массив триггеров
- * @param {Object} settings - Настройки оптимизаций (опционально)
- * @param {Object} info - Дополнительная информация (опционально)
- * @returns {boolean} - true если успешно
+ * Экспорт в JSON
  */
-function exportJSON(regex, triggers = [], settings = null, info = null) {
-    if (!regex) {
-        showToast('error', 'Нет данных для экспорта');
-        return false;
+function exportJSON() {
+    const resultTextarea = document.getElementById('resultRegex');
+    
+    if (!resultTextarea) {
+        showToast('error', 'Поле результата не найдено');
+        return;
     }
     
-    // Формируем JSON структуру
+    const regex = resultTextarea.value.trim();
+    
+    if (!regex) {
+        showToast('warning', 'Нет regex для экспорта');
+        return;
+    }
+    
+    // ИСПРАВЛЕНО: Добавлена валидация settings
+    let settings = getSelectedOptimizations();
+    if (!settings || typeof settings !== 'object') {
+        settings = {
+            type1: false,
+            type2: false,
+            type3: false,
+            type4: false,
+            type5: false
+        };
+    }
+    
     const data = {
-        version: '1.0',
-        exported: getCurrentTimestamp(),
         regex: regex,
-        triggers: triggers,
-        settings: settings || getSelectedOptimizations(),
-        info: info || {
-            triggerCount: triggers.length,
-            regexLength: countChars(regex)
-        }
+        timestamp: getCurrentTimestamp(),
+        settings: settings,
+        version: '1.0'
     };
     
-    // Конвертируем в JSON с отступами
-    const jsonString = JSON.stringify(data, null, 2);
+    const json = JSON.stringify(data, null, 2);
+    downloadFile(json, generateFilename('json'), 'application/json');
     
-    // Генерируем имя файла
-    const filename = generateFilename('json');
-    
-    // Скачиваем
-    const success = downloadFile(jsonString, filename, 'application/json');
-    
-    if (success) {
-        showMessage('success', 'EXPORTED_JSON');
-        return true;
-    } else {
-        showToast('error', 'Ошибка при скачивании файла');
-        return false;
-    }
+    showToast('success', 'Экспортировано в JSON');
 }
 
 /* ============================================
