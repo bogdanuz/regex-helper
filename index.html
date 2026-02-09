@@ -208,7 +208,24 @@
                         rows="8"
                         readonly
                     ></textarea>
-                    
+
+                    <!-- ============================================
+     ДОБАВЛЕНО: Статистика результата
+     ============================================ -->
+
+<textarea id="resultRegex" class="textarea" rows="8" readonly
+          placeholder="Результат появится здесь..."></textarea>
+
+<!-- ДОБАВЛЕНО -->
+<div id="resultStats" class="result-stats"></div>
+
+<div class="button-group">
+    <button id="copyBtn" class="btn btn-primary">
+        📋 Копировать
+    </button>
+    <!-- ... остальные кнопки -->
+</div>
+                  
                     <div class="result-info mt-1">
                         <span id="regexLength" class="info-text">Длина: 0 символов</span>
                     </div>
