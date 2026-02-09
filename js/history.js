@@ -40,6 +40,8 @@ function initHistory() {
         // Event listeners
         const historyBtn = document.getElementById('historyBtn');
         const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+        const modal = document.getElementById('historyModal');
+        const closeBtn = modal ? modal.querySelector('.modal-close') : null;
 
         if (historyBtn) {
             historyBtn.addEventListener('click', showHistoryModal);
@@ -49,9 +51,30 @@ function initHistory() {
             clearHistoryBtn.addEventListener('click', handleClearHistory);
         }
 
+        // Закрытие по крестику
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closeHistoryModal);
+        }
+
+        // Закрытие по клику на overlay
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeHistoryModal();
+                }
+            });
+        }
+
+        // Закрытие по Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal && modal.style.display === 'flex') {
+                closeHistoryModal();
+            }
+        });
+
         console.log('✓ История инициализирована');
     } catch (error) {
-        logError('initHistory', error);
+        console.error('Ошибка инициализации истории:', error);
     }
 }
 
@@ -175,6 +198,15 @@ function showHistoryModal() {
     if (modal) {
         renderHistory();
         modal.style.display = 'flex';
+    }
+}
+/**
+ * Закрыть модальное окно истории
+ */
+function closeHistoryModal() {
+    const modal = document.getElementById('historyModal');
+    if (modal) {
+        modal.style.display = 'none';
     }
 }
 
