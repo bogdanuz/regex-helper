@@ -52,7 +52,7 @@ function cleanTrigger(trigger) {
     // Переводим в lowercase
     cleaned = cleaned.toLowerCase();
     
-    // Удаляем множественные пробелы
+    // ИСПРАВЛЕНО: Удаляем множественные пробелы (\s+ вместо \\s+)
     cleaned = cleaned.replace(/\s+/g, ' ');
     
     return cleaned;
@@ -320,30 +320,4 @@ function getTriggerStats(text) {
     };
 }
 
-// Экспортируем функции для использования в других модулях
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        // Константы
-        LIMITS,
-        
-        // Парсинг
-        parseSimpleTriggers,
-        cleanTrigger,
-        
-        // Валидация
-        validateTriggers,
-        validateRegexLength,
-        
-        // Дубликаты
-        removeDuplicatesFromTriggers,
-        
-        // Конвертация
-        convertToRegex,
-        performConversion,
-        
-        // Вспомогательные
-        countTriggersInText,
-        hasTriggersInText,
-        getTriggerStats
-    };
-}
+console.log('✓ Модуль converter.js загружен');
