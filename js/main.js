@@ -33,7 +33,10 @@ function initApp() {
         showToast('error', 'Ошибка загрузки приложения. Перезагрузите страницу.');
         return;
     }
-    
+
+   // Инициализация истории
+initHistory();
+   
     // Установка event listeners
     setupEventListeners();
     
@@ -252,6 +255,18 @@ if (hasSimple) {
     }
     
     regex = result.regex;
+   
+   // Сохранение в историю
+if (result.success && result.regex) {
+    const selectedSettings = getSelectedOptimizations();
+    saveToHistory(
+        result.regex,
+        allTriggers, // массив всех триггеров
+        selectedSettings,
+        result.info
+    );
+}
+
 }
 
 // Добавляем перестановки связанных триггеров если есть
