@@ -234,59 +234,58 @@ function findCommonSuffix(str1, str2) {
     return str1.substring(str1.length - i);
 }
 
+// ============================================
+// КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: optimizeType4()
+// ============================================
+
 /**
- * Оптимизация Type 4: Группировка по суффиксу
+ * Оптимизация Type 4: Склонения русских слов
  * @param {Array} triggers - Массив триггеров
  * @returns {Array} - Оптимизированный массив
  */
 function optimizeType4(triggers) {
-    if (!Array.isArray(triggers) || triggers.length < 2) {
+    if (!Array.isArray(triggers) || triggers.length === 0) {
         return triggers;
     }
     
-    const optimized = [];
-    const used = new Set();
+    const result = [];
     
-    for (let i = 0; i < triggers.length; i++) {
-        if (used.has(i)) continue;
-        
-        const current = triggers[i];
-        const group = [current];
-        
-        // Ищем триггеры с общим суффиксом
-        for (let j = i + 1; j < triggers.length; j++) {
-            if (used.has(j)) continue;
-            
-            const other = triggers[j];
-            const suffix = findCommonSuffix(current, other);
-            
-            // Если общий суффикс минимум 2 символа
-            if (suffix.length >= 2) {
-                const prefix1 = current.substring(0, current.length - suffix.length);
-                const prefix2 = other.substring(0, other.length - suffix.length);
-                
-                // Если оба префикса не пустые
-                if (prefix1.length > 0 && prefix2.length > 0) {
-                    group.push(other);
-                    used.add(j);
-                }
-            }
+    for (let trigger of triggers) {
+        // Проверка: только русские слова
+        if (!/^[а-яё]+$/i.test(trigger)) {
+            result.push(trigger);
+            continue;
         }
         
-        // Если нашли группу (2+ триггеров)
-        if (group.length >= 2) {
-            const suffix = findCommonSuffix(group[0], group[1]);
-            const prefixes = group.map(t => t.substring(0, t.length - suffix.length));
+        try {
+            // Генерация всех падежных форм
+            const declensions = generateDeclensions(trigger);
             
-            // Создаем паттерн: (красн|син)ий
-            const pattern = '(' + prefixes.map(p => escapeRegex(p)).join('|') + ')' + escapeRegex(suffix);
-            optimized.push(pattern);
-        } else {
-            optimized.push(current);
+            if (declensions && declensions.length > 1) {
+                // Найти общий корень
+                const base = findCommonBase(declensions);
+                
+                // Извлечь окончания
+                const suffixes = declensions.map(word => word.slice(base.length));
+                
+                // КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ:
+                // БЫЛО: const pattern = escapeRegex(base) + '[' + suffixes.map(s => escapeRegex(s)).join('') + ']';
+                // ПРОБЛЕМА: [...] работает только для ОДИНОЧНЫХ символов!
+                
+                // СТАЛО: Используем (...|...) для многобуквенных окончаний
+                const pattern = escapeRegex(base) + '(' + suffixes.map(s => escapeRegex(s)).join('|') + ')';
+                
+                result.push(pattern);
+            } else {
+                result.push(trigger);
+            }
+        } catch (error) {
+            console.warn('[Optimizer] Ошибка Type 4 для триггера:', trigger, error);
+            result.push(trigger);
         }
     }
     
-    return optimized;
+    return result;
 }
 
 /* ============================================
