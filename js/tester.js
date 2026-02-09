@@ -38,18 +38,33 @@ let testDebounceTimer = null;
 function initTester() {
     console.log('[Tester] Инициализация...');
     
-    // ИСПРАВЛЕНО: result → resultRegex
-    const resultTextarea = document.getElementById('resultRegex');
-    
-    if (resultTextarea) {
-        resultTextarea.addEventListener('input', debouncedTest);
-    }
-
+    try {
+        // ИСПРАВЛЕНО: result → resultRegex
+        const resultTextarea = document.getElementById('resultRegex');
+        const testText = document.getElementById('testText');
+        const testRegexBtn = document.getElementById('testRegexBtn');
+        const closeTesterBtn = document.getElementById('closeTesterBtn');
+        
+        // Auto-test при изменении regex
+        if (resultTextarea) {
+            resultTextarea.addEventListener('input', debouncedTest);
+        }
+        
+        // Auto-test при изменении тестового текста
+        if (testText) {
+            testText.addEventListener('input', debouncedTest);
+        }
+        
+        // Кнопка "Тестер" (открыть тестер)
+        if (testRegexBtn) {
+            testRegexBtn.addEventListener('click', showTester);
+        }
+        
         // Закрытие панели тестера
         if (closeTesterBtn) {
             closeTesterBtn.addEventListener('click', hideTester);
         }
-
+        
         console.log('✓ Тестер инициализирован');
     } catch (error) {
         console.error('Ошибка initTester:', error);
@@ -128,7 +143,8 @@ function debouncedTest() {
  */
 function runTest() {
     try {
-        const resultTextarea = document.getElementById('result');
+        // ИСПРАВЛЕНО: result → resultRegex
+        const resultTextarea = document.getElementById('resultRegex');
         const testText = document.getElementById('testText');
         const testResults = document.getElementById('testResults');
         const testEmpty = document.getElementById('testEmpty');
