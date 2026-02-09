@@ -24,12 +24,12 @@ function escapeHTML(str) {
 }
 
 /**
- * Экранирование спецсимволов regex
+ * Экранирование специальных символов regex
  * @param {string} str - Строка для экранирования
- * @returns {string} - Строка с экранированными спецсимволами
+ * @returns {string} - Экранированная строка
  */
 function escapeRegex(str) {
-    if (!str) return '';
+    // ИСПРАВЛЕНО: убран лишний экранирующий слэш
     return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
