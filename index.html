@@ -388,6 +388,69 @@
         </div>
     </div>
 
+    <!-- Панель: Тестер Regex -->
+<div class="panel" id="testerPanel" style="display: none;">
+    <div class="panel-header">
+        <h2 class="panel-title">🧪 Тестер Regex</h2>
+        <button class="btn-icon" id="closeTesterBtn" title="Скрыть тестер">
+            ×
+        </button>
+    </div>
+    
+    <div class="panel-body">
+        <!-- Поле для тестового текста -->
+        <div class="form-group">
+            <label for="testText" class="label">
+                Тестовый текст
+                <span class="label-hint">(введите текст для проверки regex)</span>
+            </label>
+            <textarea 
+                id="testText" 
+                class="textarea" 
+                rows="6" 
+                placeholder="Вставьте текст для тестирования здесь...&#10;Например:&#10;Я купил красное яблоко и зеленую грушу.&#10;Также взял апельсин и банан."
+            ></textarea>
+        </div>
+
+        <!-- Результаты тестирования -->
+        <div id="testResults" style="display: none;">
+            <!-- Статистика -->
+            <div class="test-stats">
+                <div class="test-stat-item">
+                    <span class="test-stat-label">Найдено совпадений:</span>
+                    <span class="test-stat-value" id="matchCount">0</span>
+                </div>
+            </div>
+
+            <!-- Подсветка совпадений -->
+            <div class="test-highlight-container">
+                <div class="test-highlight-label">
+                    <strong>Текст с подсветкой:</strong>
+                </div>
+                <div class="test-highlight" id="testHighlight">
+                    <!-- Текст с подсветкой добавляется через JS -->
+                </div>
+            </div>
+
+            <!-- Список совпадений -->
+            <div class="test-matches-container" id="testMatchesContainer" style="display: none;">
+                <div class="test-matches-label">
+                    <strong>Список совпадений:</strong>
+                </div>
+                <div class="test-matches-list" id="testMatchesList">
+                    <!-- Список добавляется через JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Пустое состояние -->
+        <div id="testEmpty" class="test-empty">
+            <p>🔍 Введите текст для тестирования</p>
+            <p class="text-muted">Regex будет проверен на этом тексте автоматически</p>
+        </div>
+    </div>
+</div>
+
     <!-- Modal: Export Options -->
     <div id="exportModal" class="modal-overlay" style="display: none;">
         <div class="modal">
