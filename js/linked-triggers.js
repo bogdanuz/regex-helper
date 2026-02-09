@@ -71,10 +71,13 @@ function addLinkedGroup() {
     groupDiv.className = 'linked-group';
     groupDiv.id = groupId;
     groupDiv.innerHTML = `
-        <div class="linked-group-header">
-            <span class="linked-group-title">Группа ${currentGroups + 1}</span>
-            <button class="btn-icon" onclick="removeLinkedGroup('${groupId}')" title="Удалить группу">×</button>
+    <div class="linked-group-header">
+        <span class="linked-group-title">Группа ${currentGroups + 1}</span>
+        <div class="group-actions">
+            <button class="btn-icon btn-icon-warning" onclick="clearLinkedGroup('${groupId}')" title="Очистить все поля группы">🗑️</button>
+            <button class="btn-icon btn-icon-danger" onclick="removeLinkedGroup('${groupId}')" title="Удалить группу целиком">🗙</button>
         </div>
+    </div>
         <div class="linked-group-body" id="${groupId}_body">
             <!-- Поля будут добавляться динамически -->
         </div>
@@ -166,15 +169,15 @@ function addTriggerField(groupId) {
     fieldDiv.className = 'linked-field';
     fieldDiv.id = fieldId;
     fieldDiv.innerHTML = `
-        <input 
-            type="text" 
-            class="input linked-input" 
-            placeholder="Триггер ${currentFields + 1}"
-            data-group="${groupId}"
-            data-field="${fieldId}"
-        >
-        <button class="btn-icon" onclick="removeTriggerField('${groupId}', '${fieldId}')" title="Удалить триггер">×</button>
-    `;
+    <input 
+        type="text" 
+        class="input linked-input" 
+        placeholder="Триггер ${currentFields + 1}"
+        data-group="${groupId}"
+        data-field="${fieldId}"
+    >
+    <button class="btn-icon btn-icon-sm" onclick="removeTriggerField('${groupId}', '${fieldId}')" title="Удалить это поле триггера">×</button>
+`;
     
     groupBody.appendChild(fieldDiv);
     
@@ -469,6 +472,50 @@ function exportLinkedToSimple() {
     
     console.log(`[LinkedTriggers] Экспортировано ${addedCount} перестановок`);
 }
+
+/**
+ * Очистить все поля в группе (не удалять саму группу)
+ * @param {string} groupId - ID группы
+ */
+function clearLinkedGroup(groupId) {
+    const groupBody = document.getElementById(`${groupId}_body`);
+    
+    if (!groupBody) {
+        console.error(`[LinkedTriggers] Группа ${groupId} не найдена`);
+        return;
+    }
+    
+    const inputs = groupBody.querySelectorAll('.linked-input');
+    
+    if (inputs.length === 0) return;
+    
+    // Проверяем есть ли заполненные поля
+    let hasValues = false;
+    inputs.forEach(input => {
+        if (input.value.trim()) {
+            hasValues = true;
+        }
+    });
+    
+    if (!hasValues) {
+        showToast('info', 'Все поля уже пустые');
+        return;
+    }
+    
+    confirmAction(
+        'Очистить все поля в этой группе?',
+        () => {
+            inputs.forEach(input => {
+                input.value = '';
+            });
+            showToast('info', 'Поля группы очищены');
+            console.log(`[LinkedTriggers] Группа ${groupId} очищена`);
+        }
+    );
+}
+
+// Делаем функцию глобальной
+window.clearLinkedGroup = clearLinkedGroup;
 
 // Экспортируем функции для использования в других модулях
 if (typeof module !== 'undefined' && module.exports) {
