@@ -33,27 +33,17 @@ let testDebounceTimer = null;
 // ============================================
 
 /**
- * Инициализация модуля тестера
+ * Инициализация тестера
  */
 function initTester() {
-    try {
-        const testText = document.getElementById('testText');
-        const resultTextarea = document.getElementById('result');
-        const closeTesterBtn = document.getElementById('closeTesterBtn');
-
-        // Автоматическое тестирование при изменении текста
-        if (testText) {
-            testText.addEventListener('input', () => {
-                debouncedTest();
-            });
-        }
-
-        // Автоматическое тестирование при изменении regex
-        if (resultTextarea) {
-            resultTextarea.addEventListener('input', () => {
-                debouncedTest();
-            });
-        }
+    console.log('[Tester] Инициализация...');
+    
+    // ИСПРАВЛЕНО: result → resultRegex
+    const resultTextarea = document.getElementById('resultRegex');
+    
+    if (resultTextarea) {
+        resultTextarea.addEventListener('input', debouncedTest);
+    }
 
         // Закрытие панели тестера
         if (closeTesterBtn) {
