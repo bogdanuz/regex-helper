@@ -39,7 +39,19 @@ function initApp() {
     
     // Инициализация тестера
     initTester();
-   
+
+    // ДОБАВЛЕНО: Инициализация визуализатора
+    if (typeof initVisualizer === 'function') {
+        initVisualizer();
+    }
+    
+    // ДОБАВЛЕНО: Инициализация обратного конвертера
+    if (typeof initReverse === 'function') {
+        initReverse();
+    }
+    
+    console.log('✓ RegexHelper готов к работе');
+}   
     // Установка event listeners
     setupEventListeners();
     
@@ -123,7 +135,31 @@ const testRegexBtn = document.getElementById('testRegexBtn');
 if (testRegexBtn) {
     testRegexBtn.addEventListener('click', toggleTester);
 }
+
+   // ДОБАВЛЕНО: Кнопка "Визуализация"
+    const visualizeBtn = document.getElementById('visualizeBtn');
+    if (visualizeBtn) {
+        visualizeBtn.addEventListener('click', () => {
+            if (typeof showVisualizer === 'function') {
+                showVisualizer();
+            } else {
+                showToast('error', 'Визуализатор не загружен');
+            }
+        });
+    }
     
+    // ДОБАВЛЕНО: Кнопка "Обратный конвертер"
+    const reverseBtn = document.getElementById('reverseBtn');
+    if (reverseBtn) {
+        reverseBtn.addEventListener('click', () => {
+            if (typeof showReverse === 'function') {
+                showReverse();
+            } else {
+                showToast('error', 'Обратный конвертер не загружен');
+            }
+        });
+    }
+}
     // Закрытие модалок по крестику
     setupModalCloseButtons();
     
@@ -235,17 +271,41 @@ function handleConvert() {
 
         let text = simpleTextarea.value;
 
-        // Защита от пустых строк: удаляем пустые строки в конце и между триггерами
-        if (text && text.includes('\n')) {
-            const lines = text
-                .split('\n')
-                .map(line => line.trim())
-                .filter(line => line.length > 0); // убираем пустые
-
-            text = lines.join('\n');
-            simpleTextarea.value = text; // обновляем textarea очищенным текстом
+       // Установить результат
+    resultTextarea.value = regex;
+    
+    // ДОБАВЛЕНО: Обновляем счетчик длины
+    const regexLengthSpan = document.getElementById('regexLength');
+    if (regexLengthSpan) {
+        const length = regex.length;
+        regexLengthSpan.textContent = `Длина: ${length} ${pluralize(length, ['символ', 'символа', 'символов'])}`;
+        
+        // Цвет в зависимости от длины
+        if (length > 9000) {
+            regexLengthSpan.style.color = '#F44336'; // Красный (критично)
+        } else if (length > 5000) {
+            regexLengthSpan.style.color = '#FF9800'; // Оранжевый (предупреждение)
+        } else {
+            regexLengthSpan.style.color = '#4CAF50'; // Зеленый (норма)
         }
-
+    }
+        // ИСПРАВЛЕНО: добавлена проверка после фильтрации
+    if (text && text.includes('\n')) {
+        const lines = text
+            .split('\n')
+            .map(line => line.trim())
+            .filter(line => line.length > 0);
+        
+        // ДОБАВЛЕНО: проверка, что остались строки
+        if (lines.length === 0) {
+            // Все строки были пустыми - очищаем поле
+            simpleTextarea.value = '';
+            text = '';
+        } else {
+            text = lines.join('\n');
+            simpleTextarea.value = text;
+        }
+    }
         // Проверяем наличие триггеров
         const hasSimple = hasTriggersInText(text);
         const hasLinked = hasLinkedTriggers();
@@ -383,47 +443,38 @@ function updateResultStats(result) {
 /**
  * Обработчик кнопки "Сбросить всё"
  */
+// ============================================
+// ИСПРАВЛЕНИЕ 2: confirmAction() в handleReset()
+// Строка ~478
+// ============================================
+
 function handleReset() {
+    // ИСПРАВЛЕНО: 2 параметра → 4 параметра
     confirmAction(
+        'Подтверждение',
         'Вы уверены, что хотите очистить все данные? Это действие нельзя отменить.',
         () => {
-            try {
-                // Очищаем textarea
-                const simpleTextarea = document.getElementById('simpleTriggers');
-                const resultTextarea = document.getElementById('resultRegex');
-                
-                if (simpleTextarea) simpleTextarea.value = '';
-                if (resultTextarea) resultTextarea.value = '';
-                
-                // Очищаем inline ошибки
-                clearAllInlineErrors();
-                
-                // Очищаем связанные триггеры
-                const container = document.getElementById('linkedTriggersContainer');
-                if (container) {
-                    container.innerHTML = '';
-                }
-                
-                // Очищаем статистику
-                const statsDiv = document.getElementById('resultStats');
-                if (statsDiv) statsDiv.innerHTML = '';
-                
-                // Обновляем счетчики
-                updateSimpleTriggerCount();
-                
-                // Показываем успех
-                showMessage('success', 'RESET_SUCCESS');
-                
-                // Фокус на первое поле
-                focusFirstInput();
-                
-                console.log('[Main] ✓ Все данные очищены');
-                
-            } catch (error) {
-                logError('handleReset', error);
-                showToast('error', 'Ошибка при сбросе данных');
+            // Очистка простых триггеров
+            const simpleTextarea = document.getElementById('simpleTriggers');
+            if (simpleTextarea) {
+                simpleTextarea.value = '';
             }
-        }
+            
+            // Очистка результата
+            const resultTextarea = document.getElementById('resultRegex');
+            if (resultTextarea) {
+                resultTextarea.value = '';
+            }
+            
+            // Очистка связанных триггеров
+            clearAllLinkedGroups();
+            
+            // Очистка inline ошибок
+            clearAllInlineErrors();
+            
+            showToast('success', 'Все данные очищены');
+        },
+        null
     );
 }
 
