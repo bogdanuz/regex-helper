@@ -25,30 +25,33 @@
     <link rel="stylesheet" href="css/popup.css">
     <link rel="stylesheet" href="css/spinner.css">
     
-    <!-- RussianNounsJS Library (GitHub CDN + Local Fallback) -->
+    <!-- RussianNounsJS Library - СИНХРОННАЯ загрузка (блокирующая) -->
+    <script src="lib/russian-nouns/russian-nouns.min.js"></script>
     <script>
-        (function() {
-            var script = document.createElement('script');
-            script.src = 'https://raw.githubusercontent.com/georgy7/RussianNounsJS/refs/heads/release/RussianNouns.min.js';
-            script.onerror = function() {
-                console.warn('[Library] GitHub CDN failed, trying local fallback...');
-                var script2 = document.createElement('script');
-                script2.src = 'lib/russian-nouns/russian-nouns.min.js';
-                script2.onerror = function() {
-                    console.error('[Library] ❌ Библиотека RussianNounsJS недоступна!');
-                    console.error('[Library] Скачайте файл: https://raw.githubusercontent.com/georgy7/RussianNounsJS/refs/heads/release/RussianNouns.min.js');
-                    console.error('[Library] И положите в: lib/russian-nouns/russian-nouns.min.js');
-                };
-                script2.onload = function() {
-                    console.log('[Library] ✅ RussianNounsJS загружена (локально)');
-                };
-                document.head.appendChild(script2);
-            };
-            script.onload = function() {
-                console.log('[Library] ✅ RussianNounsJS загружена (GitHub CDN)');
-            };
-            document.head.appendChild(script);
-        })();
+        // Проверка загрузки библиотеки
+        if (typeof RussianNouns !== 'undefined' && typeof RussianNouns.Engine === 'function') {
+            console.log('[Library] ✅ RussianNounsJS загружена успешно');
+            console.log('[Library] typeof RussianNouns:', typeof RussianNouns);
+            console.log('[Library] typeof RussianNouns.Engine:', typeof RussianNouns.Engine);
+            console.log('[Library] typeof RussianNouns.Gender:', typeof RussianNouns.Gender);
+            console.log('[Library] typeof RussianNouns.Case:', typeof RussianNouns.Case);
+            
+            // Тест склонения
+            try {
+                const engine = new RussianNouns.Engine();
+                const testResult = engine.decline(
+                    {text: 'дрон', gender: RussianNouns.Gender.MASCULINE},
+                    RussianNouns.Case.GENITIVE
+                );
+                console.log('[Library] Тест склонения "дрон" (родительный падеж):', testResult);
+            } catch (e) {
+                console.error('[Library] Ошибка теста:', e);
+            }
+        } else {
+            console.error('[Library] ❌ Библиотека RussianNounsJS недоступна!');
+            console.error('[Library] Проверьте файл: lib/russian-nouns/russian-nouns.min.js');
+            console.error('[Library] Скачайте: https://raw.githubusercontent.com/georgy7/RussianNounsJS/refs/heads/release/RussianNouns.min.js');
+        }
     </script>
 </head>
 <body>
@@ -472,168 +475,36 @@
                 <button class="modal-close">&times;</button>
             </div>
             <div class="modal-body">
-                
                 <p class="hint-text">Выберите оптимизации для этого триггера:</p>
-
-                <div class="settings-section">
-                    <h4>Оптимизации:</h4>
-                    
-                    <label class="checkbox-wrapper">
-                        <input type="checkbox" class="checkbox" id="triggerOptType1" checked>
-                        <span class="checkbox-label">Повторы (префиксы)</span>
-                    </label>
-
-                    <label class="checkbox-wrapper mt-1">
-                        <input type="checkbox" class="checkbox" id="triggerOptType2" checked>
-                        <span class="checkbox-label">Общий корень</span>
-                    </label>
-
-                    <label class="checkbox-wrapper mt-1">
-                        <input type="checkbox" class="checkbox" id="triggerOptType3" checked>
-                        <span class="checkbox-label">Вариации букв</span>
-                    </label>
-
-                    <label class="checkbox-wrapper mt-1">
-                        <input type="checkbox" class="checkbox" id="triggerOptType4">
-                        <span class="checkbox-label">Склонения</span>
-                    </label>
-
-                    <label class="checkbox-wrapper mt-1">
-                        <input type="checkbox" class="checkbox" id="triggerOptType5" checked>
-                        <span class="checkbox-label">Опциональный ?</span>
-                    </label>
-                </div>
-
-                <div class="settings-section mt-2">
-                    <h4>Границы и пробелы:</h4>
-                    
-                    <label class="checkbox-wrapper">
-                        <input type="checkbox" class="checkbox" id="triggerWordBoundary">
-                        <span class="checkbox-label">Границы слова \b</span>
-                        <span class="checkbox-hint">⚠️ Автоматически для ≤ 3 символов</span>
-                    </label>
-
-                    <label class="checkbox-wrapper mt-1">
-                        <input type="checkbox" class="checkbox" id="triggerSpaceBefore">
-                        <span class="checkbox-label">Пробел до триггера \s...</span>
-                    </label>
-
-                    <label class="checkbox-wrapper mt-1">
-                        <input type="checkbox" class="checkbox" id="triggerSpaceAfter">
-                        <span class="checkbox-label">Пробел после триггера ...\s</span>
-                    </label>
-                </div>
-
+                
+                <label class="checkbox-wrapper">
+                    <input type="checkbox" class="checkbox" id="triggerOptType1">
+                    <span class="checkbox-label">Повторы (префиксы)</span>
+                </label>
+                
+                <label class="checkbox-wrapper mt-1">
+                    <input type="checkbox" class="checkbox" id="triggerOptType2">
+                    <span class="checkbox-label">Общий корень</span>
+                </label>
+                
+                <label class="checkbox-wrapper mt-1">
+                    <input type="checkbox" class="checkbox" id="triggerOptType3">
+                    <span class="checkbox-label">Вариации букв</span>
+                </label>
+                
+                <label class="checkbox-wrapper mt-1">
+                    <input type="checkbox" class="checkbox" id="triggerOptType4">
+                    <span class="checkbox-label">Склонения</span>
+                </label>
+                
+                <label class="checkbox-wrapper mt-1">
+                    <input type="checkbox" class="checkbox" id="triggerOptType5">
+                    <span class="checkbox-label">Опциональный символ ?</span>
+                </label>
             </div>
             <div class="modal-footer">
                 <button class="btn-primary" id="applyTriggerSettingsBtn">Применить</button>
                 <button class="btn-secondary" onclick="closeModal('triggerSettingsModal')">Отмена</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal: Group Settings -->
-    <div id="groupSettingsModal" class="modal-overlay" style="display: none;">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title">⚙ Настройки группы "<span id="groupSettingsTitle"></span>"</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                
-                <div class="settings-section">
-                    <h4>Расстояние между триггерами:</h4>
-                    
-                    <label class="radio-wrapper">
-                        <input type="radio" name="distanceType" value="fixed" checked>
-                        <div class="radio-content">
-                            <span class="radio-label">Фиксированное .{min,max}</span>
-                            <div class="distance-inputs mt-1">
-                                <label class="input-label">
-                                    Min: <input type="number" id="distanceMin" class="input-small" value="1" min="0" max="99">
-                                </label>
-                                <label class="input-label">
-                                    Max: <input type="number" id="distanceMax" class="input-small" value="7" min="1" max="99">
-                                </label>
-                            </div>
-                        </div>
-                    </label>
-
-                    <label class="radio-wrapper mt-1">
-                        <input type="radio" name="distanceType" value="any">
-                        <span class="radio-label">Любое [\s\S]+ (независимо от расстояния)</span>
-                    </label>
-
-                    <label class="radio-wrapper mt-1">
-                        <input type="radio" name="distanceType" value="paragraph">
-                        <span class="radio-label">В пределах абзаца .+ (без разрыва строк)</span>
-                    </label>
-
-                    <label class="radio-wrapper mt-1">
-                        <input type="radio" name="distanceType" value="line">
-                        <span class="radio-label">В пределах строки [^\n]+ (без переноса)</span>
-                    </label>
-                </div>
-
-                <div class="settings-section mt-2">
-                    <label class="checkbox-wrapper">
-                        <input type="checkbox" class="checkbox" id="groupAnyOrder">
-                        <span class="checkbox-label">Любая последовательность (A→B или B→A)</span>
-                        <span class="checkbox-hint">Триггеры в любом порядке</span>
-                    </label>
-                </div>
-
-                <div class="settings-section mt-2">
-                    <h4>Оптимизации для триггеров группы:</h4>
-                    
-                    <label class="checkbox-wrapper">
-                        <input type="checkbox" class="checkbox" id="groupOptType1" checked>
-                        <span class="checkbox-label">Повторы</span>
-                    </label>
-
-                    <label class="checkbox-wrapper mt-1">
-                        <input type="checkbox" class="checkbox" id="groupOptType2" checked>
-                        <span class="checkbox-label">Общий корень</span>
-                    </label>
-
-                    <label class="checkbox-wrapper mt-1">
-                        <input type="checkbox" class="checkbox" id="groupOptType3" checked>
-                        <span class="checkbox-label">Вариации букв</span>
-                    </label>
-
-                    <label class="checkbox-wrapper mt-1">
-                        <input type="checkbox" class="checkbox" id="groupOptType4">
-                        <span class="checkbox-label">Склонения</span>
-                    </label>
-
-                    <label class="checkbox-wrapper mt-1">
-                        <input type="checkbox" class="checkbox" id="groupOptType5" checked>
-                        <span class="checkbox-label">Опциональный ?</span>
-                    </label>
-                </div>
-
-            </div>
-            <div class="modal-footer">
-                <button class="btn-primary" id="applyGroupSettingsBtn">Применить</button>
-                <button class="btn-secondary" onclick="closeModal('groupSettingsModal')">Отмена</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal: Export -->
-    <div id="exportModal" class="modal-overlay" style="display: none;">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title">Экспорт</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p>Выберите формат экспорта:</p>
-                <div class="export-options">
-                    <button class="btn-secondary" id="exportTxtBtn">📄 TXT</button>
-                    <button class="btn-secondary" id="exportJsonBtn">📋 JSON</button>
-                    <button class="btn-secondary" id="exportCsvBtn">📊 CSV</button>
-                </div>
             </div>
         </div>
     </div>
@@ -649,9 +520,6 @@
     <script src="js/history.js"></script>
     <script src="js/tester.js"></script>
     <script src="js/main.js"></script>
-
-    <!-- Inline Scripts -->
     <script src="js/inline-scripts.js"></script>
-
 </body>
 </html>
