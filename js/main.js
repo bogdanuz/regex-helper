@@ -304,21 +304,26 @@ function handleConvert() {
         let totalDuplicatesRemoved = 0;
 
         // ========================================
-        // КОНВЕРТАЦИЯ ПРОСТЫХ ТРИГГЕРОВ
-        // ========================================
-        if (hasSimple) {
-            // Получаем глобальные настройки оптимизаций
-            const globalTypes = getGlobalOptimizationStates();
-            
-            // Парсим триггеры
-            const triggers = parseSimpleTriggers(text);
-            
-            // ГРУППА 5: Применяем индивидуальные или глобальные настройки для каждого триггера
-            const triggersWithSettings = triggers.map(trigger => ({
-                text: trigger,
-                types: getEffectiveSettings(trigger, globalTypes)
-            }));
-            
+// КОНВЕРТАЦИЯ ПРОСТЫХ ТРИГГЕРОВ
+// ========================================
+if (hasSimple) {
+    // Получаем глобальные настройки оптимизаций
+    const globalTypes = getGlobalOptimizationStates();
+    
+    console.log('[Main] Глобальные настройки:', globalTypes);
+    
+    // Парсим триггеры
+    const triggers = parseSimpleTriggers(text);
+    
+    // ГРУППА 5: Применяем индивидуальные или глобальные настройки для каждого триггера
+    const triggersWithSettings = triggers.map(trigger => {
+        const effectiveSettings = getEffectiveSettings(trigger, globalTypes);
+        console.log(`[Main] Триггер "${trigger}" использует настройки:`, effectiveSettings);
+        return {
+            text: trigger,
+            types: effectiveSettings
+        };
+    });            
             // Группируем триггеры по настройкам
             const groups = new Map();
             
