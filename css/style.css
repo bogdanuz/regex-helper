@@ -936,3 +936,34 @@ button {
     scrollbar-width: thin;
     scrollbar-color: var(--gray-border) var(--gray-light);
 }
+
+/* Стили для header controls */
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.duplicate-note {
+    font-size: 0.85rem;
+    color: #ff9800;
+    font-style: italic;
+}
+
+.counter-warning {
+    color: #ff9800 !important;
+    font-weight: bold;
+}
+
+.counter-error {
+    color: #f44336 !important;
+    font-weight: bold;
+}
+
+/* Стили для result actions */
+.result-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
