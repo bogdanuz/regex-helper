@@ -17,7 +17,7 @@ function initApp() {
     
     // Проверка совместимости браузера
     if (!checkBrowserCompatibility()) {
-        showToast('error', ERROR_MESSAGES.BROWSER_NOT_SUPPORTED, 10000);
+        showToast('error', 'Ваш браузер не поддерживается. Используйте современный браузер (Chrome, Firefox, Edge).', 10000);
         return;
     }
     
@@ -226,10 +226,10 @@ function updateSimpleTriggerCount() {
     // Предупреждение о лимите
     if (stats.hasLimit) {
         counter.classList.add('counter-error');
-        counter.title = `Превышен лимит (максимум ${LIMITS.MAX_TRIGGERS})`;
+        counter.title = 'Превышен лимит (максимум 200 триггеров)';
     } else if (stats.nearLimit) {
         counter.classList.add('counter-warning');
-        counter.title = `Приближение к лимиту (${stats.count} из ${LIMITS.MAX_TRIGGERS})`;
+        counter.title = 'Приближение к лимиту (используйте до 200 триггеров)';
     } else {
         counter.classList.remove('counter-error', 'counter-warning');
         counter.title = '';
@@ -367,8 +367,8 @@ function handleConvert() {
             const permutations = generateLinkedPermutations();
             const permutationCount = countLinkedPermutations();
 
-            if (permutationCount > LINKED_LIMITS.PERMUTATION_WARNING) {
-                showToast('warning', WARNING_MESSAGES.PERMUTATIONS_TOO_MANY);
+            if (permutationCount > 100) {
+                showToast('warning', 'Большое количество перестановок может замедлить работу приложения');
             }
 
             if (regex) {
@@ -455,12 +455,12 @@ function handleConvert() {
         }
 
         // Уведомление об успехе
-        showToast('success', SUCCESS_MESSAGES.CONVERSION_SUCCESS || 'Regex успешно создан');
+        showToast('success', 'Regex успешно создан!');
         console.log('[Main] ✓ Конвертация успешна');
         
     } catch (error) {
         logError('handleConvert', error);
-        showToast('error', ERROR_MESSAGES.UNKNOWN_ERROR || 'Произошла неизвестная ошибка');
+        showToast('error', 'Произошла ошибка при конвертации. Попробуйте еще раз.');
     }
 }
 
@@ -564,7 +564,7 @@ async function handleCopyRegex() {
         const success = await copyToClipboard(regex);
         
         if (success) {
-            showMessage('success', 'COPIED_TO_CLIPBOARD');
+            showToast('success', 'Regex скопирован в буфер обмена');
             
             // Визуальная обратная связь на кнопке
             const copyBtn = document.getElementById('copyRegexBtn');
@@ -581,7 +581,7 @@ async function handleCopyRegex() {
             
             console.log('[Main] ✓ Regex скопирован в буфер');
         } else {
-            showToast('error', ERROR_MESSAGES.CLIPBOARD_NOT_SUPPORTED);
+            showToast('error', 'Копирование в буфер обмена не поддерживается вашим браузером');
         }
         
     } catch (error) {
