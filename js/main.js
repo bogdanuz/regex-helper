@@ -392,7 +392,7 @@ async function handleCopyRegex() {
     const regex = resultTextarea.value.trim();
     
     if (!regex) {
-        showToast('warning', 'Сначала создайте regex');
+        showToast('warning', 'Сначала создайте regex для копирования');
         return;
     }
     
