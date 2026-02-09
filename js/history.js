@@ -271,20 +271,31 @@ function renderHistory() {
     `).join('');
 }
 
+// ============================================
+// ИСПРАВЛЕНО: Строка ~262
+// ============================================
+
 /**
- * Загрузка конвертации из истории
- * @param {number} id - ID записи
+ * Загрузить запись из истории
+ * @param {number} index - Индекс записи
  */
-function loadFromHistory(id) {
-    try {
-        const history = loadHistory();
-        const entry = history.find(item => item.id === id);
-
-        if (!entry) {
-            showToast('error', ERROR_MESSAGES.HISTORY_NOT_FOUND || 'Запись не найдена');
-            return;
-        }
-
+function loadFromHistory(index) {
+    const history = loadHistory();
+    
+    if (index < 0 || index >= history.length) {
+        showToast('error', 'Запись не найдена');
+        return;
+    }
+    
+    const record = history[index];
+    
+    // Заполнить поле результата
+    // ИСПРАВЛЕНО: result → resultRegex
+    const resultTextarea = document.getElementById('resultRegex');
+    if (resultTextarea) {
+        resultTextarea.value = record.regex;
+    }
+    
         // Закрытие модалки
         const modal = document.getElementById('historyModal');
         if (modal) {
