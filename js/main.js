@@ -221,60 +221,72 @@ function handleConvert() {
         
         const text = simpleTextarea.value;
         
-        // Проверяем есть ли триггеры
-        if (!hasTriggersInText(text)) {
-            showInlineError('simpleTriggers', ERROR_MESSAGES.EMPTY_TRIGGERS);
-            return;
-        }
+        // Проверяем есть ли триггеры (простые ИЛИ связанные)
+const hasSimple = hasTriggersInText(text);
+const hasLinked = hasLinkedTriggers();
+
+if (!hasSimple && !hasLinked) {
+    showInlineError('simpleTriggers', 'Введите хотя бы один триггер (простой или связанный)');
+    return;
+}
         
         // Получаем настройки оптимизаций
         const optimizations = getSelectedOptimizations();
         const hasOptimizations = hasAnyOptimization();
         
         // Выполняем конвертацию
-        let result;
-        
-        if (hasOptimizations) {
-            // С оптимизациями
-            result = performConversionWithOptimizations(text, optimizations, true);
-        } else {
-            // Без оптимизаций (базовая конвертация)
-            result = performConversion(text, true);
-        }
-        
-        // Проверяем результат
-        if (!result.success) {
-            console.error('[Main] Конвертация не удалась:', result.info);
-            return;
-        }
-        
-        // Записываем результат
-        resultTextarea.value = result.regex;
-        
-        // Добавляем перестановки связанных триггеров если есть
-        if (hasLinkedTriggers()) {
-            const permutations = generateLinkedPermutations();
-            const permutationCount = countLinkedPermutations();
-            
-            // Предупреждение о большом количестве перестановок
-            if (permutationCount > LINKED_LIMITS.PERMUTATION_WARNING) {
-                showToast('warning', WARNING_MESSAGES.PERMUTATIONS_TOO_MANY);
-            }
-            
-            // Объединяем regex простых триггеров и перестановок
-            const combinedRegex = result.regex + '|' + permutations.join('|');
-            resultTextarea.value = combinedRegex;
-            
-            console.log(`[Main] Добавлено ${permutationCount} перестановок`);
-        }
-        
-        // Показываем успех
-        showMessage('success', 'CONVERSION_SUCCESS');
-        
-        // Обновляем статистику результата
-        updateResultStats(result);
-        
-        console.log('[Main] ✓ Конвертация успешна');
+let result;
+let regex = '';
+
+// Если есть простые триггеры - конвертируем их
+if (hasSimple) {
+    if (hasOptimizations) {
+        result = performConversionWithOptimizations(text, optimizations, true);
+    } else {
+        result = performConversion(text, true);
+    }
+    
+    if (!result.success) {
+        console.error('[Main] Конвертация не удалась:', result.info);
+        return;
+    }
+    
+    regex = result.regex;
+}
+
+// Добавляем перестановки связанных триггеров если есть
+if (hasLinked) {
+    const permutations = generateLinkedPermutations();
+    const permutationCount = countLinkedPermutations();
+    
+    // Предупреждение о большом количестве перестановок
+    if (permutationCount > LINKED_LIMITS.PERMUTATION_WARNING) {
+        showToast('warning', WARNING_MESSAGES.PERMUTATIONS_TOO_MANY);
+    }
+    
+    // Объединяем regex простых триггеров и перестановок
+    if (regex) {
+        regex = regex + '|' + permutations.join('|');
+    } else {
+        // Только связанные триггеры
+        regex = permutations.join('|');
+    }
+    
+    console.log(`[Main] Добавлено ${permutationCount} перестановок`);
+}
+
+// Записываем результат
+resultTextarea.value = regex;
+
+// Показываем успех
+showMessage('success', 'CONVERSION_SUCCESS');
+
+// Обновляем статистику результата
+if (result) {
+    updateResultStats(result);
+}
+
+console.log('[Main] ✓ Конвертация успешна');
         
     } catch (error) {
         logError('handleConvert', error);
@@ -452,6 +464,56 @@ document.addEventListener('DOMContentLoaded', () => {
     showVersionInfo();
     initApp();
 });
+
+/* ============================================
+   ОЧИСТКА ПОЛЕЙ
+   ============================================ */
+
+/**
+ * Очистить поле простых триггеров
+ */
+function clearSimpleTriggers() {
+    const textarea = document.getElementById('simpleTriggers');
+    
+    if (!textarea) return;
+    
+    if (textarea.value.trim()) {
+        confirmAction(
+            'Очистить поле простых триггеров?',
+            () => {
+                textarea.value = '';
+                clearInlineError('simpleTriggers');
+                updateSimpleTriggerCount();
+                showToast('info', 'Поле очищено');
+            }
+        );
+    }
+}
+
+/**
+ * Очистить результат
+ */
+function clearResultRegex() {
+    const textarea = document.getElementById('resultRegex');
+    const statsDiv = document.getElementById('resultStats');
+    
+    if (!textarea) return;
+    
+    if (textarea.value.trim()) {
+        confirmAction(
+            'Очистить результат?',
+            () => {
+                textarea.value = '';
+                if (statsDiv) statsDiv.innerHTML = '';
+                showToast('info', 'Результат очищен');
+            }
+        );
+    }
+}
+
+// Делаем функции глобальными
+window.clearSimpleTriggers = clearSimpleTriggers;
+window.clearResultRegex = clearResultRegex;
 
 // Экспортируем функции для использования в других модулях
 if (typeof module !== 'undefined' && module.exports) {
