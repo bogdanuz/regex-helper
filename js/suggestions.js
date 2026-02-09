@@ -321,6 +321,24 @@ function openTriggerSettingsModal(trigger) {
             showToast('success', `Настройки применены для "${trigger}"`);
         };
     }
+    
+    // НОВОЕ: Обработчик кнопки "Сбросить настройки"
+    const resetBtn = document.getElementById('resetTriggerSettingsBtn');
+    if (resetBtn) {
+        resetBtn.onclick = () => {
+            confirmAction(
+                'Подтверждение',
+                `Сбросить индивидуальные настройки для "${trigger}"? Будут использоваться глобальные настройки.`,
+                () => {
+                    removeTriggerSettings(trigger);
+                    closeModal('triggerSettingsModal');
+                    updateTriggerSettingsUI();
+                    showToast('info', `Настройки сброшены для "${trigger}"`);
+                },
+                null
+            );
+        };
+    }
 }
 
 /* ============================================
