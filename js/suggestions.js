@@ -362,6 +362,26 @@ function openTriggerSettingsModal(trigger) {
         };
     }
     
+    // Обработчик кнопки "Сбросить настройки" (БЕЗ ПОДТВЕРЖДЕНИЯ)
+    const resetBtn = document.getElementById('resetTriggerSettingsBtn');
+    if (resetBtn) {
+        // Удаляем старые обработчики
+        resetBtn.onclick = null;
+        resetBtn.onclick = () => {
+            // ИСПРАВЛЕНИЕ: Убираем confirmAction - сразу удаляем настройки
+            removeTriggerSettings(trigger);
+            closeModal('triggerSettingsModal');
+            
+            // Обновляем UI после закрытия модалки
+            setTimeout(() => {
+                updateTriggerSettingsUI();
+            }, 100);
+            
+            showToast('info', `Настройки сброшены для "${trigger}". Используются глобальные.`);
+        };
+    }
+}
+    
     // Обработчик кнопки "Сбросить настройки"
     const resetBtn = document.getElementById('resetTriggerSettingsBtn');
     if (resetBtn) {
