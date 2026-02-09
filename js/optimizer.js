@@ -270,40 +270,52 @@ function findCommonBase(words) {
  * @returns {Array} - Массив склонений
  */
 function generateDeclensions(word) {
-    // Проверка: доступна ли библиотека russian-nouns-js
-    if (typeof RussianNouns !== 'undefined' && RussianNouns.decline) {
-        try {
-            // Используем библиотеку для генерации склонений
-            const declensions = [];
-            const cases = ['nominative', 'genitive', 'dative', 'accusative', 'instrumental', 'prepositional'];
-            
-            for (let caseType of cases) {
-                try {
-                    const declined = RussianNouns.decline(word, caseType);
-                    if (declined && declined !== word) {
-                        declensions.push(declined);
-                    }
-                } catch (e) {
-                    // Игнорируем ошибки для отдельных падежей
-                }
-            }
-            
-            // Добавляем исходное слово
-            if (!declensions.includes(word)) {
-                declensions.push(word);
-            }
-            
-            // Удаляем дубликаты
-            return [...new Set(declensions)];
-        } catch (error) {
-            console.warn('[Optimizer] Ошибка генерации склонений:', error);
-            return [word];
-        }
+    // Проверка: доступна ли библиотека RussianNouns
+    if (typeof RussianNouns === 'undefined' || typeof RussianNouns.decline !== 'function') {
+        console.warn('[Optimizer Type 4] Библиотека RussianNouns недоступна. Возвращаем исходное слово:', word);
+        return [word];
     }
     
-    // FALLBACK: Если библиотека недоступна, возвращаем только исходное слово
-    console.warn('[Optimizer] Библиотека russian-nouns-js недоступна. Type 4 работает в ограниченном режиме.');
-    return [word];
+    try {
+        console.log('[Optimizer Type 4] Генерация склонений для:', word);
+        
+        // Используем библиотеку для генерации склонений
+        const declensions = new Set(); // Используем Set для автоматического удаления дубликатов
+        
+        // Добавляем исходное слово
+        declensions.add(word);
+        
+        // Генерируем все падежи (именительный, родительный, дательный, винительный, творительный, предложный)
+        const cases = ['nominative', 'genitive', 'dative', 'accusative', 'instrumental', 'prepositional'];
+        
+        for (let caseType of cases) {
+            try {
+                // Пробуем склонить в единственном числе
+                const singular = RussianNouns.decline(word, caseType);
+                if (singular && singular !== word) {
+                    declensions.add(singular);
+                }
+                
+                // Пробуем склонить во множественном числе
+                const plural = RussianNouns.decline(word, caseType, true); // true = множественное число
+                if (plural && plural !== word && plural !== singular) {
+                    declensions.add(plural);
+                }
+            } catch (e) {
+                // Игнорируем ошибки для отдельных падежей
+                console.warn(`[Optimizer Type 4] Ошибка склонения "${word}" в ${caseType}:`, e.message);
+            }
+        }
+        
+        const result = Array.from(declensions);
+        console.log(`[Optimizer Type 4] Получено ${result.length} форм для "${word}":`, result);
+        
+        return result;
+        
+    } catch (error) {
+        console.error('[Optimizer Type 4] Ошибка генерации склонений для', word, ':', error);
+        return [word];
+    }
 }
 
 /**
@@ -320,6 +332,13 @@ function generateDeclensions(word) {
 function optimizeType4(triggers) {
     if (!Array.isArray(triggers) || triggers.length === 0) {
         return triggers;
+    }
+    
+    // Проверка доступности библиотеки
+    if (typeof RussianNouns === 'undefined' || typeof RussianNouns.decline !== 'function') {
+        console.warn('[Optimizer Type 4] Библиотека RussianNouns недоступна. Type 4 пропущен.');
+        // Возвращаем триггеры с экранированием
+        return triggers.map(t => escapeRegex(t));
     }
     
     const result = [];
@@ -355,7 +374,7 @@ function optimizeType4(triggers) {
                 result.push(escapeRegex(trigger));
             }
         } catch (error) {
-            console.warn('[Optimizer] Ошибка Type 4 для триггера:', trigger, error);
+            console.warn('[Optimizer Type 4] Ошибка для триггера:', trigger, error);
             result.push(escapeRegex(trigger));
         }
     }
