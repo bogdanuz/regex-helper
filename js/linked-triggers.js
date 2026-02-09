@@ -505,3 +505,10 @@ if (typeof module !== 'undefined' && module.exports) {
         exportLinkedToSimple
     };
 }
+
+// Делаем функции глобальными для onclick
+window.addLinkedGroup = addLinkedGroup;
+window.removeLinkedGroup = removeLinkedGroup;
+window.addTriggerField = addTriggerField;
+window.removeTriggerField = removeTriggerField;
+
