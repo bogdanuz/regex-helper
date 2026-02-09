@@ -9,12 +9,12 @@
 
 const STORAGE_KEY_OPTIMIZATIONS = 'regexhelper_optimizations';
 
-// Дефолтные настройки (все включены)
+// ОБНОВЛЕНО: Дефолтные настройки (все включены, type3 убран, type5 добавлен)
 const DEFAULT_OPTIMIZATIONS = {
-    type1: true,
-    type2: true,
-    type3: true,
-    type4: true
+    type1: true,  // Вариации букв (латиница ↔ кириллица)
+    type2: true,  // Опциональные буквы (окончания)
+    type4: true,  // Склонения (русские падежи)
+    type5: true   // Опциональный символ ?
 };
 
 /* ============================================
@@ -39,17 +39,18 @@ function initSuggestions() {
    ============================================ */
 
 /**
- * Установка event listeners для чекбоксов
+ * ОБНОВЛЕНО: Установка event listeners для чекбоксов
  */
 function setupOptimizationListeners() {
-    const checkboxes = [
-        'optType1',
-        'optType2',
-        'optType3',
-        'optType4'
+    // ИСПРАВЛЕНО: Правильные ID чекбоксов (без префикса opt)
+    const checkboxIds = [
+        'type1',
+        'type2',
+        'type4',
+        'type5'
     ];
     
-    checkboxes.forEach(id => {
+    checkboxIds.forEach(id => {
         const checkbox = document.getElementById(id);
         
         if (checkbox) {
@@ -66,7 +67,7 @@ function setupOptimizationListeners() {
  */
 function handleOptimizationChange(event) {
     const checkbox = event.target;
-    const optimizationType = checkbox.id.replace('opt', '').toLowerCase(); // optType1 → type1
+    const optimizationType = checkbox.id; // type1, type2, type4, type5
     const isChecked = checkbox.checked;
     
     console.log(`[Suggestions] ${optimizationType} = ${isChecked}`);
@@ -80,23 +81,24 @@ function handleOptimizationChange(event) {
    ============================================ */
 
 /**
- * Получить текущие выбранные оптимизации
- * @returns {Object} - { type1: boolean, type2: boolean, type3: boolean, type4: boolean }
+ * ОБНОВЛЕНО: Получить текущие выбранные оптимизации
+ * @returns {Object} - { type1: boolean, type2: boolean, type4: boolean, type5: boolean }
  */
 function getSelectedOptimizations() {
     const optimizations = {
         type1: false,
         type2: false,
-        type3: false,
-        type4: false
+        type4: false,
+        type5: false
     };
     
+    // ИСПРАВЛЕНО: Правильные ID
     const checkboxes = {
-    type1: document.getElementById('type1'),
-    type2: document.getElementById('type2'),
-    type4: document.getElementById('type4'),
-    type5: document.getElementById('type5')
-};
+        type1: document.getElementById('type1'),
+        type2: document.getElementById('type2'),
+        type4: document.getElementById('type4'),
+        type5: document.getElementById('type5')
+    };
     
     for (let type in checkboxes) {
         const checkbox = checkboxes[type];
@@ -109,12 +111,12 @@ function getSelectedOptimizations() {
 }
 
 /**
- * Проверка: выбрана ли хотя бы одна оптимизация
+ * ОБНОВЛЕНО: Проверка: выбрана ли хотя бы одна оптимизация
  * @returns {boolean}
  */
 function hasAnyOptimization() {
     const opts = getSelectedOptimizations();
-    return opts.type1 || opts.type2 || opts.type3 || opts.type4;
+    return opts.type1 || opts.type2 || opts.type4 || opts.type5;
 }
 
 /* ============================================
@@ -146,6 +148,17 @@ function loadOptimizationPreferences() {
         if (saved) {
             // Загружаем сохранённые настройки
             optimizations = JSON.parse(saved);
+            
+            // ВАЖНО: Мигрируем старые настройки (если есть type3, удаляем его)
+            if (optimizations.type3 !== undefined) {
+                delete optimizations.type3;
+            }
+            
+            // Добавляем type5, если его нет (для старых сохранений)
+            if (optimizations.type5 === undefined) {
+                optimizations.type5 = true; // По умолчанию включен
+            }
+            
             console.log('[Suggestions] Загружены сохранённые настройки:', optimizations);
         } else {
             // Используем дефолтные настройки
@@ -165,15 +178,16 @@ function loadOptimizationPreferences() {
 }
 
 /**
- * Применить настройки оптимизаций к UI (чекбоксам)
+ * ОБНОВЛЕНО: Применить настройки оптимизаций к UI (чекбоксам)
  * @param {Object} optimizations - Объект с настройками
  */
 function applyOptimizationsToUI(optimizations) {
+    // ИСПРАВЛЕНО: Правильные ID чекбоксов
     const checkboxes = {
-        type1: document.getElementById('optType1'),
-        type2: document.getElementById('optType2'),
-        type3: document.getElementById('optType3'),
-        type4: document.getElementById('optType4')
+        type1: document.getElementById('type1'),
+        type2: document.getElementById('type2'),
+        type4: document.getElementById('type4'),
+        type5: document.getElementById('type5')
     };
     
     for (let type in checkboxes) {
@@ -198,17 +212,17 @@ function resetOptimizationPreferences() {
    ============================================ */
 
 /**
- * Включить все оптимизации
+ * ОБНОВЛЕНО: Включить все оптимизации
  */
 function enableAllOptimizations() {
-    const checkboxes = [
-        'optType1',
-        'optType2',
-        'optType3',
-        'optType4'
+    const checkboxIds = [
+        'type1',
+        'type2',
+        'type4',
+        'type5'
     ];
     
-    checkboxes.forEach(id => {
+    checkboxIds.forEach(id => {
         const checkbox = document.getElementById(id);
         if (checkbox) {
             checkbox.checked = true;
@@ -220,17 +234,17 @@ function enableAllOptimizations() {
 }
 
 /**
- * Выключить все оптимизации
+ * ОБНОВЛЕНО: Выключить все оптимизации
  */
 function disableAllOptimizations() {
-    const checkboxes = [
-        'optType1',
-        'optType2',
-        'optType3',
-        'optType4'
+    const checkboxIds = [
+        'type1',
+        'type2',
+        'type4',
+        'type5'
     ];
     
-    checkboxes.forEach(id => {
+    checkboxIds.forEach(id => {
         const checkbox = document.getElementById(id);
         if (checkbox) {
             checkbox.checked = false;
@@ -242,7 +256,7 @@ function disableAllOptimizations() {
 }
 
 /**
- * Получить количество включённых оптимизаций
+ * ОБНОВЛЕНО: Получить количество включённых оптимизаций
  * @returns {number} - Количество включённых оптимизаций (0-4)
  */
 function getEnabledOptimizationsCount() {
@@ -251,15 +265,15 @@ function getEnabledOptimizationsCount() {
     
     if (opts.type1) count++;
     if (opts.type2) count++;
-    if (opts.type3) count++;
     if (opts.type4) count++;
+    if (opts.type5) count++;
     
     return count;
 }
 
 /**
- * Получить список включённых оптимизаций
- * @returns {Array} - Массив имён включённых оптимизаций ['type1', 'type2', ...]
+ * ОБНОВЛЕНО: Получить список включённых оптимизаций
+ * @returns {Array} - Массив имён включённых оптимизаций ['type1', 'type2', 'type4', 'type5']
  */
 function getEnabledOptimizationsList() {
     const opts = getSelectedOptimizations();
@@ -267,11 +281,15 @@ function getEnabledOptimizationsList() {
     
     if (opts.type1) enabled.push('type1');
     if (opts.type2) enabled.push('type2');
-    if (opts.type3) enabled.push('type3');
     if (opts.type4) enabled.push('type4');
+    if (opts.type5) enabled.push('type5');
     
     return enabled;
 }
+
+/* ============================================
+   ЭКСПОРТ
+   ============================================ */
 
 // Экспортируем функции для использования в других модулях
 if (typeof module !== 'undefined' && module.exports) {
@@ -298,5 +316,5 @@ if (typeof module !== 'undefined' && module.exports) {
         loadOptimizationPreferences
     };
 }
-console.log('✓ Модуль suggestions.js загружен');
 
+console.log('✓ Модуль suggestions.js загружен');
