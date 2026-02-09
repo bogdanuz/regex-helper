@@ -219,6 +219,46 @@ function optimizeType3(triggers) {
    ============================================ */
 
 /**
+ * Определение рода русского слова по окончанию
+ * @param {string} word - Слово (в нижнем регистре)
+ * @returns {string} - Род ('MASCULINE', 'FEMININE', 'NEUTER')
+ */
+function detectGender(word) {
+    const lastChar = word[word.length - 1];
+    const lastTwo = word.substring(word.length - 2);
+    
+    // Женский род: -а, -я, -ь (большинство)
+    if (lastChar === 'а' || lastChar === 'я') {
+        return 'FEMININE';
+    }
+    
+    // Средний род: -о, -е, -ё, -мя
+    if (lastChar === 'о' || lastChar === 'е' || lastChar === 'ё') {
+        return 'NEUTER';
+    }
+    
+    if (lastTwo === 'мя') {
+        return 'NEUTER';
+    }
+    
+    // Женский род: слова на -ь с определенными окончаниями
+    if (lastChar === 'ь') {
+        // Типичные женские окончания на -ь
+        const feminineSuffixes = ['ость', 'есть', 'знь', 'ань', 'ынь', 'рь', 'вь'];
+        for (let suffix of feminineSuffixes) {
+            if (word.endsWith(suffix)) {
+                return 'FEMININE';
+            }
+        }
+        // По умолчанию -ь = мужской род (день, конь, гость)
+        return 'MASCULINE';
+    }
+    
+    // По умолчанию: мужской род (согласная на конце)
+    return 'MASCULINE';
+}
+
+/**
  * Поиск общего суффикса
  * @param {string} str1 - Первая строка
  * @param {string} str2 - Вторая строка
@@ -265,13 +305,16 @@ function findCommonBase(words) {
 }
 
 /**
- * Генерация склонений русского слова
+ * Генерация склонений русского слова с использованием RussianNounsJS
  * @param {string} word - Исходное слово
  * @returns {Array} - Массив склонений
  */
 function generateDeclensions(word) {
     // Проверка: доступна ли библиотека RussianNouns
-    if (typeof RussianNouns === 'undefined' || typeof RussianNouns.decline !== 'function') {
+    if (typeof RussianNouns === 'undefined' || 
+        typeof RussianNouns.Engine !== 'function' ||
+        typeof RussianNouns.Gender === 'undefined' ||
+        typeof RussianNouns.Case === 'undefined') {
         console.warn('[Optimizer Type 4] Библиотека RussianNouns недоступна. Возвращаем исходное слово:', word);
         return [word];
     }
@@ -279,31 +322,68 @@ function generateDeclensions(word) {
     try {
         console.log('[Optimizer Type 4] Генерация склонений для:', word);
         
-        // Используем библиотеку для генерации склонений
-        const declensions = new Set(); // Используем Set для автоматического удаления дубликатов
+        const engine = new RussianNouns.Engine();
+        const declensions = new Set();
         
         // Добавляем исходное слово
         declensions.add(word);
         
-        // Генерируем все падежи (именительный, родительный, дательный, винительный, творительный, предложный)
-        const cases = ['nominative', 'genitive', 'dative', 'accusative', 'instrumental', 'prepositional'];
+        // Определяем род слова
+        const genderStr = detectGender(word.toLowerCase());
+        const gender = RussianNouns.Gender[genderStr];
         
-        for (let caseType of cases) {
+        console.log('[Optimizer Type 4] Определен род:', genderStr);
+        
+        // Создаем объект леммы
+        const lemma = {
+            text: word,
+            gender: gender
+        };
+        
+        // Генерируем все падежи
+        const cases = [
+            'NOMINATIVE',    // именительный
+            'GENITIVE',      // родительный
+            'DATIVE',        // дательный
+            'ACCUSATIVE',    // винительный
+            'INSTRUMENTAL',  // творительный
+            'PREPOSITIONAL'  // предложный
+        ];
+        
+        for (let caseName of cases) {
             try {
-                // Пробуем склонить в единственном числе
-                const singular = RussianNouns.decline(word, caseType);
-                if (singular && singular !== word) {
+                const caseValue = RussianNouns.Case[caseName];
+                
+                // Склоняем в единственном числе
+                const singular = engine.decline(lemma, caseValue);
+                if (Array.isArray(singular)) {
+                    singular.forEach(form => {
+                        if (form && form !== word) {
+                            declensions.add(form);
+                        }
+                    });
+                } else if (singular && singular !== word) {
                     declensions.add(singular);
                 }
                 
-                // Пробуем склонить во множественном числе
-                const plural = RussianNouns.decline(word, caseType, true); // true = множественное число
-                if (plural && plural !== word && plural !== singular) {
-                    declensions.add(plural);
+                // Склоняем во множественном числе
+                try {
+                    const plural = engine.pluralize(lemma);
+                    if (Array.isArray(plural)) {
+                        plural.forEach(form => {
+                            if (form && form !== word) {
+                                declensions.add(form);
+                            }
+                        });
+                    } else if (plural && plural !== word) {
+                        declensions.add(plural);
+                    }
+                } catch (e) {
+                    // Игнорируем ошибки множественного числа
                 }
+                
             } catch (e) {
-                // Игнорируем ошибки для отдельных падежей
-                console.warn(`[Optimizer Type 4] Ошибка склонения "${word}" в ${caseType}:`, e.message);
+                console.warn(`[Optimizer Type 4] Ошибка склонения "${word}" в ${caseName}:`, e.message);
             }
         }
         
@@ -313,7 +393,7 @@ function generateDeclensions(word) {
         return result;
         
     } catch (error) {
-        console.error('[Optimizer Type 4] Ошибка генерации склонений для', word, ':', error);
+        console.error('[Optimizer Type 4] Критическая ошибка генерации склонений для', word, ':', error);
         return [word];
     }
 }
@@ -335,7 +415,8 @@ function optimizeType4(triggers) {
     }
     
     // Проверка доступности библиотеки
-    if (typeof RussianNouns === 'undefined' || typeof RussianNouns.decline !== 'function') {
+    if (typeof RussianNouns === 'undefined' || 
+        typeof RussianNouns.Engine !== 'function') {
         console.warn('[Optimizer Type 4] Библиотека RussianNouns недоступна. Type 4 пропущен.');
         // Возвращаем триггеры с экранированием
         return triggers.map(t => escapeRegex(t));
@@ -359,12 +440,18 @@ function optimizeType4(triggers) {
                 const base = findCommonBase(declensions);
                 
                 // Извлечь окончания
-                const suffixes = declensions.map(word => word.slice(base.length)).filter(s => s.length > 0);
+                const suffixes = declensions
+                    .map(word => word.slice(base.length))
+                    .filter(s => s.length > 0);
                 
                 // ВАЖНО: используем круглые скобки (...|...) для многобуквенных окончаний
                 // Квадратные скобки [...] НЕ работают для окончаний типа "ом" (2+ буквы)!
                 if (suffixes.length > 0) {
-                    const pattern = escapeRegex(base) + '(' + suffixes.map(s => escapeRegex(s)).join('|') + ')';
+                    // Удаляем дубликаты и сортируем по длине (длинные первыми)
+                    const uniqueSuffixes = Array.from(new Set(suffixes))
+                        .sort((a, b) => b.length - a.length);
+                    
+                    const pattern = escapeRegex(base) + '(' + uniqueSuffixes.map(s => escapeRegex(s)).join('|') + ')';
                     result.push(pattern);
                 } else {
                     // Если нет окончаний (все слова одинаковые), используем исходное
