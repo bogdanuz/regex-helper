@@ -1,6 +1,6 @@
 /* ============================================
    REGEXHELPER - OPTIMIZER
-   4 типа оптимизации regex
+   5 типов оптимизации regex
    ============================================ */
 
 /* ============================================
@@ -141,7 +141,7 @@ function optimizeType2(triggers) {
 
 /* ============================================
    ТИП 3: ЛАТИНИЦА ↔ КИРИЛЛИЦА
-   test → [tт][eе][sѕ][tт]
+   дрон → [dд][rр][oо][nп]
    ============================================ */
 
 /**
@@ -215,7 +215,7 @@ function optimizeType3(triggers) {
 
 /* ============================================
    ТИП 4: СКЛОНЕНИЯ
-   книга, книги, книге → книг(а|и|е)
+   дрон → дрон(а|у|ом|е|ов|ам|ами|ах)
    ============================================ */
 
 /**
@@ -234,7 +234,7 @@ function findCommonSuffix(str1, str2) {
 }
 
 /**
- * ДОБАВЛЕНО: Найти общую основу слов
+ * Найти общую основу слов
  * @param {Array} words - Массив слов
  * @returns {string} - Общая основа
  */
@@ -265,7 +265,7 @@ function findCommonBase(words) {
 }
 
 /**
- * ДОБАВЛЕНО: Генерация склонений русского слова
+ * Генерация склонений русского слова
  * @param {string} word - Исходное слово
  * @returns {Array} - Массив склонений
  */
@@ -308,6 +308,12 @@ function generateDeclensions(word) {
 
 /**
  * Оптимизация Type 4: Склонения русских слов
+ * Генерирует regex с круглыми скобками и альтернацией для многобуквенных окончаний
+ * 
+ * @example
+ * // Input: ["дрон"]
+ * // Output: ["дрон(а|у|ом|е|ов|ам|ами|ах)"]
+ * 
  * @param {Array} triggers - Массив триггеров
  * @returns {Array} - Оптимизированный массив
  */
@@ -336,7 +342,8 @@ function optimizeType4(triggers) {
                 // Извлечь окончания
                 const suffixes = declensions.map(word => word.slice(base.length)).filter(s => s.length > 0);
                 
-                // ИСПРАВЛЕНО: используем (...|...) для многобуквенных окончаний
+                // ВАЖНО: используем круглые скобки (...|...) для многобуквенных окончаний
+                // Квадратные скобки [...] НЕ работают для окончаний типа "ом" (2+ буквы)!
                 if (suffixes.length > 0) {
                     const pattern = escapeRegex(base) + '(' + suffixes.map(s => escapeRegex(s)).join('|') + ')';
                     result.push(pattern);
@@ -357,13 +364,156 @@ function optimizeType4(triggers) {
 }
 
 /* ============================================
+   ТИП 5: ОПЦИОНАЛЬНЫЙ СИМВОЛ ?
+   пассивный, пасивный → пасс?ивный
+   ============================================ */
+
+/**
+ * Вычисление расстояния Левенштейна между двумя строками
+ * @param {string} str1 - Первая строка
+ * @param {string} str2 - Вторая строка
+ * @returns {number} - Расстояние Левенштейна
+ */
+function levenshteinDistance(str1, str2) {
+    const len1 = str1.length;
+    const len2 = str2.length;
+    const matrix = [];
+
+    // Инициализация матрицы
+    for (let i = 0; i <= len1; i++) {
+        matrix[i] = [i];
+    }
+    for (let j = 0; j <= len2; j++) {
+        matrix[0][j] = j;
+    }
+
+    // Заполнение матрицы
+    for (let i = 1; i <= len1; i++) {
+        for (let j = 1; j <= len2; j++) {
+            const cost = str1[i - 1] === str2[j - 1] ? 0 : 1;
+            matrix[i][j] = Math.min(
+                matrix[i - 1][j] + 1,      // удаление
+                matrix[i][j - 1] + 1,      // вставка
+                matrix[i - 1][j - 1] + cost // замена
+            );
+        }
+    }
+
+    return matrix[len1][len2];
+}
+
+/**
+ * Поиск позиции различия между двумя строками (одна буква)
+ * @param {string} str1 - Первая строка
+ * @param {string} str2 - Вторая строка (короче на 1 символ)
+ * @returns {number|null} - Позиция опциональной буквы или null
+ */
+function findOptionalCharPosition(str1, str2) {
+    if (Math.abs(str1.length - str2.length) !== 1) {
+        return null;
+    }
+
+    // str1 должна быть длиннее
+    if (str1.length < str2.length) {
+        [str1, str2] = [str2, str1];
+    }
+
+    // Ищем позицию, где строки расходятся
+    for (let i = 0; i < str2.length; i++) {
+        if (str1[i] !== str2[i]) {
+            // Проверяем, совпадает ли остаток
+            const remainder1 = str1.substring(i + 1);
+            const remainder2 = str2.substring(i);
+            
+            if (remainder1 === remainder2) {
+                return i; // Найдена позиция опциональной буквы
+            }
+            
+            return null;
+        }
+    }
+
+    // Различие в последнем символе
+    return str2.length;
+}
+
+/**
+ * Оптимизация Type 5: Опциональный символ ?
+ * Объединяет слова, отличающиеся на одну букву в середине
+ * 
+ * @example
+ * // Input: ["пассивный", "пасивный"]
+ * // Output: ["пасс?ивный"]
+ * 
+ * @example
+ * // Input: ["алкоголь", "алкголь"]
+ * // Output: ["алко?голь"]
+ * 
+ * @param {Array} triggers - Массив триггеров
+ * @returns {Array} - Оптимизированный массив
+ */
+function optimizeType5(triggers) {
+    if (!Array.isArray(triggers) || triggers.length < 2) {
+        return triggers;
+    }
+
+    const optimized = [];
+    const used = new Set();
+
+    for (let i = 0; i < triggers.length; i++) {
+        if (used.has(i)) continue;
+
+        const current = triggers[i];
+        let foundPair = false;
+
+        // Ищем пару (отличие на 1 букву)
+        for (let j = i + 1; j < triggers.length; j++) {
+            if (used.has(j)) continue;
+
+            const other = triggers[j];
+
+            // Проверяем расстояние Левенштейна = 1 (одно изменение)
+            if (levenshteinDistance(current, other) === 1) {
+                // Проверяем, что это именно вставка/удаление одной буквы
+                const position = findOptionalCharPosition(current, other);
+
+                if (position !== null) {
+                    // Определяем, какая строка длиннее
+                    const longer = current.length > other.length ? current : other;
+                    const shorter = current.length > other.length ? other : current;
+
+                    // Создаем паттерн с опциональной буквой
+                    const before = escapeRegex(longer.substring(0, position));
+                    const optionalChar = escapeRegex(longer[position]);
+                    const after = escapeRegex(longer.substring(position + 1));
+
+                    const pattern = before + optionalChar + '?' + after;
+
+                    optimized.push(pattern);
+                    used.add(j);
+                    foundPair = true;
+                    break;
+                }
+            }
+        }
+
+        // Если не нашли пару, добавляем как есть
+        if (!foundPair) {
+            optimized.push(escapeRegex(current));
+        }
+    }
+
+    return optimized;
+}
+
+/* ============================================
    ПРИМЕНЕНИЕ ОПТИМИЗАЦИЙ
    ============================================ */
 
 /**
  * Применить выбранные оптимизации
  * @param {Array} triggers - Массив триггеров
- * @param {Object} types - Объект с флагами { type1: true, type2: false, ... }
+ * @param {Object} types - Объект с флагами { type1: true, type2: false, type3: true, type4: false, type5: true }
  * @returns {Array} - Оптимизированный массив
  */
 function applyOptimizations(triggers, types) {
@@ -390,6 +540,11 @@ function applyOptimizations(triggers, types) {
     
     if (types.type4) {
         result = optimizeType4(result);
+    }
+    
+    // ДОБАВЛЕНО: Type 5 - опциональный символ ?
+    if (types.type5) {
+        result = optimizeType5(result);
     }
     
     return result;
@@ -435,7 +590,7 @@ function performConversionWithOptimizations(text, types, showWarnings = true) {
         clearAllInlineErrors();
         
         // Проверка: выбрана ли хотя бы одна оптимизация
-        const hasOptimizations = types.type1 || types.type2 || types.type3 || types.type4;
+        const hasOptimizations = types.type1 || types.type2 || types.type3 || types.type4 || types.type5;
         
         if (!hasOptimizations && showWarnings) {
             showToast('warning', WARNING_MESSAGES.NO_OPTIMIZATIONS);
@@ -518,4 +673,4 @@ function performConversionWithOptimizations(text, types, showWarnings = true) {
    ЭКСПОРТ
    ============================================ */
 
-console.log('✓ Модуль optimizer.js загружен');
+console.log('✓ Модуль optimizer.js загружен (5 типов оптимизаций)');
