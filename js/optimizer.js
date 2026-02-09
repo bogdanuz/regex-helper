@@ -25,30 +25,40 @@ function optimizeType1(triggers) {
         if (used.has(i)) continue;
         
         const current = triggers[i];
-        let pattern = current;
+        const grouped = [current];
         
-        // Ищем триггеры с повторяющимися символами в конце
+        // Ищем триггеры, где current - префикс
         for (let j = i + 1; j < triggers.length; j++) {
             if (used.has(j)) continue;
             
             const other = triggers[j];
             
             // Проверяем: other начинается с current?
-            if (other.startsWith(current)) {
-                const suffix = other.substring(current.length);
-                
-                // Проверяем: suffix состоит из повторений одного символа?
-                if (suffix.length > 0 && new Set(suffix).size === 1) {
-                    const repeatedChar = suffix[0];
-                    
-                    // Создаем паттерн: джефф → джеффф?
-                    pattern = escapeRegex(current) + escapeRegex(repeatedChar) + '?';
-                    used.add(j);
-                }
+            if (other.startsWith(current) && other.length > current.length) {
+                grouped.push(other);
+                used.add(j);
             }
         }
         
-        optimized.push(pattern);
+        // Если нашли группу (2+ триггеров)
+        if (grouped.length >= 2) {
+            // Сортируем по длине
+            grouped.sort((a, b) => a.length - b.length);
+            
+            const base = grouped[0];
+            const suffixes = grouped.slice(1).map(t => t.substring(base.length));
+            
+            // Создаем паттерн: джефф(ри|ффри)?
+            if (suffixes.length === 1) {
+                const pattern = escapeRegex(base) + '(' + escapeRegex(suffixes[0]) + ')?';
+                optimized.push(pattern);
+            } else {
+                const pattern = escapeRegex(base) + '(' + suffixes.map(s => escapeRegex(s)).join('|') + ')?';
+                optimized.push(pattern);
+            }
+        } else {
+            optimized.push(current);
+        }
     }
     
     return optimized;
@@ -178,7 +188,7 @@ function optimizeType3(triggers) {
     for (let trigger of triggers) {
         // Проверяем есть ли заменяемые символы
         if (!hasReplaceableChars(trigger)) {
-            optimized.push(trigger);
+            optimized.push(escapeRegex(trigger));
             continue;
         }
         
@@ -190,9 +200,10 @@ function optimizeType3(triggers) {
             
             if (replacement) {
                 // Символ есть в карте - создаем группу [латиница|кириллица]
-                pattern += '[' + escapeRegex(char) + escapeRegex(replacement) + ']';
+                // Внутри [] не нужно экранировать большинство символов
+                pattern += '[' + char + replacement + ']';
             } else {
-                // Обычный символ
+                // Обычный символ - экранируем
                 pattern += escapeRegex(char);
             }
         }
