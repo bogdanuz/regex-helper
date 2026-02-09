@@ -205,37 +205,73 @@ function updateTriggerSettingsUI() {
     if (!buttonsContainer) {
         buttonsContainer = document.createElement('div');
         buttonsContainer.id = 'triggerSettingsButtons';
-        buttonsContainer.style.cssText = 'display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px;';
+        buttonsContainer.style.cssText = 'display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;';
         textarea.parentElement.appendChild(buttonsContainer);
     }
     
     // Очищаем контейнер
     buttonsContainer.innerHTML = '';
     
+    // Если нет триггеров, скрываем контейнер
+    if (triggers.length === 0) {
+        buttonsContainer.style.display = 'none';
+        return;
+    }
+    
+    buttonsContainer.style.display = 'flex';
+    
     // Создаем кнопку для каждого триггера
     triggers.forEach((trigger, index) => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'btn-icon';
-        btn.title = `Настройки для "${trigger}"`;
-        btn.style.cssText = 'font-size: 12px; padding: 4px 8px;';
-        
         // Проверяем есть ли индивидуальные настройки
         const hasSettings = hasTriggerSettings(trigger);
-        btn.textContent = hasSettings ? '⚙️✓' : '⚙️';
-        btn.style.background = hasSettings ? '#4CAF50' : '';
-        btn.style.color = hasSettings ? 'white' : '';
         
-        btn.onclick = () => openTriggerSettingsModal(trigger);
-        
-        const label = document.createElement('span');
-        label.textContent = trigger.length > 15 ? trigger.substring(0, 15) + '...' : trigger;
-        label.style.cssText = 'font-size: 12px; margin-right: 5px;';
-        
+        // Контейнер для триггера
         const wrapper = document.createElement('div');
-        wrapper.style.cssText = 'display: flex; align-items: center; gap: 5px;';
+        wrapper.className = 'trigger-settings-item';
+        wrapper.style.cssText = `
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border: 2px solid ${hasSettings ? '#4CAF50' : '#ddd'};
+            border-radius: 6px;
+            background: ${hasSettings ? '#E8F5E9' : '#f9f9f9'};
+            transition: all 0.2s ease;
+            cursor: pointer;
+        `;
+        
+        // При наведении
+        wrapper.onmouseenter = () => {
+            wrapper.style.borderColor = hasSettings ? '#45a049' : '#2196F3';
+            wrapper.style.transform = 'translateY(-1px)';
+            wrapper.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+        };
+        wrapper.onmouseleave = () => {
+            wrapper.style.borderColor = hasSettings ? '#4CAF50' : '#ddd';
+            wrapper.style.transform = 'translateY(0)';
+            wrapper.style.boxShadow = 'none';
+        };
+        
+        // Название триггера
+        const label = document.createElement('span');
+        label.textContent = trigger.length > 20 ? trigger.substring(0, 20) + '...' : trigger;
+        label.title = trigger;
+        label.style.cssText = `
+            font-size: 13px;
+            color: ${hasSettings ? '#2E7D32' : '#333'};
+            font-weight: ${hasSettings ? '600' : '400'};
+        `;
+        
+        // Иконка настроек
+        const icon = document.createElement('span');
+        icon.textContent = hasSettings ? '⚙️✓' : '⚙️';
+        icon.style.cssText = 'font-size: 16px;';
+        
         wrapper.appendChild(label);
-        wrapper.appendChild(btn);
+        wrapper.appendChild(icon);
+        
+        // Обработчик клика
+        wrapper.onclick = () => openTriggerSettingsModal(trigger);
         
         buttonsContainer.appendChild(wrapper);
     });
