@@ -439,7 +439,11 @@ function findOptionalCharPosition(str1, str2) {
 
 /**
  * Оптимизация Type 5: Опциональный символ ?
- * Объединяет слова, отличающиеся на одну букву в середине
+ * Объединяет слова, отличающиеся на одну букву в любой позиции
+ * 
+ * ВАЖНО: Type 5 должен применяться ДО Type 4 (склонений)!
+ * Причина: Type 5 работает с простыми триггерами. Если сначала применить Type 4,
+ * триггер "дрон" превратится в "дрон(а|у|ом)", и Type 5 не сможет его обработать.
  * 
  * @example
  * // Input: ["пассивный", "пасивный"]
@@ -448,6 +452,10 @@ function findOptionalCharPosition(str1, str2) {
  * @example
  * // Input: ["алкоголь", "алкголь"]
  * // Output: ["алко?голь"]
+ * 
+ * @example
+ * // Input: ["товар", "товарр"]
+ * // Output: ["товарр?"] // последний символ опциональный
  * 
  * @param {Array} triggers - Массив триггеров
  * @returns {Array} - Оптимизированный массив
@@ -512,8 +520,19 @@ function optimizeType5(triggers) {
 
 /**
  * Применить выбранные оптимизации
+ * 
+ * ВАЖНО: Порядок применения оптимизаций критичен!
+ * 
+ * 1. Type 3 (латиница ↔ кириллица) - применяется к исходным триггерам посимвольно
+ * 2. Type 5 (опциональный ?) - ищет триггеры, отличающиеся на 1 букву
+ * 3. Type 1 (повторы) - группирует триггеры с общим началом
+ * 4. Type 2 (общий корень) - группирует триггеры с общим корнем и короткими окончаниями
+ * 5. Type 4 (склонения) - генерирует все падежные формы (создает сложные паттерны)
+ * 
+ * Type 5 ДОЛЖЕН быть ДО Type 4, иначе он будет пытаться оптимизировать уже обработанные паттерны!
+ * 
  * @param {Array} triggers - Массив триггеров
- * @param {Object} types - Объект с флагами { type1: true, type2: false, type3: true, type4: false, type5: true }
+ * @param {Object} types - Объект с флагами { type1: bool, type2: bool, type3: bool, type4: bool, type5: bool }
  * @returns {Array} - Оптимизированный массив
  */
 function applyOptimizations(triggers, types) {
@@ -523,29 +542,39 @@ function applyOptimizations(triggers, types) {
     
     let result = [...triggers];
     
-    // ВАЖНО: Type3 применяется ПЕРВЫМ (к исходным триггерам)
-    // Остальные оптимизации работают с уже обработанными паттернами
+    console.log('[Optimizer] Исходные триггеры:', result.length);
     
+    // ШАГ 1: Type 3 - Латиница ↔ Кириллица (посимвольная замена)
     if (types.type3) {
         result = optimizeType3(result);
+        console.log('[Optimizer] После Type 3 (латиница↔кириллица):', result.length);
     }
     
-    if (types.type1) {
-        result = optimizeType1(result);
-    }
-    
-    if (types.type2) {
-        result = optimizeType2(result);
-    }
-    
-    if (types.type4) {
-        result = optimizeType4(result);
-    }
-    
-    // ДОБАВЛЕНО: Type 5 - опциональный символ ?
+    // ШАГ 2: Type 5 - Опциональный символ ? (работает с простыми триггерами)
     if (types.type5) {
         result = optimizeType5(result);
+        console.log('[Optimizer] После Type 5 (опциональный ?):', result.length);
     }
+    
+    // ШАГ 3: Type 1 - Повторы (группирует префиксы)
+    if (types.type1) {
+        result = optimizeType1(result);
+        console.log('[Optimizer] После Type 1 (повторы):', result.length);
+    }
+    
+    // ШАГ 4: Type 2 - Общий корень (группирует суффиксы)
+    if (types.type2) {
+        result = optimizeType2(result);
+        console.log('[Optimizer] После Type 2 (общий корень):', result.length);
+    }
+    
+    // ШАГ 5: Type 4 - Склонения (создает сложные паттерны)
+    if (types.type4) {
+        result = optimizeType4(result);
+        console.log('[Optimizer] После Type 4 (склонения):', result.length);
+    }
+    
+    console.log('[Optimizer] Финальный результат:', result.length, 'паттернов');
     
     return result;
 }
