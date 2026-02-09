@@ -374,9 +374,10 @@ button {
 }
 
 .textarea {
-    resize: vertical;
-    line-height: 1.8;
+    width: 100%;
     min-height: 100px;
+    resize: vertical; /* Позволяет растягивать вручную */
+    /* ... остальное */
 }
 
 .input::placeholder,
@@ -978,12 +979,31 @@ button {
    ВЫДЕЛЕНИЕ ТЕКСТА
    ============================================ */
 
-/* Разрешаем выделение текста везде */
-* {
-    user-select: text;
-    -webkit-user-select: text;
-    -moz-user-select: text;
-    -ms-user-select: text;
+/* Разрешаем выделение текста в полях ввода */
+input,
+textarea,
+input::placeholder,
+textarea::placeholder,
+.result-stats,
+.info-text,
+p,
+li,
+code,
+pre,
+span,
+div {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+    cursor: text;
+}
+
+/* Специально для textarea - убираем все ограничения */
+textarea,
+.textarea {
+    user-select: text !important;
+    -webkit-user-select: text !important;
 }
 
 /* Запрещаем выделение только для кнопок и UI элементов */
@@ -1001,5 +1021,38 @@ button,
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+}
+
+/* Стили для кнопок в группах */
+.group-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.btn-icon-sm {
+    font-size: 14px;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+}
+
+.btn-icon-warning {
+    background-color: #ff9800;
+    color: white;
+}
+
+.btn-icon-warning:hover {
+    background-color: #f57c00;
+}
+
+.btn-icon-danger {
+    background-color: #f44336;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.btn-icon-danger:hover {
+    background-color: #d32f2f;
 }
 
