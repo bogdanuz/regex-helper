@@ -134,13 +134,22 @@ function showToast(type, message, duration = 4000) {
         info: 'ℹ'
     };
 
+    // ИСПРАВЛЕНО: убрана inline функция onclick
     toast.innerHTML = `
         <span class="toast-icon">${icons[type] || 'ℹ'}</span>
         <span class="toast-message">${escapeHTML(message)}</span>
-        <button class="toast-close" onclick="closeToast('${toast.id}')">×</button>
+        <button class="toast-close">×</button>
     `;
 
     document.body.appendChild(toast);
+
+    // ИСПРАВЛЕНО: добавляем обработчик на кнопку закрытия
+    const closeButton = toast.querySelector('.toast-close');
+    if (closeButton) {
+        closeButton.addEventListener('click', () => {
+            closeToast(toast.id);
+        });
+    }
 
     // Автозакрытие
     const timeoutId = setTimeout(() => {
@@ -159,9 +168,23 @@ function showToast(type, message, duration = 4000) {
     });
 }
 
-// ============================================
-// ДОБАВЛЕНО: Функция showMessage()
-// ============================================
+/**
+ * Закрыть toast по ID
+ * @param {string} toastId - ID toast элемента
+ */
+function closeToast(toastId) {
+    const toast = document.getElementById(toastId);
+    if (!toast) return;
+    
+    // ИСПРАВЛЕНО: анимация slideOut → toastSlideOut
+    toast.style.animation = 'toastSlideOut 0.3s ease forwards';
+    
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+    }, 300);
+}
 
 /**
  * Показать сообщение через Toast (обертка над showToast)
@@ -195,24 +218,6 @@ function showMessage(type, messageKey, ...args) {
     
     showToast(type, message);
 }
-
-// ============================================
-// ИСПРАВЛЕНО: Строка ~75
-// ============================================
-
-function hideToast(toastElement) {
-    if (!toastElement) return;
-    
-    // ИСПРАВЛЕНО: slideOut → toastSlideOut
-    toastElement.style.animation = 'toastSlideOut 0.3s ease forwards';
-    
-    setTimeout(() => {
-        if (toastElement.parentNode) {
-            toastElement.parentNode.removeChild(toastElement);
-        }
-    }, 300);
-}
-
 
 /* ============================================
    INLINE ОШИБКИ
@@ -405,6 +410,7 @@ function logError(context, error) {
 
 window.showToast = showToast;
 window.closeToast = closeToast;
+window.showMessage = showMessage;
 window.showInlineError = showInlineError;
 window.clearInlineError = clearInlineError;
 window.clearAllInlineErrors = clearAllInlineErrors;
