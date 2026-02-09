@@ -426,12 +426,6 @@ function generateDeclensions(word) {
 
 /**
  * Оптимизация Type 4: Склонения русских слов
- * Генерирует regex с круглыми скобками и альтернацией для многобуквенных окончаний
- * 
- * @example
- * // Input: ["дрон"]
- * // Output: ["дрон(а|у|ом|е|ов|ам|ами|ах)"]
- * 
  * @param {Array} triggers - Массив триггеров
  * @returns {Array} - Оптимизированный массив
  */
@@ -444,7 +438,6 @@ function optimizeType4(triggers) {
     if (typeof RussianNouns === 'undefined' || 
         typeof RussianNouns.Engine !== 'function') {
         console.warn('[Optimizer Type 4] Библиотека RussianNouns недоступна. Type 4 пропущен.');
-        // Возвращаем триггеры с экранированием
         return triggers.map(t => escapeRegex(t));
     }
     
@@ -470,8 +463,6 @@ function optimizeType4(triggers) {
                     .map(word => word.slice(base.length))
                     .filter(s => s.length > 0);
                 
-                // ВАЖНО: используем круглые скобки (...|...) для многобуквенных окончаний
-                // Квадратные скобки [...] НЕ работают для окончаний типа "ом" (2+ буквы)!
                 if (suffixes.length > 0) {
                     // Удаляем дубликаты и сортируем по длине (длинные первыми)
                     const uniqueSuffixes = Array.from(new Set(suffixes))
@@ -480,7 +471,6 @@ function optimizeType4(triggers) {
                     const pattern = escapeRegex(base) + '(' + uniqueSuffixes.map(s => escapeRegex(s)).join('|') + ')';
                     result.push(pattern);
                 } else {
-                    // Если нет окончаний (все слова одинаковые), используем исходное
                     result.push(escapeRegex(trigger));
                 }
             } else {
@@ -497,7 +487,7 @@ function optimizeType4(triggers) {
 
 /* ============================================
    ТИП 5: ОПЦИОНАЛЬНЫЙ СИМВОЛ ?
-   пассивный, пасивный → пасс?ивный
+   пассивный → пасс?ивный (автоматически)
    ============================================ */
 
 /**
@@ -571,29 +561,25 @@ function findOptionalCharPosition(str1, str2) {
 
 /**
  * Оптимизация Type 5: Опциональный символ ?
- * Объединяет слова, отличающиеся на одну букву в любой позиции
  * 
- * ВАЖНО: Type 5 должен применяться ДО Type 4 (склонений)!
- * Причина: Type 5 работает с простыми триггерами. Если сначала применить Type 4,
- * триггер "дрон" превратится в "дрон(а|у|ом)", и Type 5 не сможет его обработать.
+ * НОВАЯ ЛОГИКА (v2.0):
+ * 1. Автоматически находит удвоенные буквы в словах (сс, мм, нн и т.д.)
+ * 2. Делает одну из букв опциональной: пассивный → пасс?ивный
+ * 3. Также находит пары слов, отличающиеся на одну букву (старая логика)
  * 
  * @example
- * // Input: ["пассивный", "пасивный"]
+ * // Input: ["пассивный"]
  * // Output: ["пасс?ивный"]
  * 
  * @example
  * // Input: ["алкоголь", "алкголь"]
  * // Output: ["алко?голь"]
  * 
- * @example
- * // Input: ["товар", "товарр"]
- * // Output: ["товарр?"] // последний символ опциональный
- * 
  * @param {Array} triggers - Массив триггеров
  * @returns {Array} - Оптимизированный массив
  */
 function optimizeType5(triggers) {
-    if (!Array.isArray(triggers) || triggers.length < 2) {
+    if (!Array.isArray(triggers) || triggers.length === 0) {
         return triggers;
     }
 
@@ -606,7 +592,34 @@ function optimizeType5(triggers) {
         const current = triggers[i];
         let foundPair = false;
 
-        // Ищем пару (отличие на 1 букву)
+        // ========================================
+        // НОВАЯ ЛОГИКА: Поиск удвоенных букв внутри слова
+        // ========================================
+        const doubleLetterMatch = current.match(/(.)\1/);
+        
+        if (doubleLetterMatch) {
+            // Найдена удвоенная буква
+            const doubleLetter = doubleLetterMatch[0]; // например "сс"
+            const singleLetter = doubleLetterMatch[1]; // например "с"
+            const position = current.indexOf(doubleLetter);
+            
+            // Создаем паттерн: делаем вторую букву опциональной
+            const before = escapeRegex(current.substring(0, position + 1));
+            const optionalChar = escapeRegex(singleLetter);
+            const after = escapeRegex(current.substring(position + 2));
+            
+            const pattern = before + optionalChar + '?' + after;
+            
+            console.log(`[Optimizer Type 5] Удвоенная буква найдена: "${current}" → "${pattern}"`);
+            
+            optimized.push(pattern);
+            foundPair = true;
+            continue;
+        }
+
+        // ========================================
+        // СТАРАЯ ЛОГИКА: Поиск пар слов (отличие на 1 букву)
+        // ========================================
         for (let j = i + 1; j < triggers.length; j++) {
             if (used.has(j)) continue;
 
@@ -629,6 +642,8 @@ function optimizeType5(triggers) {
 
                     const pattern = before + optionalChar + '?' + after;
 
+                    console.log(`[Optimizer Type 5] Пара найдена: "${current}", "${other}" → "${pattern}"`);
+
                     optimized.push(pattern);
                     used.add(j);
                     foundPair = true;
@@ -637,7 +652,7 @@ function optimizeType5(triggers) {
             }
         }
 
-        // Если не нашли пару, добавляем как есть
+        // Если не нашли ни пару, ни удвоенную букву, добавляем как есть
         if (!foundPair) {
             optimized.push(escapeRegex(current));
         }
@@ -652,17 +667,6 @@ function optimizeType5(triggers) {
 
 /**
  * Применить выбранные оптимизации
- * 
- * ВАЖНО: Порядок применения оптимизаций критичен!
- * 
- * 1. Type 3 (латиница ↔ кириллица) - применяется к исходным триггерам посимвольно
- * 2. Type 5 (опциональный ?) - ищет триггеры, отличающиеся на 1 букву
- * 3. Type 1 (повторы) - группирует триггеры с общим началом
- * 4. Type 2 (общий корень) - группирует триггеры с общим корнем и короткими окончаниями
- * 5. Type 4 (склонения) - генерирует все падежные формы (создает сложные паттерны)
- * 
- * Type 5 ДОЛЖЕН быть ДО Type 4, иначе он будет пытаться оптимизировать уже обработанные паттерны!
- * 
  * @param {Array} triggers - Массив триггеров
  * @param {Object} types - Объект с флагами { type1: bool, type2: bool, type3: bool, type4: bool, type5: bool }
  * @returns {Array} - Оптимизированный массив
@@ -778,7 +782,7 @@ function performConversionWithOptimizations(text, types, showWarnings = true) {
         
         // Предупреждение о дубликатах
         if (deduped.duplicatesCount > 0 && showWarnings) {
-            showMessage('warning', 'DUPLICATES_REMOVED', deduped.duplicatesCount);
+            showMessage('warning', 'DUPLICATES_FOUND', deduped.duplicatesCount);
         }
         
         // 4. Конвертация в regex с оптимизациями
