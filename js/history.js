@@ -103,7 +103,7 @@ function loadHistory() {
 function saveHistoryToStorage(history) {
     try {
         localStorage.setItem(HISTORY_CONFIG.STORAGE_KEY, JSON.stringify(history));
-        } catch (error) {
+    } catch (error) {
         console.error('Ошибка saveHistoryToStorage:', error);
         showToast('error', ERROR_MESSAGES.STORAGE_ERROR || 'Ошибка сохранения истории');
     }
@@ -147,7 +147,7 @@ function saveToHistory(regex, triggers, settings, info) {
         saveHistoryToStorage(history);
 
         console.log('✓ Конвертация сохранена в историю');
-       } catch (error) {
+    } catch (error) {
         console.error('Ошибка saveToHistory:', error);
     }
 }
@@ -166,7 +166,7 @@ function deleteFromHistory(id) {
         renderHistory();
         
         showToast('success', SUCCESS_MESSAGES.HISTORY_DELETED || 'Запись удалена');
-        } catch (error) {
+    } catch (error) {
         console.error('Ошибка deleteFromHistory:', error);
         showToast('error', ERROR_MESSAGES.UNKNOWN_ERROR || 'Ошибка удаления');
     }
@@ -200,6 +200,7 @@ function showHistoryModal() {
         modal.style.display = 'flex';
     }
 }
+
 /**
  * Закрыть модальное окно истории
  */
@@ -271,41 +272,33 @@ function renderHistory() {
     `).join('');
 }
 
-// ============================================
-// ИСПРАВЛЕНО: Строка ~262
-// ============================================
-
 /**
  * Загрузить запись из истории
- * @param {number} index - Индекс записи
+ * @param {number} id - ID записи (не индекс!)
  */
-function loadFromHistory(index) {
-    const history = loadHistory();
-    
-    if (index < 0 || index >= history.length) {
-        showToast('error', 'Запись не найдена');
-        return;
-    }
-    
-    const record = history[index];
-    
-    // Заполнить поле результата
-    // ИСПРАВЛЕНО: result → resultRegex
-    const resultTextarea = document.getElementById('resultRegex');
-    if (resultTextarea) {
-        resultTextarea.value = record.regex;
-    }
-    
-        // Закрытие модалки
-        const modal = document.getElementById('historyModal');
-        if (modal) {
-            modal.style.display = 'none';
+function loadFromHistory(id) {
+    try {
+        const history = loadHistory();
+        
+        // ИСПРАВЛЕНО: ищем по ID, а не по индексу
+        const entry = history.find(item => item.id === id);
+        
+        if (!entry) {
+            showToast('error', ERROR_MESSAGES.HISTORY_NOT_FOUND || 'Запись не найдена');
+            return;
         }
 
-        // Загрузка триггеров в textarea
+        // Закрытие модалки
+        closeHistoryModal();
+
+        // ИСПРАВЛЕНО: одно объявление resultTextarea
+        const resultTextarea = document.getElementById('resultRegex');
         const simpleTextarea = document.getElementById('simpleTriggers');
+
+        // Загрузка триггеров в textarea
         if (simpleTextarea) {
             simpleTextarea.value = entry.triggers.join('\n');
+            
             // Обновление счетчика
             if (typeof updateSimpleTriggerCount === 'function') {
                 updateSimpleTriggerCount();
@@ -323,7 +316,6 @@ function loadFromHistory(index) {
         }
 
         // Загрузка результата
-        const resultTextarea = document.getElementById('result');
         if (resultTextarea) {
             resultTextarea.value = entry.regex;
         }
@@ -337,7 +329,7 @@ function loadFromHistory(index) {
         }
 
         showToast('success', SUCCESS_MESSAGES.HISTORY_LOADED || 'Конвертация загружена');
-        } catch (error) {
+    } catch (error) {
         console.error('Ошибка loadFromHistory:', error);
         showToast('error', ERROR_MESSAGES.UNKNOWN_ERROR || 'Ошибка загрузки');
     }
@@ -354,10 +346,12 @@ function handleClearHistory() {
         return;
     }
 
+    // ИСПРАВЛЕНО: confirmAction с 4 параметрами
     confirmAction(
-        'Очистить всю историю?',
-        'Это действие нельзя отменить',
-        () => clearHistory()
+        'Подтверждение',
+        'Очистить всю историю? Это действие нельзя отменить.',
+        () => clearHistory(),
+        null
     );
 }
 
@@ -394,10 +388,9 @@ function truncateRegex(regex, maxLength = 80) {
 }
 
 // ============================================
-// ЭКСПОРТ (для использования в других модулях)
+// ЭКСПОРТ
 // ============================================
 
-// Функции доступны глобально через window
 window.initHistory = initHistory;
 window.saveToHistory = saveToHistory;
 window.loadFromHistory = loadFromHistory;
