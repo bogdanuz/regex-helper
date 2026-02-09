@@ -1023,6 +1023,96 @@ button,
     -ms-user-select: none;
 }
 
+/* ============================================
+   СВЯЗАННЫЕ ТРИГГЕРЫ - УЛУЧШЕННЫЕ СТИЛИ
+   ============================================ */
+
+.linked-group {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    background-color: #fafafa;
+}
+
+.linked-group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.linked-group-title {
+    font-weight: 600;
+    font-size: 1rem;
+    color: #333;
+}
+
+.group-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.linked-group-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.linked-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.linked-input {
+    flex: 1;
+}
+
+/* Кнопки в группе - компактные */
+.linked-group .btn-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.btn-icon-sm {
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 14px !important;
+}
+
+.btn-icon-warning {
+    background-color: #ff9800;
+    color: white;
+}
+
+.btn-icon-warning:hover {
+    background-color: #f57c00;
+}
+
+.btn-icon-danger {
+    background-color: #f44336;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.btn-icon-danger:hover {
+    background-color: #d32f2f;
+}
+
+/* Кнопка удаления поля - по правому краю */
+.linked-field .btn-icon {
+    margin-left: auto;
+}
+
 /* Стили для кнопок в группах */
 .group-actions {
     display: flex;
@@ -1056,3 +1146,73 @@ button,
     background-color: #d32f2f;
 }
 
+/* ============================================
+   МГНОВЕННЫЕ ПОДСКАЗКИ
+   ============================================ */
+
+/* Убираем задержку появления подсказок */
+button[title],
+.btn[title],
+.btn-icon[title],
+[title] {
+    position: relative;
+}
+
+/* Браузерные подсказки - мгновенно */
+* {
+    /* Для Firefox */
+    -moz-tooltip-delay: 0ms !important;
+}
+
+/* CSS подсказки (если используются) */
+button[title]:hover::after,
+.btn[title]:hover::after {
+    transition-delay: 0s !important;
+}
+
+/* ============================================
+   БЕЗОПАСНЫЕ ОТСТУПЫ МЕЖДУ ЭЛЕМЕНТАМИ
+   ============================================ */
+
+/* Отступы для всех основных элементов */
+.input-section {
+    margin-bottom: 20px;
+}
+
+.panel-body > * + * {
+    margin-top: 16px;
+}
+
+.linked-group + .linked-group {
+    margin-top: 15px;
+}
+
+/* Отступы внутри полей */
+.input-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+    padding-top: 8px;
+}
+
+/* Кнопки действий - отступы */
+.button-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+/* Отступы для результата */
+.result-info {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #e0e0e0;
+}
