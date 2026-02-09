@@ -1,223 +1,60 @@
-/**
- * ============================================
- * СИСТЕМА УВЕДОМЛЕНИЙ И ОШИБОК
- * ============================================
- * 
- * Управление Toast-уведомлениями, модальными окнами,
- * inline ошибками и диалогами подтверждения.
- * 
- * Зависимости: utils.js
- */
+/* ============================================
+   REGEXHELPER - ERRORS
+   Обработка ошибок и валидация
+   ============================================ */
 
 /* ============================================
-   ПУЛ СООБЩЕНИЙ
+   КОНСТАНТЫ СООБЩЕНИЙ
    ============================================ */
 
 const ERROR_MESSAGES = {
-    // Лимиты
-    TRIGGERS_LIMIT_SOFT: 'Внимание: более 200 триггеров может замедлить работу',
-    TRIGGERS_LIMIT_HARD: 'Превышен лимит триггеров (максимум 200)',
-    REGEX_LENGTH_LIMIT: 'Regex слишком длинный (максимум 10,000 символов)',
-    LINKED_GROUP_LIMIT: 'Максимум 9 триггеров в связанной группе',
+    // Общие ошибки
+    UNKNOWN_ERROR: 'Произошла неизвестная ошибка. Попробуйте перезагрузить страницу.',
+    BROWSER_NOT_SUPPORTED: 'Ваш браузер не поддерживается. Используйте современный браузер (Chrome, Firefox, Edge).',
     
-    // Валидация
-    EMPTY_TRIGGERS: 'Введите хотя бы один триггер',
-    EMPTY_LINKED_GROUP: 'Заполните все поля в связанной группе',
-    INVALID_REGEX: 'Некорректное регулярное выражение',
-    EMPTY_TEST_TEXT: 'Введите текст для тестирования',
-    EMPTY_REGEX_INPUT: 'Введите регулярное выражение',
+    // Ошибки триггеров
+    NO_TRIGGERS: 'Введите хотя бы один триггер',
+    TRIGGERS_LIMIT_EXCEEDED: `Превышен лимит триггеров. Максимум: ${LIMITS.MAX_TRIGGERS}`,
+    TRIGGER_TOO_SHORT: `Триггер слишком короткий. Минимум: ${LIMITS.MIN_TRIGGER_LENGTH} символа`,
+    TRIGGER_TOO_LONG: `Триггер слишком длинный. Максимум: ${LIMITS.MAX_TRIGGER_LENGTH} символов`,
+    INVALID_CHARACTERS: 'Триггер содержит недопустимые символы',
     
-    // Библиотеки
-    LIBRARY_LOAD_FAILED: 'Не удалось загрузить библиотеку',
-    LIBRARY_CDN_FAILED: 'CDN недоступен, используется локальная копия',
+    // Ошибки regex
+    REGEX_TOO_LONG: `Regex слишком длинный. Максимум: ${LIMITS.MAX_REGEX_LENGTH} символов`,
+    REGEX_INVALID: 'Неверный синтаксис regex',
     
-    // Браузер
-    BROWSER_NOT_SUPPORTED: 'Ваш браузер не поддерживается. Используйте Chrome 90+, Firefox 88+ или Safari 14+',
-    CLIPBOARD_NOT_SUPPORTED: 'Ваш браузер не поддерживает копирование в буфер',
+    // Ошибки связанных триггеров
+    LINKED_TRIGGERS_EMPTY: 'Оба поля связанных триггеров должны быть заполнены',
+    LINKED_DISTANCE_INVALID: 'Некорректное значение расстояния',
     
-    // localStorage
-    STORAGE_QUOTA_EXCEEDED: 'Превышен лимит хранилища браузера',
-    STORAGE_NOT_AVAILABLE: 'localStorage недоступен',
+    // Ошибки буфера обмена
+    CLIPBOARD_NOT_SUPPORTED: 'Копирование в буфер обмена не поддерживается вашим браузером',
     
-    // История
-    HISTORY_NOT_FOUND: 'Запись не найдена в истории',
-    STORAGE_ERROR: 'Ошибка сохранения в localStorage',
+    // Ошибки экспорта
+    EXPORT_FAILED: 'Не удалось экспортировать данные',
+    EXPORT_NO_DATA: 'Нет данных для экспорта',
     
-    // Общие
-    UNKNOWN_ERROR: 'Произошла неизвестная ошибка',
-    NETWORK_ERROR: 'Ошибка сети. Проверьте подключение к интернету'
+    // Ошибки истории
+    HISTORY_LOAD_FAILED: 'Не удалось загрузить историю',
+    
+    // Ошибки конвертации
+    CONVERSION_FAILED: 'Не удалось выполнить конвертацию'
 };
 
 const WARNING_MESSAGES = {
-    // Дубликаты
-    DUPLICATES_REMOVED: (count) => `Удалено дубликатов: ${count}`,
-    
-    // Перестановки
-    PERMUTATIONS_WARNING: (count) => `Будет создано ${count} перестановок. Это может замедлить работу.`,
-    PERMUTATIONS_TOO_MANY: 'Слишком много перестановок (более 720). Рекомендуем уменьшить количество триггеров.',
-    
-    // Оптимизация
-    NO_OPTIMIZATIONS: 'Оптимизации не применены - выберите хотя бы один тип',
-    
-    // История
-    HISTORY_CLEARED: 'История очищена',
-    OLD_ENTRIES_REMOVED: (count) => `Удалено устаревших записей: ${count}`
+    NO_OPTIMIZATIONS: 'Не выбрана ни одна оптимизация. Regex будет создан без оптимизаций.',
+    DUPLICATES_FOUND: 'Найдены дубликаты триггеров. Они будут удалены автоматически.',
+    REGEX_LENGTH_WARNING: 'Regex приближается к максимальной длине',
+    PERMUTATIONS_TOO_MANY: 'Большое количество перестановок может замедлить работу приложения'
 };
 
 const SUCCESS_MESSAGES = {
-    // Копирование
-    COPIED_TO_CLIPBOARD: 'Скопировано в буфер обмена',
-    
-    // Экспорт
-    EXPORTED_TXT: 'Файл TXT успешно скачан',
-    EXPORTED_JSON: 'Файл JSON успешно скачан',
-    EXPORTED_CSV: 'Файл CSV успешно скачан',
-    
-    // Конвертация
-    CONVERSION_SUCCESS: 'Regex успешно создан',
-    
-    // История
-    LOADED_FROM_HISTORY: 'Загружено из истории',
-    HISTORY_LOADED: 'Конвертация загружена из истории',
-    HISTORY_DELETED: 'Запись удалена из истории',
+    CONVERSION_SUCCESS: 'Regex успешно создан!',
+    COPIED_TO_CLIPBOARD: 'Regex скопирован в буфер обмена',
+    EXPORTED_SUCCESS: 'Данные успешно экспортированы',
     HISTORY_CLEARED: 'История очищена',
-    
-    // Визуализация
-    VISUALIZATION_SUCCESS: 'Диаграмма успешно создана',
-    
-    // Тестирование
-    TEST_COMPLETE: (count) => `Найдено совпадений: ${count}`,
-    
-    // Обратная конвертация
-    REVERSE_SUCCESS: (count) => `Извлечено триггеров: ${count}`,
-    
-    // Сброс
-    RESET_SUCCESS: 'Все данные очищены'
+    SETTINGS_SAVED: 'Настройки сохранены'
 };
-
-const INFO_MESSAGES = {
-    LOADING: 'Загрузка...',
-    PROCESSING: 'Обработка...',
-    PLEASE_WAIT: 'Пожалуйста, подождите',
-    HISTORY_EMPTY: 'История пуста'
-};
-
-/* ============================================
-   TOAST-УВЕДОМЛЕНИЯ
-   ============================================ */
-
-let toastCounter = 0;
-
-/**
- * Показать toast-уведомление
- * @param {string} type - Тип: 'success', 'error', 'warning', 'info'
- * @param {string} message - Текст сообщения
- * @param {number} duration - Длительность в мс (по умолчанию 4000)
- */
-function showToast(type, message, duration = 4000) {
-    // Удаляем предыдущий toast если есть
-    const existingToast = document.querySelector('.toast');
-    if (existingToast) {
-        existingToast.remove();
-    }
-
-    // Создаем новый toast
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    toast.id = `toast-${++toastCounter}`;
-
-    // Иконки для разных типов
-    const icons = {
-        success: '✓',
-        error: '✕',
-        warning: '⚠',
-        info: 'ℹ'
-    };
-
-    // ИСПРАВЛЕНО: убрана inline функция onclick
-    toast.innerHTML = `
-        <span class="toast-icon">${icons[type] || 'ℹ'}</span>
-        <span class="toast-message">${escapeHTML(message)}</span>
-        <button class="toast-close">×</button>
-    `;
-
-    document.body.appendChild(toast);
-
-    // ИСПРАВЛЕНО: добавляем обработчик на кнопку закрытия
-    const closeButton = toast.querySelector('.toast-close');
-    if (closeButton) {
-        closeButton.addEventListener('click', () => {
-            closeToast(toast.id);
-        });
-    }
-
-    // Автозакрытие
-    const timeoutId = setTimeout(() => {
-        closeToast(toast.id);
-    }, duration);
-
-    // Пауза при наведении
-    toast.addEventListener('mouseenter', () => {
-        clearTimeout(timeoutId);
-    });
-
-    toast.addEventListener('mouseleave', () => {
-        setTimeout(() => {
-            closeToast(toast.id);
-        }, 1000);
-    });
-}
-
-/**
- * Закрыть toast по ID
- * @param {string} toastId - ID toast элемента
- */
-function closeToast(toastId) {
-    const toast = document.getElementById(toastId);
-    if (!toast) return;
-    
-    // ИСПРАВЛЕНО: анимация slideOut → toastSlideOut
-    toast.style.animation = 'toastSlideOut 0.3s ease forwards';
-    
-    setTimeout(() => {
-        if (toast.parentNode) {
-            toast.parentNode.removeChild(toast);
-        }
-    }, 300);
-}
-
-/**
- * Показать сообщение через Toast (обертка над showToast)
- * @param {string} type - Тип (success, error, warning, info)
- * @param {string} messageKey - Ключ из констант (SUCCESS_MESSAGES, ERROR_MESSAGES, etc.)
- * @param {...any} args - Аргументы для подстановки в плейсхолдеры {0}, {1}, etc.
- */
-function showMessage(type, messageKey, ...args) {
-    let message = '';
-    
-    // Поиск сообщения в константах
-    if (type === 'success' && SUCCESS_MESSAGES[messageKey]) {
-        message = SUCCESS_MESSAGES[messageKey];
-    } else if (type === 'error' && ERROR_MESSAGES[messageKey]) {
-        message = ERROR_MESSAGES[messageKey];
-    } else if (type === 'warning' && WARNING_MESSAGES[messageKey]) {
-        message = WARNING_MESSAGES[messageKey];
-    } else if (type === 'info' && INFO_MESSAGES[messageKey]) {
-        message = INFO_MESSAGES[messageKey];
-    } else {
-        // Fallback: использовать ключ как есть
-        message = messageKey;
-    }
-    
-    // Подстановка аргументов (если есть плейсхолдеры {0}, {1})
-    if (args.length > 0) {
-        message = message.replace(/\{(\d+)\}/g, (match, index) => {
-            return args[index] !== undefined ? args[index] : match;
-        });
-    }
-    
-    showToast(type, message);
-}
 
 /* ============================================
    INLINE ОШИБКИ
@@ -225,43 +62,59 @@ function showMessage(type, messageKey, ...args) {
 
 /**
  * Показать inline ошибку под полем
- * @param {string} fieldId - ID поля ввода
- * @param {string|Array} messages - Сообщение или массив сообщений
+ * @param {string} fieldId - ID поля
+ * @param {string} message - Текст ошибки
  */
-function showInlineError(fieldId, messages) {
+function showInlineError(fieldId, message) {
     const field = document.getElementById(fieldId);
-    if (!field) return;
-
-    clearInlineError(fieldId);
-
-    field.classList.add('input-error');
-
-    const errorDiv = document.createElement('div');
-    errorDiv.className = 'error-message';
-    errorDiv.id = `${fieldId}-error`;
-
-    if (Array.isArray(messages)) {
-        errorDiv.innerHTML = messages.map(msg => escapeHTML(msg)).join('<br>');
-    } else {
-        errorDiv.textContent = messages;
+    
+    if (!field) {
+        console.error('[Errors] Поле не найдено:', fieldId);
+        return;
     }
-
-    field.parentNode.insertBefore(errorDiv, field.nextSibling);
+    
+    // Удаляем старую ошибку если есть
+    clearInlineError(fieldId);
+    
+    // Добавляем класс ошибки к полю
+    field.classList.add('input-error');
+    
+    // Создаем элемент ошибки
+    const errorEl = document.createElement('div');
+    errorEl.className = 'inline-error';
+    errorEl.id = `${fieldId}-error`;
+    errorEl.textContent = message;
+    errorEl.style.cssText = `
+        color: #F44336;
+        font-size: 13px;
+        margin-top: 5px;
+        padding: 8px 12px;
+        background: #FFEBEE;
+        border-left: 3px solid #F44336;
+        border-radius: 4px;
+        animation: slideDown 0.3s ease;
+    `;
+    
+    // Вставляем после поля
+    field.parentElement.insertBefore(errorEl, field.nextSibling);
+    
+    console.log('[Errors] Inline ошибка показана:', fieldId, message);
 }
 
 /**
  * Очистить inline ошибку
- * @param {string} fieldId - ID поля ввода
+ * @param {string} fieldId - ID поля
  */
 function clearInlineError(fieldId) {
     const field = document.getElementById(fieldId);
-    if (!field) return;
-
-    field.classList.remove('input-error');
-
-    const errorDiv = document.getElementById(`${fieldId}-error`);
-    if (errorDiv) {
-        errorDiv.remove();
+    const errorEl = document.getElementById(`${fieldId}-error`);
+    
+    if (field) {
+        field.classList.remove('input-error');
+    }
+    
+    if (errorEl) {
+        errorEl.remove();
     }
 }
 
@@ -269,126 +122,192 @@ function clearInlineError(fieldId) {
  * Очистить все inline ошибки
  */
 function clearAllInlineErrors() {
-    document.querySelectorAll('.input-error').forEach(field => {
-        field.classList.remove('input-error');
-    });
-
-    document.querySelectorAll('.error-message').forEach(msg => {
-        msg.remove();
-    });
+    const errorEls = document.querySelectorAll('.inline-error');
+    const errorFields = document.querySelectorAll('.input-error');
+    
+    errorEls.forEach(el => el.remove());
+    errorFields.forEach(field => field.classList.remove('input-error'));
 }
 
 /* ============================================
-   МОДАЛЬНЫЕ ОКНА
+   TOAST УВЕДОМЛЕНИЯ
    ============================================ */
 
 /**
- * Показать модальное окно
- * @param {string} modalId - ID модального окна
+ * Показать toast уведомление
+ * @param {string} type - Тип: 'success', 'error', 'warning', 'info'
+ * @param {string} message - Текст сообщения
+ * @param {number} duration - Длительность показа (мс)
  */
-function showModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (!modal) return;
-
-    modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-
-    const closeButtons = modal.querySelectorAll('.modal-close');
-    closeButtons.forEach(btn => {
-        btn.onclick = () => closeModal(modalId);
-    });
-
-    modal.onclick = (e) => {
-        if (e.target === modal) {
-            closeModal(modalId);
-        }
+function showToast(type, message, duration = 4000) {
+    // Создаем контейнер для toast если его нет
+    let container = document.getElementById('toastContainer');
+    
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        `;
+        document.body.appendChild(container);
+    }
+    
+    // Цвета для разных типов
+    const colors = {
+        success: { bg: '#4CAF50', icon: '✓' },
+        error: { bg: '#F44336', icon: '✕' },
+        warning: { bg: '#FF9800', icon: '⚠' },
+        info: { bg: '#2196F3', icon: 'ℹ' }
     };
-
-    const handleEscape = (e) => {
-        if (e.key === 'Escape') {
-            closeModal(modalId);
-            document.removeEventListener('keydown', handleEscape);
-        }
+    
+    const color = colors[type] || colors.info;
+    
+    // Создаем toast элемент
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.style.cssText = `
+        background: ${color.bg};
+        color: white;
+        padding: 14px 20px;
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 300px;
+        max-width: 500px;
+        font-size: 14px;
+        pointer-events: auto;
+        animation: slideInRight 0.3s ease;
+        cursor: pointer;
+    `;
+    
+    toast.innerHTML = `
+        <span style="font-size: 18px; font-weight: bold;">${color.icon}</span>
+        <span style="flex: 1;">${message}</span>
+    `;
+    
+    // Клик для закрытия
+    toast.onclick = () => {
+        toast.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
     };
-
-    document.addEventListener('keydown', handleEscape);
+    
+    container.appendChild(toast);
+    
+    // Автоматическое удаление
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.style.animation = 'slideOutRight 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }
+    }, duration);
+    
+    console.log(`[Toast] ${type.toUpperCase()}: ${message}`);
 }
 
 /**
- * Закрыть модальное окно
- * @param {string} modalId - ID модального окна
+ * Показать сообщение по ключу
+ * @param {string} type - Тип: 'success', 'error', 'warning', 'info'
+ * @param {string} messageKey - Ключ сообщения
+ * @param {any} params - Параметры для подстановки
  */
-function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (!modal) return;
-
-    modal.style.display = 'none';
-    document.body.style.overflow = '';
+function showMessage(type, messageKey, params = null) {
+    let message = null;
+    
+    if (type === 'error') {
+        message = ERROR_MESSAGES[messageKey];
+    } else if (type === 'warning') {
+        message = WARNING_MESSAGES[messageKey];
+    } else if (type === 'success') {
+        message = SUCCESS_MESSAGES[messageKey];
+    }
+    
+    if (!message) {
+        console.error('[Errors] Сообщение не найдено:', messageKey);
+        return;
+    }
+    
+    // Подстановка параметров
+    if (params !== null) {
+        message = message.replace('{0}', params);
+    }
+    
+    showToast(type, message);
 }
 
 /* ============================================
-   ДИАЛОГИ ПОДТВЕРЖДЕНИЯ
+   МОДАЛЬНЫЕ ОКНА ПОДТВЕРЖДЕНИЯ
    ============================================ */
 
 /**
- * Показать диалог подтверждения
+ * Универсальная функция подтверждения действия
  * @param {string} title - Заголовок
  * @param {string} message - Сообщение
  * @param {Function} onConfirm - Callback при подтверждении
- * @param {Function} onCancel - Callback при отмене
+ * @param {Function} onCancel - Callback при отмене (опционально)
  */
 function confirmAction(title, message, onConfirm, onCancel) {
-    const modalId = 'confirmModal';
-    let modal = document.getElementById(modalId);
-
-    if (!modal) {
-        modal = document.createElement('div');
-        modal.id = modalId;
-        modal.className = 'modal-overlay';
-        modal.innerHTML = `
-            <div class="modal-content" style="max-width: 400px;">
-                <div class="modal-header">
-                    <h2 class="modal-title" id="confirmTitle"></h2>
-                </div>
-                <div class="modal-body">
-                    <p id="confirmMessage"></p>
-                </div>
-                <div class="modal-footer" style="display: flex; gap: 12px; justify-content: center;">
-                    <button class="btn btn-secondary" id="confirmCancel">Отмена</button>
-                    <button class="btn btn-danger" id="confirmOk">Подтвердить</button>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(modal);
-    }
-
-    document.getElementById('confirmTitle').textContent = title;
-    document.getElementById('confirmMessage').textContent = message;
-
-    const closeConfirm = () => {
-        modal.style.display = 'none';
-        document.body.style.overflow = '';
-    };
-
-    document.getElementById('confirmOk').onclick = () => {
-        closeConfirm();
-        if (onConfirm) onConfirm();
-    };
-
-    document.getElementById('confirmCancel').onclick = () => {
-        closeConfirm();
-        if (onCancel) onCancel();
-    };
-
-    modal.onclick = (e) => {
-        if (e.target === modal) {
-            closeConfirm();
-            if (onCancel) onCancel();
+    const modal = document.getElementById('confirmModal');
+    const titleEl = document.getElementById('confirmModalTitle');
+    const textEl = document.getElementById('confirmModalText');
+    const yesBtn = document.getElementById('confirmModalYes');
+    const noBtn = document.getElementById('confirmModalNo');
+    
+    // ИСПРАВЛЕНИЕ: проверяем наличие всех элементов
+    if (!modal || !titleEl || !textEl || !yesBtn || !noBtn) {
+        console.error('[confirmAction] Модальное окно или его элементы не найдены');
+        // Если модалка не найдена, используем стандартный confirm
+        if (window.confirm(message)) {
+            if (typeof onConfirm === 'function') {
+                onConfirm();
+            }
+        } else {
+            if (typeof onCancel === 'function') {
+                onCancel();
+            }
         }
-    };
-
+        return;
+    }
+    
+    // Устанавливаем текст
+    titleEl.textContent = title || 'Подтверждение';
+    textEl.textContent = message || 'Вы уверены?';
+    
+    // Показываем модальное окно
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
+    
+    // Удаляем старые обработчики
+    const newYesBtn = yesBtn.cloneNode(true);
+    const newNoBtn = noBtn.cloneNode(true);
+    yesBtn.parentNode.replaceChild(newYesBtn, yesBtn);
+    noBtn.parentNode.replaceChild(newNoBtn, noBtn);
+    
+    // Обработчик кнопки "Да"
+    newYesBtn.onclick = () => {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+        if (typeof onConfirm === 'function') {
+            onConfirm();
+        }
+    };
+    
+    // Обработчик кнопки "Отмена"
+    newNoBtn.onclick = () => {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+        if (typeof onCancel === 'function') {
+            onCancel();
+        }
+    };
 }
 
 /* ============================================
@@ -396,32 +315,19 @@ function confirmAction(title, message, onConfirm, onCancel) {
    ============================================ */
 
 /**
- * Логирование ошибки в консоль
+ * Логирование ошибки с контекстом
  * @param {string} context - Контекст ошибки
  * @param {Error} error - Объект ошибки
  */
 function logError(context, error) {
-    console.error(`[${context}]`, error);
+    console.error(`[Error] ${context}:`, error);
+    
+    // Можно добавить отправку на сервер логов
+    // sendErrorToServer(context, error);
 }
 
 /* ============================================
    ЭКСПОРТ
    ============================================ */
-
-window.showToast = showToast;
-window.closeToast = closeToast;
-window.showMessage = showMessage;
-window.showInlineError = showInlineError;
-window.clearInlineError = clearInlineError;
-window.clearAllInlineErrors = clearAllInlineErrors;
-window.showModal = showModal;
-window.closeModal = closeModal;
-window.confirmAction = confirmAction;
-window.logError = logError;
-
-window.SUCCESS_MESSAGES = SUCCESS_MESSAGES;
-window.ERROR_MESSAGES = ERROR_MESSAGES;
-window.WARNING_MESSAGES = WARNING_MESSAGES;
-window.INFO_MESSAGES = INFO_MESSAGES;
 
 console.log('✓ Модуль errors.js загружен');
