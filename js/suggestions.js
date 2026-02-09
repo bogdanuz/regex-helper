@@ -192,9 +192,41 @@ function getGlobalOptimizationStates() {
    ============================================ */
 
 /**
+ * Очистка устаревших настроек триггеров
+ * Удаляет настройки для триггеров, которых больше нет в поле ввода
+ */
+function cleanupStaleSettings() {
+    const textarea = document.getElementById('simpleTriggers');
+    if (!textarea) return;
+    
+    const currentTriggers = parseSimpleTriggers(textarea.value);
+    const currentTriggerSet = new Set(currentTriggers);
+    
+    // Удаляем настройки для триггеров, которых больше нет
+    const toRemove = [];
+    triggerSettings.forEach((settings, trigger) => {
+        if (!currentTriggerSet.has(trigger)) {
+            toRemove.push(trigger);
+        }
+    });
+    
+    toRemove.forEach(trigger => {
+        triggerSettings.delete(trigger);
+        console.log('[Suggestions] Удалены устаревшие настройки для:', trigger);
+    });
+    
+    if (toRemove.length > 0) {
+        saveTriggerSettings();
+    }
+}
+
+/**
  * Обновление UI textarea с кнопками настроек
  */
 function updateTriggerSettingsUI() {
+    // Очистка устаревших настроек
+    cleanupStaleSettings();
+    
     const textarea = document.getElementById('simpleTriggers');
     if (!textarea) return;
     
@@ -302,10 +334,13 @@ function openTriggerSettingsModal(trigger) {
     
     // Показываем модальное окно
     modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
     
     // Обработчик кнопки "Применить"
     const applyBtn = document.getElementById('applyTriggerSettingsBtn');
     if (applyBtn) {
+        // Удаляем старые обработчики
+        applyBtn.onclick = null;
         applyBtn.onclick = () => {
             const newSettings = {
                 type1: document.getElementById('triggerOptType1')?.checked || false,
@@ -317,26 +352,54 @@ function openTriggerSettingsModal(trigger) {
             
             setTriggerSettings(trigger, newSettings);
             closeModal('triggerSettingsModal');
-            updateTriggerSettingsUI();
+            
+            // Обновляем UI после закрытия модалки
+            setTimeout(() => {
+                updateTriggerSettingsUI();
+            }, 100);
+            
             showToast('success', `Настройки применены для "${trigger}"`);
         };
     }
     
-    // НОВОЕ: Обработчик кнопки "Сбросить настройки"
+    // Обработчик кнопки "Сбросить настройки"
     const resetBtn = document.getElementById('resetTriggerSettingsBtn');
     if (resetBtn) {
+        // Удаляем старые обработчики
+        resetBtn.onclick = null;
         resetBtn.onclick = () => {
-            confirmAction(
-                'Подтверждение',
-                `Сбросить индивидуальные настройки для "${trigger}"? Будут использоваться глобальные настройки.`,
-                () => {
+            // Проверяем наличие confirmAction
+            if (typeof confirmAction !== 'function') {
+                // Если нет - используем стандартный confirm
+                if (window.confirm(`Сбросить индивидуальные настройки для "${trigger}"?`)) {
                     removeTriggerSettings(trigger);
                     closeModal('triggerSettingsModal');
-                    updateTriggerSettingsUI();
+                    
+                    // Обновляем UI после закрытия модалки
+                    setTimeout(() => {
+                        updateTriggerSettingsUI();
+                    }, 100);
+                    
                     showToast('info', `Настройки сброшены для "${trigger}"`);
-                },
-                null
-            );
+                }
+            } else {
+                confirmAction(
+                    'Подтверждение',
+                    `Сбросить индивидуальные настройки для "${trigger}"? Будут использоваться глобальные настройки.`,
+                    () => {
+                        removeTriggerSettings(trigger);
+                        closeModal('triggerSettingsModal');
+                        
+                        // Обновляем UI после закрытия модалки
+                        setTimeout(() => {
+                            updateTriggerSettingsUI();
+                        }, 100);
+                        
+                        showToast('info', `Настройки сброшены для "${trigger}"`);
+                    },
+                    null
+                );
+            }
         };
     }
 }
