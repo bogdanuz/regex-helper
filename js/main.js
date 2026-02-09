@@ -189,12 +189,21 @@ function setupTriggerCounters() {
     
     if (simpleTextarea) {
         // Debounce для оптимизации (300ms задержка)
-        const debouncedUpdate = debounce(updateSimpleTriggerCount, 300);
+        const debouncedUpdate = debounce(() => {
+            updateSimpleTriggerCount();
+            // ДОБАВЛЕНО: Обновляем UI индивидуальных настроек
+            if (typeof updateTriggerSettingsUI === 'function') {
+                updateTriggerSettingsUI();
+            }
+        }, 300);
         
         simpleTextarea.addEventListener('input', debouncedUpdate);
         
         // Начальное обновление
         updateSimpleTriggerCount();
+        if (typeof updateTriggerSettingsUI === 'function') {
+            updateTriggerSettingsUI();
+        }
     }
     
     console.log('[Main] Счетчики триггеров настроены');
@@ -265,20 +274,18 @@ function handleConvert() {
 
         let text = simpleTextarea.value;
 
-        // ИСПРАВЛЕНО: обработка пустых строк (было '\\n', стало '\n')
-        if (text && text.includes('\n')) {
+        // Обработка пустых строк
+        if (text && text.includes('\\n')) {
             const lines = text
-                .split('\n')
+                .split('\\n')
                 .map(line => line.trim())
                 .filter(line => line.length > 0);
             
-            // ДОБАВЛЕНО: проверка, что остались строки
             if (lines.length === 0) {
-                // Все строки были пустыми - очищаем поле
                 simpleTextarea.value = '';
                 text = '';
             } else {
-                text = lines.join('\n');
+                text = lines.join('\\n');
                 simpleTextarea.value = text;
             }
         }
@@ -292,30 +299,64 @@ function handleConvert() {
             return;
         }
 
-        // Настройки оптимизаций
-        const optimizations = getSelectedOptimizations();
-        const hasOptimizations = hasAnyOptimization();
-
-        let result = null;
         let regex = '';
+        let allTriggersProcessed = 0;
+        let totalDuplicatesRemoved = 0;
 
-        // Конвертация простых триггеров
+        // ========================================
+        // КОНВЕРТАЦИЯ ПРОСТЫХ ТРИГГЕРОВ
+        // ========================================
         if (hasSimple) {
-            if (hasOptimizations) {
-                result = performConversionWithOptimizations(text, optimizations, true);
-            } else {
-                result = performConversion(text, true);
-            }
-
-            if (!result || !result.success) {
-                console.error('[Main] Конвертация не удалась:', result && result.info);
-                return;
-            }
-
-            regex = result.regex;
+            // Получаем глобальные настройки оптимизаций
+            const globalTypes = getGlobalOptimizationStates();
+            
+            // Парсим триггеры
+            const triggers = parseSimpleTriggers(text);
+            
+            // ГРУППА 5: Применяем индивидуальные или глобальные настройки для каждого триггера
+            const triggersWithSettings = triggers.map(trigger => ({
+                text: trigger,
+                types: getEffectiveSettings(trigger, globalTypes)
+            }));
+            
+            // Группируем триггеры по настройкам
+            const groups = new Map();
+            
+            triggersWithSettings.forEach(item => {
+                const key = JSON.stringify(item.types);
+                if (!groups.has(key)) {
+                    groups.set(key, []);
+                }
+                groups.get(key).push(item.text);
+            });
+            
+            console.log(`[Main] Триггеры разделены на ${groups.size} групп по настройкам`);
+            
+            // Конвертируем каждую группу отдельно
+            const regexParts = [];
+            
+            groups.forEach((triggerList, typesKey) => {
+                const types = JSON.parse(typesKey);
+                const groupText = triggerList.join('\n');
+                
+                console.log(`[Main] Конвертация группы: ${triggerList.length} триггеров с настройками:`, types);
+                
+                const result = performConversionWithOptimizations(groupText, types, false);
+                
+                if (result.success && result.regex) {
+                    regexParts.push(result.regex);
+                    allTriggersProcessed += result.info.finalCount || triggerList.length;
+                    totalDuplicatesRemoved += result.info.duplicatesRemoved || 0;
+                }
+            });
+            
+            // Объединяем все части
+            regex = regexParts.join('|');
         }
 
-        // Добавляем перестановки связанных триггеров, если есть
+        // ========================================
+        // ДОБАВЛЯЕМ СВЯЗАННЫЕ ТРИГГЕРЫ
+        // ========================================
         if (hasLinked) {
             const permutations = generateLinkedPermutations();
             const permutationCount = countLinkedPermutations();
@@ -333,10 +374,16 @@ function handleConvert() {
             console.log(`[Main] Добавлено ${permutationCount} перестановок`);
         }
 
+        // Проверка итогового regex
+        if (!regex) {
+            showToast('error', 'Не удалось создать regex');
+            return;
+        }
+
         // Установить результат
         resultTextarea.value = regex;
         
-        // ДОБАВЛЕНО: Обновляем счетчик длины
+        // Обновляем счетчик длины
         const regexLengthSpan = document.getElementById('regexLength');
         if (regexLengthSpan) {
             const length = regex.length;
@@ -353,20 +400,31 @@ function handleConvert() {
         }
 
         // Обновляем статистику
-        if (result) {
-            updateResultStats(result);
+        const statsDiv = document.getElementById('resultStats');
+        if (statsDiv) {
+            let html = '<div class="result-stats-content">';
+            html += `<span>Триггеров обработано: ${allTriggersProcessed}</span>`;
+            
+            if (totalDuplicatesRemoved > 0) {
+                html += `<span>Дубликатов удалено: ${totalDuplicatesRemoved}</span>`;
+            }
+            
+            html += `<span>Длина regex: ${regex.length}</span>`;
+            html += `<span class="stats-highlight">✓ Оптимизации применены</span>`;
+            html += '</div>';
+            
+            statsDiv.innerHTML = html;
+            statsDiv.style.display = 'block';
         }
 
         // Подготовка массива всех триггеров для истории
         let allTriggers = [];
         try {
-            // Простые триггеры
             if (text && hasSimple) {
                 const simpleTriggers = parseSimpleTriggers(text);
                 allTriggers = allTriggers.concat(simpleTriggers);
             }
 
-            // Связанные триггеры
             if (hasLinked && typeof generateLinkedPermutations === 'function') {
                 const linkedStrings = generateLinkedPermutations();
                 allTriggers = allTriggers.concat(linkedStrings);
@@ -378,11 +436,11 @@ function handleConvert() {
         // Сохранение в историю
         try {
             if (regex && Array.isArray(allTriggers) && allTriggers.length > 0) {
-                const selectedSettings = getSelectedOptimizations ? getSelectedOptimizations() : {};
-                // result может быть null, поэтому info защитим
-                const info = result && result.info ? result.info : {
-                    triggerCount: allTriggers.length,
-                    regexLength: regex.length
+                const selectedSettings = getGlobalOptimizationStates();
+                const info = {
+                    triggerCount: allTriggersProcessed,
+                    regexLength: regex.length,
+                    duplicatesRemoved: totalDuplicatesRemoved
                 };
                 saveToHistory(regex, allTriggers, selectedSettings, info);
             }
@@ -400,37 +458,6 @@ function handleConvert() {
     }
 }
 
-/**
- * Обновить статистику результата
- * @param {Object} result - Результат конвертации
- */
-function updateResultStats(result) {
-    const statsDiv = document.getElementById('resultStats');
-    
-    if (!statsDiv) return;
-    
-    const info = result.info;
-    
-    let html = '<div class="result-stats-content">';
-    html += `<span>Триггеров: ${info.finalCount}</span>`;
-    
-    if (info.duplicatesRemoved > 0) {
-        html += `<span>Дубликатов удалено: ${info.duplicatesRemoved}</span>`;
-    }
-    
-    html += `<span>Длина regex: ${info.regexLength}</span>`;
-    
-    if (info.optimizationsApplied) {
-        html += `<span class="stats-highlight">✓ Оптимизации применены</span>`;
-    }
-    
-    html += '</div>';
-    
-    statsDiv.innerHTML = html;
-    statsDiv.style.display = 'block';
-    statsDiv.classList.add('visible');
-}
-
 /* ============================================
    ОБРАБОТЧИК СБРОСА
    ============================================ */
@@ -439,7 +466,6 @@ function updateResultStats(result) {
  * Обработчик кнопки "Сбросить всё"
  */
 function handleReset() {
-    // ИСПРАВЛЕНО: confirmAction с 4 параметрами
     confirmAction(
         'Подтверждение',
         'Вы уверены, что хотите очистить все данные? Это действие нельзя отменить.',
@@ -474,6 +500,16 @@ function handleReset() {
             // Очистка связанных триггеров
             if (typeof clearAllLinkedGroups === 'function') {
                 clearAllLinkedGroups();
+            }
+            
+            // ДОБАВЛЕНО: Очистка индивидуальных настроек триггеров
+            if (typeof clearAllTriggerSettings === 'function') {
+                clearAllTriggerSettings();
+            }
+            
+            // ДОБАВЛЕНО: Обновляем UI кнопок настроек
+            if (typeof updateTriggerSettingsUI === 'function') {
+                updateTriggerSettingsUI();
             }
             
             // Очистка inline ошибок
@@ -550,7 +586,6 @@ function clearSimpleTriggers() {
     if (!textarea) return;
     
     if (textarea.value.trim()) {
-        // ИСПРАВЛЕНО: confirmAction с 4 параметрами
         confirmAction(
             'Подтверждение',
             'Очистить поле простых триггеров?',
@@ -558,6 +593,12 @@ function clearSimpleTriggers() {
                 textarea.value = '';
                 clearInlineError('simpleTriggers');
                 updateSimpleTriggerCount();
+                
+                // ДОБАВЛЕНО: Обновляем UI кнопок настроек
+                if (typeof updateTriggerSettingsUI === 'function') {
+                    updateTriggerSettingsUI();
+                }
+                
                 showToast('info', 'Поле очищено');
             },
             null
@@ -575,7 +616,6 @@ function clearResultRegex() {
     if (!textarea) return;
     
     if (textarea.value.trim()) {
-        // ИСПРАВЛЕНО: confirmAction с 4 параметрами
         confirmAction(
             'Подтверждение',
             'Очистить результат?',
