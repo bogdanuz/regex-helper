@@ -92,11 +92,11 @@ function getSelectedOptimizations() {
     };
     
     const checkboxes = {
-        type1: document.getElementById('optType1'),
-        type2: document.getElementById('optType2'),
-        type3: document.getElementById('optType3'),
-        type4: document.getElementById('optType4')
-    };
+    type1: document.getElementById('type1'),
+    type2: document.getElementById('type2'),
+    type4: document.getElementById('type4'),
+    type5: document.getElementById('type5')
+};
     
     for (let type in checkboxes) {
         const checkbox = checkboxes[type];
