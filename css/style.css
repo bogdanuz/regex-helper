@@ -1216,3 +1216,112 @@ button[title]:hover::after,
     padding-top: 12px;
     border-top: 1px solid #e0e0e0;
 }
+
+/* ============================================
+   ИСТОРИЯ КОНВЕРТАЦИЙ
+   ============================================ */
+
+/* Список истории */
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+/* Карточка записи */
+.history-item {
+    background: var(--gray-50);
+    border: 2px solid var(--gray-200);
+    border-radius: 8px;
+    padding: 16px;
+    transition: all 0.2s ease;
+}
+
+.history-item:hover {
+    border-color: var(--primary);
+    background: white;
+    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.1);
+}
+
+/* Заголовок карточки */
+.history-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.history-item-date {
+    font-size: 13px;
+    color: var(--gray-600);
+    font-weight: 500;
+}
+
+.history-item-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* Превью regex */
+.history-item-regex {
+    background: white;
+    border: 1px solid var(--gray-300);
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: var(--gray-800);
+    margin-bottom: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+/* Метаданные */
+.history-item-meta {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--gray-600);
+}
+
+.history-item-meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Пустая история */
+.history-empty {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--gray-500);
+}
+
+.history-empty p:first-child {
+    font-size: 48px;
+    margin-bottom: 16px;
+}
+
+.history-empty .text-muted {
+    font-size: 14px;
+    color: var(--gray-500);
+}
+
+/* Футер модалки */
+.modal-footer {
+    padding: 16px 24px;
+    border-top: 2px solid var(--gray-200);
+    display: flex;
+    justify-content: center;
+}
+
+/* Кнопки в карточке */
+.history-item .btn-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+}
