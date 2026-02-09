@@ -38,6 +38,10 @@ const ERROR_MESSAGES = {
     NETWORK_ERROR: 'Ошибка сети. Проверьте подключение к интернету'
 };
 
+// В объект ERROR_MESSAGES:
+HISTORY_NOT_FOUND: 'Запись не найдена в истории',
+STORAGE_ERROR: 'Ошибка сохранения в localStorage',
+
 const WARNING_MESSAGES = {
     // Дубликаты
     DUPLICATES_REMOVED: (count) => `Удалено дубликатов: ${count}`,
@@ -82,11 +86,19 @@ const SUCCESS_MESSAGES = {
     RESET_SUCCESS: 'Все данные очищены'
 };
 
+// В объект SUCCESS_MESSAGES:
+HISTORY_LOADED: 'Конвертация загружена из истории',
+HISTORY_DELETED: 'Запись удалена из истории',
+HISTORY_CLEARED: 'История очищена',
+
 const INFO_MESSAGES = {
     LOADING: 'Загрузка...',
     PROCESSING: 'Обработка...',
     PLEASE_WAIT: 'Пожалуйста, подождите'
 };
+
+// В объект INFO_MESSAGES:
+HISTORY_EMPTY: 'История пуста',
 
 /* ============================================
    TOAST-УВЕДОМЛЕНИЯ
