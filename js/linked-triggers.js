@@ -71,13 +71,13 @@ function addLinkedGroup() {
     groupDiv.className = 'linked-group';
     groupDiv.id = groupId;
     groupDiv.innerHTML = `
-    <div class="linked-group-header">
-        <span class="linked-group-title">Группа ${currentGroups + 1}</span>
-        <div class="group-actions">
-            <button class="btn-icon btn-icon-warning" onclick="clearLinkedGroup('${groupId}')" title="Очистить все поля группы">🗑️</button>
-            <button class="btn-icon btn-icon-danger" onclick="removeLinkedGroup('${groupId}')" title="Удалить группу целиком">🗙</button>
+        <div class="linked-group-header">
+            <span class="linked-group-title">Группа ${currentGroups + 1}</span>
+            <div class="group-actions">
+                <button class="btn-icon btn-icon-warning" onclick="clearLinkedGroup('${groupId}')" title="Очистить все поля группы">🗑️</button>
+                <button class="btn-icon btn-icon-danger" onclick="removeLinkedGroup('${groupId}')" title="Удалить группу целиком">🗙</button>
+            </div>
         </div>
-    </div>
         <div class="linked-group-body" id="${groupId}_body">
             <!-- Поля будут добавляться динамически -->
         </div>
@@ -99,24 +99,31 @@ function addLinkedGroup() {
    УДАЛЕНИЕ ГРУППЫ
    ============================================ */
 
-// ============================================
-// ИСПРАВЛЕНО: Строка ~136
-// ============================================
-
-// Кнопка удаления группы
-removeBtn.addEventListener('click', () => {
-    // БЫЛО: confirmAction('Удалить эту группу...', () => {...});
-    // СТАЛО: 4 параметра
+/**
+ * Удалить группу связанных триггеров
+ * @param {string} groupId - ID группы
+ */
+function removeLinkedGroup(groupId) {
+    const group = document.getElementById(groupId);
+    const container = document.getElementById('linkedTriggersContainer');
+    
+    if (!group || !container) {
+        console.error(`[LinkedTriggers] Группа ${groupId} не найдена`);
+        return;
+    }
+    
+    // ИСПРАВЛЕНО: confirmAction с 4 параметрами
     confirmAction(
         'Подтверждение',
         'Удалить эту группу связанных триггеров?',
         () => {
             container.removeChild(group);
-            updateLinkedGroupsVisibility();
+            updateGroupNumbers();
+            console.log(`[LinkedTriggers] Группа ${groupId} удалена`);
         },
         null
     );
-});
+}
 
 /**
  * Обновить нумерацию групп после удаления
@@ -164,15 +171,15 @@ function addTriggerField(groupId) {
     fieldDiv.className = 'linked-field';
     fieldDiv.id = fieldId;
     fieldDiv.innerHTML = `
-    <input 
-        type="text" 
-        class="input linked-input" 
-        placeholder="Триггер ${currentFields + 1}"
-        data-group="${groupId}"
-        data-field="${fieldId}"
-    >
-    <button class="btn-icon btn-icon-sm" onclick="removeTriggerField('${groupId}', '${fieldId}')" title="Удалить это поле триггера">×</button>
-`;
+        <input 
+            type="text" 
+            class="input linked-input" 
+            placeholder="Триггер ${currentFields + 1}"
+            data-group="${groupId}"
+            data-field="${fieldId}"
+        >
+        <button class="btn-icon btn-icon-sm" onclick="removeTriggerField('${groupId}', '${fieldId}')" title="Удалить это поле триггера">×</button>
+    `;
     
     groupBody.appendChild(fieldDiv);
     
@@ -405,25 +412,71 @@ function countLinkedPermutations() {
    ОЧИСТКА
    ============================================ */
 
-// ============================================
-// ИСПРАВЛЕНО: Строка ~399
-// ============================================
+/**
+ * Очистить все поля в группе (не удалять саму группу)
+ * @param {string} groupId - ID группы
+ */
+function clearLinkedGroup(groupId) {
+    const groupBody = document.getElementById(`${groupId}_body`);
+    
+    if (!groupBody) {
+        console.error(`[LinkedTriggers] Группа ${groupId} не найдена`);
+        return;
+    }
+    
+    const inputs = groupBody.querySelectorAll('.linked-input');
+    
+    if (inputs.length === 0) return;
+    
+    // Проверяем есть ли заполненные поля
+    let hasValues = false;
+    inputs.forEach(input => {
+        if (input.value.trim()) {
+            hasValues = true;
+        }
+    });
+    
+    if (!hasValues) {
+        showToast('info', 'Все поля уже пустые');
+        return;
+    }
+    
+    // ИСПРАВЛЕНО: confirmAction с 4 параметрами
+    confirmAction(
+        'Подтверждение',
+        'Очистить все поля в этой группе?',
+        () => {
+            inputs.forEach(input => {
+                input.value = '';
+            });
+            showToast('info', 'Поля группы очищены');
+            console.log(`[LinkedTriggers] Группа ${groupId} очищена`);
+        },
+        null
+    );
+}
 
 /**
  * Очистить все связанные группы
  */
 function clearAllLinkedGroups() {
-    // БЫЛО: confirmAction('Очистить все группы...', () => {...});
-    // СТАЛО: 4 параметра
+    const container = document.getElementById('linkedTriggersContainer');
+    if (!container) return;
+    
+    const groups = container.querySelectorAll('.linked-group');
+    if (groups.length === 0) {
+        showToast('info', 'Нет групп для очистки');
+        return;
+    }
+    
+    // ИСПРАВЛЕНО: confirmAction с 4 параметрами
     confirmAction(
         'Подтверждение',
         'Очистить все группы связанных триггеров?',
         () => {
-            const container = document.getElementById('linkedTriggersContainer');
-            if (container) {
-                container.innerHTML = '';
-                updateLinkedGroupsVisibility();
-            }
+            container.innerHTML = '';
+            showToast('info', 'Все группы удалены');
+            console.log('[LinkedTriggers] Все группы очищены');
         },
         null
     );
@@ -471,89 +524,16 @@ function exportLinkedToSimple() {
     console.log(`[LinkedTriggers] Экспортировано ${addedCount} перестановок`);
 }
 
-/**
- * Очистить все поля в группе (не удалять саму группу)
- * @param {string} groupId - ID группы
- */
-function clearLinkedGroup(groupId) {
-    const groupBody = document.getElementById(`${groupId}_body`);
-    
-    if (!groupBody) {
-        console.error(`[LinkedTriggers] Группа ${groupId} не найдена`);
-        return;
-    }
-    
-    const inputs = groupBody.querySelectorAll('.linked-input');
-    
-    if (inputs.length === 0) return;
-    
-    // Проверяем есть ли заполненные поля
-    let hasValues = false;
-    inputs.forEach(input => {
-        if (input.value.trim()) {
-            hasValues = true;
-        }
-    });
-    
-    if (!hasValues) {
-        showToast('info', 'Все поля уже пустые');
-        return;
-    }
-    
-    confirmAction(
-        'Очистить все поля в этой группе?',
-        () => {
-            inputs.forEach(input => {
-                input.value = '';
-            });
-            showToast('info', 'Поля группы очищены');
-            console.log(`[LinkedTriggers] Группа ${groupId} очищена`);
-        }
-    );
-}
-
-// Делаем функцию глобальной
-window.clearLinkedGroup = clearLinkedGroup;
-
-// Экспортируем функции для использования в других модулях
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {
-        // Константы
-        LINKED_LIMITS,
-        
-        // Инициализация
-        initLinkedTriggers,
-        
-        // Управление группами
-        addLinkedGroup,
-        removeLinkedGroup,
-        
-        // Управление полями
-        addTriggerField,
-        removeTriggerField,
-        
-        // Получение данных
-        getLinkedGroups,
-        hasLinkedTriggers,
-        
-        // Валидация
-        validateLinkedGroups,
-        
-        // Перестановки
-        generateLinkedPermutations,
-        countLinkedPermutations,
-        
-        // Очистка
-        clearAllLinkedGroups,
-        
-        // Экспорт
-        exportLinkedToSimple
-    };
-}
+/* ============================================
+   ЭКСПОРТ
+   ============================================ */
 
 // Делаем функции глобальными для onclick
 window.addLinkedGroup = addLinkedGroup;
 window.removeLinkedGroup = removeLinkedGroup;
 window.addTriggerField = addTriggerField;
 window.removeTriggerField = removeTriggerField;
+window.clearLinkedGroup = clearLinkedGroup;
+window.clearAllLinkedGroups = clearAllLinkedGroups;
 
+console.log('✓ Модуль linked-triggers.js загружен');
