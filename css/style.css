@@ -1221,28 +1221,100 @@ button[title]:hover::after,
    ИСТОРИЯ КОНВЕРТАЦИЙ
    ============================================ */
 
+/* Overlay модалки */
+#historyModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    animation: fadeIn 0.2s ease;
+}
+
+#historyModal.show {
+    display: flex;
+}
+
+/* Контент модалки */
+#historyModal .modal-content {
+    background: white;
+    border-radius: 12px;
+    max-width: 800px;
+    width: 90%;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    animation: scaleIn 0.3s ease;
+}
+
+/* Заголовок */
+#historyModal .modal-header {
+    padding: 24px 24px 16px;
+    border-bottom: 2px solid #E0E0E0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#historyModal .modal-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #212121;
+    margin: 0;
+}
+
+#historyModal .modal-close {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    font-size: 24px;
+    line-height: 1;
+    color: #757575;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#historyModal .modal-close:hover {
+    background: #F5F5F5;
+    color: #212121;
+}
+
+/* Тело модалки */
+#historyModal .modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
 /* Список истории */
 .history-list {
     display: flex;
     flex-direction: column;
     gap: 12px;
-    max-height: 500px;
-    overflow-y: auto;
 }
 
 /* Карточка записи */
 .history-item {
-    background: var(--gray-50);
-    border: 2px solid var(--gray-200);
+    background: #FAFAFA;
+    border: 2px solid #E0E0E0;
     border-radius: 8px;
     padding: 16px;
     transition: all 0.2s ease;
 }
 
 .history-item:hover {
-    border-color: var(--primary);
+    border-color: #2196F3;
     background: white;
-    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.1);
+    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.15);
 }
 
 /* Заголовок карточки */
@@ -1255,7 +1327,7 @@ button[title]:hover::after,
 
 .history-item-date {
     font-size: 13px;
-    color: var(--gray-600);
+    color: #607D8B;
     font-weight: 500;
 }
 
@@ -1267,12 +1339,12 @@ button[title]:hover::after,
 /* Превью regex */
 .history-item-regex {
     background: white;
-    border: 1px solid var(--gray-300);
+    border: 1px solid #BDBDBD;
     border-radius: 4px;
-    padding: 8px 12px;
+    padding: 10px 12px;
     font-family: 'Courier New', monospace;
     font-size: 13px;
-    color: var(--gray-800);
+    color: #424242;
     margin-bottom: 12px;
     white-space: nowrap;
     overflow: hidden;
@@ -1285,7 +1357,7 @@ button[title]:hover::after,
     display: flex;
     gap: 16px;
     font-size: 12px;
-    color: var(--gray-600);
+    color: #757575;
 }
 
 .history-item-meta span {
@@ -1297,31 +1369,60 @@ button[title]:hover::after,
 /* Пустая история */
 .history-empty {
     text-align: center;
-    padding: 48px 24px;
-    color: var(--gray-500);
+    padding: 60px 24px;
+    color: #9E9E9E;
 }
 
 .history-empty p:first-child {
-    font-size: 48px;
+    font-size: 64px;
     margin-bottom: 16px;
+    line-height: 1;
 }
 
 .history-empty .text-muted {
-    font-size: 14px;
-    color: var(--gray-500);
+    font-size: 15px;
+    color: #757575;
+    margin-top: 8px;
 }
 
 /* Футер модалки */
 .modal-footer {
     padding: 16px 24px;
-    border-top: 2px solid var(--gray-200);
+    border-top: 2px solid #E0E0E0;
     display: flex;
     justify-content: center;
+    background: #FAFAFA;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
 }
 
 /* Кнопки в карточке */
 .history-item .btn-icon {
-    width: 28px;
-    height: 28px;
-    font-size: 14px;
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+    border: 1px solid #BDBDBD;
+    background: white;
+}
+
+.history-item .btn-icon:hover {
+    background: #F5F5F5;
+    border-color: #757575;
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.95);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
