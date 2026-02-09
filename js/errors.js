@@ -33,14 +33,14 @@ const ERROR_MESSAGES = {
     STORAGE_QUOTA_EXCEEDED: 'Превышен лимит хранилища браузера',
     STORAGE_NOT_AVAILABLE: 'localStorage недоступен',
     
+    // История
+    HISTORY_NOT_FOUND: 'Запись не найдена в истории',
+    STORAGE_ERROR: 'Ошибка сохранения в localStorage',
+    
     // Общие
     UNKNOWN_ERROR: 'Произошла неизвестная ошибка',
     NETWORK_ERROR: 'Ошибка сети. Проверьте подключение к интернету'
 };
-
-// В объект ERROR_MESSAGES:
-HISTORY_NOT_FOUND: 'Запись не найдена в истории',
-STORAGE_ERROR: 'Ошибка сохранения в localStorage',
 
 const WARNING_MESSAGES = {
     // Дубликаты
@@ -72,6 +72,9 @@ const SUCCESS_MESSAGES = {
     
     // История
     LOADED_FROM_HISTORY: 'Загружено из истории',
+    HISTORY_LOADED: 'Конвертация загружена из истории',
+    HISTORY_DELETED: 'Запись удалена из истории',
+    HISTORY_CLEARED: 'История очищена',
     
     // Визуализация
     VISUALIZATION_SUCCESS: 'Диаграмма успешно создана',
@@ -86,15 +89,11 @@ const SUCCESS_MESSAGES = {
     RESET_SUCCESS: 'Все данные очищены'
 };
 
-// В объект SUCCESS_MESSAGES:
-HISTORY_LOADED: 'Конвертация загружена из истории',
-HISTORY_DELETED: 'Запись удалена из истории',
-HISTORY_CLEARED: 'История очищена',
-
 const INFO_MESSAGES = {
     LOADING: 'Загрузка...',
     PROCESSING: 'Обработка...',
-    PLEASE_WAIT: 'Пожалуйста, подождите'
+    PLEASE_WAIT: 'Пожалуйста, подождите',
+    HISTORY_EMPTY: 'История пуста'
 };
 
 // В объект INFO_MESSAGES:
