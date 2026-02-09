@@ -306,7 +306,12 @@ function applyOptimizations(triggers, types) {
     
     let result = [...triggers];
     
-    // Применяем оптимизации в порядке: 1 → 2 → 3 → 4
+    // ВАЖНО: Type3 применяется ПЕРВЫМ (к исходным триггерам)
+    // Остальные оптимизации работают с уже обработанными паттернами
+    
+    if (types.type3) {
+        result = optimizeType3(result);
+    }
     
     if (types.type1) {
         result = optimizeType1(result);
@@ -314,10 +319,6 @@ function applyOptimizations(triggers, types) {
     
     if (types.type2) {
         result = optimizeType2(result);
-    }
-    
-    if (types.type3) {
-        result = optimizeType3(result);
     }
     
     if (types.type4) {
