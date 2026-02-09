@@ -222,99 +222,128 @@ function handleConvert() {
     console.log('[Main] Начало конвертации');
     
     try {
-        // Получаем текст из textarea
+        clearAllInlineErrors();
+
+        // Получаем поля
         const simpleTextarea = document.getElementById('simpleTriggers');
         const resultTextarea = document.getElementById('resultRegex');
-        
+
         if (!simpleTextarea || !resultTextarea) {
             console.error('[Main] Textarea не найдены');
             return;
         }
-        
-        const text = simpleTextarea.value;
-        
-        // Проверяем есть ли триггеры (простые ИЛИ связанные)
-const hasSimple = hasTriggersInText(text);
-const hasLinked = hasLinkedTriggers();
 
-if (!hasSimple && !hasLinked) {
-    showInlineError('simpleTriggers', 'Введите хотя бы один триггер (простой или связанный)');
-    return;
-}
-        
-        // Получаем настройки оптимизаций
+        let text = simpleTextarea.value;
+
+        // Защита от пустых строк: удаляем пустые строки в конце и между триггерами
+        if (text && text.includes('\n')) {
+            const lines = text
+                .split('\n')
+                .map(line => line.trim())
+                .filter(line => line.length > 0); // убираем пустые
+
+            text = lines.join('\n');
+            simpleTextarea.value = text; // обновляем textarea очищенным текстом
+        }
+
+        // Проверяем наличие триггеров
+        const hasSimple = hasTriggersInText(text);
+        const hasLinked = hasLinkedTriggers();
+
+        if (!hasSimple && !hasLinked) {
+            showInlineError('simpleTriggers', 'Введите хотя бы один триггер (простой или связанный)');
+            return;
+        }
+
+        // Настройки оптимизаций
         const optimizations = getSelectedOptimizations();
         const hasOptimizations = hasAnyOptimization();
-        
-        // Выполняем конвертацию
-let result;
-let regex = '';
 
-// Если есть простые триггеры - конвертируем их
-if (hasSimple) {
-    if (hasOptimizations) {
-        result = performConversionWithOptimizations(text, optimizations, true);
-    } else {
-        result = performConversion(text, true);
-    }
-    
-    if (!result.success) {
-        console.error('[Main] Конвертация не удалась:', result.info);
-        return;
-    }
-    
-    regex = result.regex;
-   
-   // Сохранение в историю
-if (result.success && result.regex) {
-    const selectedSettings = getSelectedOptimizations();
-    saveToHistory(
-        result.regex,
-        allTriggers, // массив всех триггеров
-        selectedSettings,
-        result.info
-    );
-}
+        let result = null;
+        let regex = '';
 
-}
+        // Конвертация простых триггеров
+        if (hasSimple) {
+            if (hasOptimizations) {
+                result = performConversionWithOptimizations(text, optimizations, true);
+            } else {
+                result = performConversion(text, true);
+            }
 
-// Добавляем перестановки связанных триггеров если есть
-if (hasLinked) {
-    const permutations = generateLinkedPermutations();
-    const permutationCount = countLinkedPermutations();
-    
-    // Предупреждение о большом количестве перестановок
-    if (permutationCount > LINKED_LIMITS.PERMUTATION_WARNING) {
-        showToast('warning', WARNING_MESSAGES.PERMUTATIONS_TOO_MANY);
-    }
-    
-    // Объединяем regex простых триггеров и перестановок
-    if (regex) {
-        regex = regex + '|' + permutations.join('|');
-    } else {
-        // Только связанные триггеры
-        regex = permutations.join('|');
-    }
-    
-    console.log(`[Main] Добавлено ${permutationCount} перестановок`);
-}
+            if (!result || !result.success) {
+                console.error('[Main] Конвертация не удалась:', result && result.info);
+                return;
+            }
 
-// Записываем результат
-resultTextarea.value = regex;
+            regex = result.regex;
+        }
 
-// Показываем успех
-showMessage('success', 'CONVERSION_SUCCESS');
+        // Добавляем перестановки связанных триггеров, если есть
+        if (hasLinked) {
+            const permutations = generateLinkedPermutations();
+            const permutationCount = countLinkedPermutations();
 
-// Обновляем статистику результата
-if (result) {
-    updateResultStats(result);
-}
+            if (permutationCount > LINKED_LIMITS.PERMUTATION_WARNING) {
+                showToast('warning', WARNING_MESSAGES.PERMUTATIONS_TOO_MANY);
+            }
 
-console.log('[Main] ✓ Конвертация успешна');
+            if (regex) {
+                regex = regex + '|' + permutations.join('|');
+            } else {
+                regex = permutations.join('|');
+            }
+
+            console.log(`[Main] Добавлено ${permutationCount} перестановок`);
+        }
+
+        // Записываем результат
+        resultTextarea.value = regex;
+
+        // Обновляем статистику
+        if (result) {
+            updateResultStats(result);
+        }
+
+        // Подготовка массива всех триггеров для истории
+        let allTriggers = [];
+        try {
+            // Простые триггеры
+            if (text && hasSimple) {
+                const simpleTriggers = parseSimpleTriggers(text);
+                allTriggers = allTriggers.concat(simpleTriggers);
+            }
+
+            // Связанные триггеры
+            if (hasLinked && typeof generateLinkedPermutations === 'function') {
+                const linkedStrings = generateLinkedPermutations();
+                allTriggers = allTriggers.concat(linkedStrings);
+            }
+        } catch (e) {
+            logError('handleConvert:allTriggers', e);
+        }
+
+        // Сохранение в историю
+        try {
+            if (regex && Array.isArray(allTriggers) && allTriggers.length > 0) {
+                const selectedSettings = getSelectedOptimizations ? getSelectedOptimizations() : {};
+                // result может быть null, поэтому info защитим
+                const info = result && result.info ? result.info : {
+                    triggerCount: allTriggers.length,
+                    regexLength: regex.length
+                };
+                saveToHistory(regex, allTriggers, selectedSettings, info);
+            }
+        } catch (e) {
+            logError('handleConvert:saveToHistory', e);
+        }
+
+        // Уведомление об успехе
+        showToast('success', SUCCESS_MESSAGES.CONVERSION_SUCCESS || 'Regex успешно создан');
+        console.log('[Main] ✓ Конвертация успешна');
         
     } catch (error) {
         logError('handleConvert', error);
-        showToast('error', ERROR_MESSAGES.UNKNOWN_ERROR);
+        showToast('error', ERROR_MESSAGES.UNKNOWN_ERROR || 'Произошла неизвестная ошибка');
     }
 }
 
