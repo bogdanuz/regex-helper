@@ -25,9 +25,31 @@
     <link rel="stylesheet" href="css/popup.css">
     <link rel="stylesheet" href="css/spinner.css">
     
-    <!-- External Libraries (CDN + Fallback) -->
-    <script src="https://cdn.jsdelivr.net/npm/russian-nouns-js@2.3.0/RussianNouns.min.js" 
-            onerror="this.onerror=null; this.src='lib/russian-nouns/RussianNouns.min.js'"></script>
+    <!-- RussianNounsJS Library (GitHub CDN + Local Fallback) -->
+    <script>
+        (function() {
+            var script = document.createElement('script');
+            script.src = 'https://raw.githubusercontent.com/georgy7/RussianNounsJS/refs/heads/release/RussianNouns.min.js';
+            script.onerror = function() {
+                console.warn('[Library] GitHub CDN failed, trying local fallback...');
+                var script2 = document.createElement('script');
+                script2.src = 'lib/russian-nouns/russian-nouns.min.js';
+                script2.onerror = function() {
+                    console.error('[Library] ❌ Библиотека RussianNounsJS недоступна!');
+                    console.error('[Library] Скачайте файл: https://raw.githubusercontent.com/georgy7/RussianNounsJS/refs/heads/release/RussianNouns.min.js');
+                    console.error('[Library] И положите в: lib/russian-nouns/russian-nouns.min.js');
+                };
+                script2.onload = function() {
+                    console.log('[Library] ✅ RussianNounsJS загружена (локально)');
+                };
+                document.head.appendChild(script2);
+            };
+            script.onload = function() {
+                console.log('[Library] ✅ RussianNounsJS загружена (GitHub CDN)');
+            };
+            document.head.appendChild(script);
+        })();
+    </script>
 </head>
 <body>
     <!-- Loading Spinner -->
@@ -117,8 +139,6 @@
                     
                     <p class="hint-text">Выберите оптимизации для всех триггеров:</p>
 
-                    <!-- ИСПРАВЛЕНО: Правильные ID и названия -->
-                    
                     <label class="checkbox-wrapper">
                         <input type="checkbox" class="checkbox" id="optType1" checked>
                         <div class="checkbox-content">
