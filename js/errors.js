@@ -14,13 +14,13 @@ const ERROR_MESSAGES = {
     
     // Ошибки триггеров
     NO_TRIGGERS: 'Введите хотя бы один триггер',
-    TRIGGERS_LIMIT_EXCEEDED: `Превышен лимит триггеров. Максимум: ${LIMITS.MAX_TRIGGERS}`,
-    TRIGGER_TOO_SHORT: `Триггер слишком короткий. Минимум: ${LIMITS.MIN_TRIGGER_LENGTH} символа`,
-    TRIGGER_TOO_LONG: `Триггер слишком длинный. Максимум: ${LIMITS.MAX_TRIGGER_LENGTH} символов`,
+    TRIGGERS_LIMIT_EXCEEDED: 'Превышен лимит триггеров (максимум 200)',
+    TRIGGER_TOO_SHORT: 'Триггер слишком короткий (минимум 1 символ)',
+    TRIGGER_TOO_LONG: 'Триггер слишком длинный (максимум 100 символов)',
     INVALID_CHARACTERS: 'Триггер содержит недопустимые символы',
     
     // Ошибки regex
-    REGEX_TOO_LONG: `Regex слишком длинный. Максимум: ${LIMITS.MAX_REGEX_LENGTH} символов`,
+    REGEX_TOO_LONG: 'Regex слишком длинный (максимум 10000 символов)',
     REGEX_INVALID: 'Неверный синтаксис regex',
     
     // Ошибки связанных триггеров
