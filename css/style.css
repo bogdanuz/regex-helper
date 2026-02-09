@@ -1721,3 +1721,45 @@ button[title]:hover::after,
     border-top: 1px solid #e0e0e0;
 }
 
+/* ============================================
+   TRIGGER SETTINGS BUTTONS
+   ============================================ */
+
+.trigger-settings-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    background: #f9f9f9;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    user-select: none;
+}
+
+.trigger-settings-item:hover {
+    border-color: #2196F3;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.trigger-settings-item.has-settings {
+    border-color: #4CAF50;
+    background: #E8F5E9;
+}
+
+.trigger-settings-item.has-settings:hover {
+    border-color: #45a049;
+}
+
+.trigger-settings-item span {
+    font-size: 13px;
+    color: #333;
+}
+
+.trigger-settings-item.has-settings span {
+    color: #2E7D32;
+    font-weight: 600;
+}
+
