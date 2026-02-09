@@ -99,29 +99,24 @@ function addLinkedGroup() {
    УДАЛЕНИЕ ГРУППЫ
    ============================================ */
 
-/**
- * Удалить группу связанных триггеров
- * @param {string} groupId - ID группы
- */
-function removeLinkedGroup(groupId) {
-    const group = document.getElementById(groupId);
-    
-    if (!group) {
-        console.error(`[LinkedTriggers] Группа ${groupId} не найдена`);
-        return;
-    }
-    
+// ============================================
+// ИСПРАВЛЕНО: Строка ~136
+// ============================================
+
+// Кнопка удаления группы
+removeBtn.addEventListener('click', () => {
+    // БЫЛО: confirmAction('Удалить эту группу...', () => {...});
+    // СТАЛО: 4 параметра
     confirmAction(
+        'Подтверждение',
         'Удалить эту группу связанных триггеров?',
         () => {
-            group.remove();
-            console.log(`[LinkedTriggers] Группа ${groupId} удалена`);
-            
-            // Обновляем нумерацию групп
-            updateGroupNumbers();
-        }
+            container.removeChild(group);
+            updateLinkedGroupsVisibility();
+        },
+        null
     );
-}
+});
 
 /**
  * Обновить нумерацию групп после удаления
@@ -410,24 +405,27 @@ function countLinkedPermutations() {
    ОЧИСТКА
    ============================================ */
 
+// ============================================
+// ИСПРАВЛЕНО: Строка ~399
+// ============================================
+
 /**
- * Очистить все группы связанных триггеров
+ * Очистить все связанные группы
  */
 function clearAllLinkedGroups() {
-    const container = document.getElementById('linkedTriggersContainer');
-    
-    if (!container) {
-        return;
-    }
-    
+    // БЫЛО: confirmAction('Очистить все группы...', () => {...});
+    // СТАЛО: 4 параметра
     confirmAction(
-        'Удалить все группы связанных триггеров?',
+        'Подтверждение',
+        'Очистить все группы связанных триггеров?',
         () => {
-            container.innerHTML = '';
-            linkedGroupCounter = 0;
-            linkedFieldCounter = 0;
-            console.log('[LinkedTriggers] Все группы очищены');
-        }
+            const container = document.getElementById('linkedTriggersContainer');
+            if (container) {
+                container.innerHTML = '';
+                updateLinkedGroupsVisibility();
+            }
+        },
+        null
     );
 }
 
