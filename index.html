@@ -468,46 +468,59 @@
     </div>
 
     <!-- Modal: Trigger Settings -->
-    <div id="triggerSettingsModal" class="modal-overlay" style="display: none;">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 class="modal-title">⚙ Настройки для "<span id="triggerSettingsTitle"></span>"</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p class="hint-text">Выберите оптимизации для этого триггера:</p>
-                
-                <label class="checkbox-wrapper">
-                    <input type="checkbox" class="checkbox" id="triggerOptType1">
+<div id="triggerSettingsModal" class="modal-overlay" style="display: none;">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 class="modal-title">⚙ Настройки для "<span id="triggerSettingsTitle"></span>"</h3>
+            <button class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p class="hint-text">Выберите оптимизации для этого триггера:</p>
+            
+            <label class="checkbox-wrapper">
+                <input type="checkbox" class="checkbox" id="triggerOptType1">
+                <div class="checkbox-content">
                     <span class="checkbox-label">Повторы (префиксы)</span>
-                </label>
-                
-                <label class="checkbox-wrapper mt-1">
-                    <input type="checkbox" class="checkbox" id="triggerOptType2">
+                </div>
+            </label>
+            
+            <label class="checkbox-wrapper mt-1">
+                <input type="checkbox" class="checkbox" id="triggerOptType2">
+                <div class="checkbox-content">
                     <span class="checkbox-label">Общий корень</span>
-                </label>
-                
-                <label class="checkbox-wrapper mt-1">
-                    <input type="checkbox" class="checkbox" id="triggerOptType3">
+                </div>
+            </label>
+            
+            <label class="checkbox-wrapper mt-1">
+                <input type="checkbox" class="checkbox" id="triggerOptType3">
+                <div class="checkbox-content">
                     <span class="checkbox-label">Вариации букв</span>
-                </label>
-                
-                <label class="checkbox-wrapper mt-1">
-                    <input type="checkbox" class="checkbox" id="triggerOptType4">
+                </div>
+            </label>
+            
+            <label class="checkbox-wrapper mt-1">
+                <input type="checkbox" class="checkbox" id="triggerOptType4">
+                <div class="checkbox-content">
                     <span class="checkbox-label">Склонения</span>
-                </label>
-                
-                <label class="checkbox-wrapper mt-1">
-                    <input type="checkbox" class="checkbox" id="triggerOptType5">
+                </div>
+            </label>
+            
+            <label class="checkbox-wrapper mt-1">
+                <input type="checkbox" class="checkbox" id="triggerOptType5">
+                <div class="checkbox-content">
                     <span class="checkbox-label">Опциональный символ ?</span>
-                </label>
-            </div>
-            <div class="modal-footer">
+                </div>
+            </label>
+        </div>
+        <div class="modal-footer" style="display: flex; gap: 10px; justify-content: space-between;">
+            <button class="btn-danger" id="resetTriggerSettingsBtn">Сбросить настройки</button>
+            <div style="display: flex; gap: 10px;">
                 <button class="btn-primary" id="applyTriggerSettingsBtn">Применить</button>
                 <button class="btn-secondary" onclick="closeModal('triggerSettingsModal')">Отмена</button>
             </div>
         </div>
     </div>
+</div>
 
     <!-- JavaScript Modules -->
     <script src="js/utils.js"></script>
