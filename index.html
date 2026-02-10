@@ -229,7 +229,7 @@
 
         </section>
 
-        <!-- ВИЗУАЛИЗАТОР REGEX (ОБНОВЛЕНО) -->
+        <!-- ВИЗУАЛИЗАТОР REGEX (ОБНОВЛЕНО v3.0) -->
 <section id="visualizerSection" class="tool-section">
     <div class="section-header">
         <h2>📊 Визуализатор Regex</h2>
@@ -238,45 +238,33 @@
     <div class="section-content">
         <!-- Поле для regex -->
         <div class="visualizer-input-group">
-            <label for="visualizerRegex">Regex для визуализации:</label>
+            <label for="visualizerRegex">Введите регулярное выражение для визуализации:</label>
             <textarea 
                 id="visualizerRegex" 
                 rows="3" 
-                placeholder="Введите regex... Например: ^[a-z]+$ или (дрон|квадрокоптер)"
+                placeholder="Например: \d+[a-z]* или (дрон|квадрокоптер|бпла)"
             ></textarea>
-        </div>
-        
-        <!-- Кнопки примеров -->
-        <div class="examples-container">
-            <label>Примеры:</label>
-            <div class="examples-buttons">
-                <button class="example-btn" onclick="loadExample('simple')">Простой</button>
-                <button class="example-btn" onclick="loadExample('email')">Email</button>
-                <button class="example-btn" onclick="loadExample('phone')">Телефон</button>
-                <button class="example-btn" onclick="loadExample('url')">URL</button>
-                <button class="example-btn" onclick="loadExample('date')">Дата</button>
-                <button class="example-btn" onclick="loadExample('hex')">HEX цвет</button>
-                <button class="example-btn" onclick="loadExample('ip')">IP адрес</button>
-            </div>
         </div>
         
         <!-- Кнопка визуализации -->
         <div class="visualizer-buttons">
-            <button class="btn-primary" id="visualizeBtn">📊 Визуализировать</button>
+            <button id="visualizeBtn">📊 Визуализировать</button>
         </div>
         
         <!-- SVG диаграмма -->
-        <div id="diagramContainer" class="diagram-container"></div>
+        <div id="diagramContainer"></div>
         
-        <!-- Кнопки управления (БЕЗ ТЕМЫ) -->
+        <!-- Кнопки управления -->
         <div class="visualizer-controls">
-            <button class="btn-secondary" id="exportSvgBtn">💾 Экспорт SVG</button>
-            <button class="btn-secondary" id="exportPngBtn">🖼️ Экспорт PNG</button>
-            <button class="btn-icon" id="zoomInBtn" title="Увеличить">🔍+</button>
-            <button class="btn-icon" id="zoomOutBtn" title="Уменьшить">🔍−</button>
+            <button id="exportSvgBtn">💾 Экспорт SVG</button>
+            <button id="exportPngBtn">🖼️ Экспорт PNG</button>
+            <button id="openFullscreenBtn">⛶ На весь экран</button>
+            <button id="zoomInBtn" title="Увеличить">🔍+</button>
+            <button id="zoomOutBtn" title="Уменьшить">🔍−</button>
         </div>
     </div>
 </section>
+        
         <!-- ============================================================ -->
         <!-- КОНЕЦ НОВОЙ СЕКЦИИ -->
         <!-- ============================================================ -->
@@ -747,7 +735,7 @@
     
     <!-- JavaScript Libraries -->
     <!-- НОВОЕ: Railroad Diagrams Library -->
-    <script src="lib/railroad-diagrams.js"></script>
+    <script src="lib/regex-visualizer.js"></script>
     
     <!-- JavaScript Modules -->
     <script src="js/utils.js"></script>
