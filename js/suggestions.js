@@ -350,7 +350,42 @@ function openTriggerSettingsModal(trigger) {
                 type5: document.getElementById('triggerOptType5')?.checked || false
             };
             
-            setTriggerSettings(trigger, newSettings);
+            // ИСПРАВЛЕНИЕ: Проверяем, все ли галочки сняты
+            const allUnchecked = !newSettings.type1 && !newSettings.type2 && 
+                                 !newSettings.type3 && !newSettings.type4 && !newSettings.type5;
+            
+            if (allUnchecked) {
+                // Если все галочки сняты - удаляем индивидуальные настройки
+                removeTriggerSettings(trigger);
+                closeModal('triggerSettingsModal');
+                
+                setTimeout(() => {
+                    updateTriggerSettingsUI();
+                }, 100);
+                
+                showToast('info', `Настройки сброшены для "${trigger}". Используются глобальные.`);
+            } else {
+                // Если хотя бы одна галочка стоит - сохраняем индивидуальные настройки
+                setTriggerSettings(trigger, newSettings);
+                closeModal('triggerSettingsModal');
+                
+                setTimeout(() => {
+                    updateTriggerSettingsUI();
+                }, 100);
+                
+                showToast('success', `Настройки применены для "${trigger}"`);
+            }
+        };
+    }
+    
+    // Обработчик кнопки "Сбросить настройки" (БЕЗ ПОДТВЕРЖДЕНИЯ)
+    const resetBtn = document.getElementById('resetTriggerSettingsBtn');
+    if (resetBtn) {
+        // Удаляем старые обработчики
+        resetBtn.onclick = null;
+        resetBtn.onclick = () => {
+            // Сразу удаляем настройки без подтверждения
+            removeTriggerSettings(trigger);
             closeModal('triggerSettingsModal');
             
             // Обновляем UI после закрытия модалки
@@ -358,9 +393,10 @@ function openTriggerSettingsModal(trigger) {
                 updateTriggerSettingsUI();
             }, 100);
             
-            showToast('success', `Настройки применены для "${trigger}"`);
+            showToast('info', `Настройки сброшены для "${trigger}". Используются глобальные.`);
         };
     }
+}
     
     // Обработчик кнопки "Сбросить настройки" (БЕЗ ПОДТВЕРЖДЕНИЯ)
     const resetBtn = document.getElementById('resetTriggerSettingsBtn');
