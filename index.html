@@ -24,6 +24,8 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/popup.css">
     <link rel="stylesheet" href="css/spinner.css">
+    <!-- НОВОЕ: CSS для визуализатора -->
+    <link rel="stylesheet" href="css/visualizer.css">
     
     <!-- RussianNounsJS Library - СИНХРОННАЯ загрузка (блокирующая) -->
     <script src="lib/russian-nouns/russian-nouns.min.js"></script>
@@ -68,6 +70,8 @@
         
         <nav class="header-nav">
             <a href="#converterSection" class="nav-link">Конвертер</a>
+            <!-- НОВОЕ: Ссылка на визуализатор -->
+            <a href="#visualizerSection" class="nav-link">Визуализатор</a>
             <a href="#testerPanel" class="nav-link">Тестирование</a>
             <a href="#historySection" class="nav-link">История</a>
         </nav>
@@ -142,7 +146,6 @@
                     
                     <p class="hint-text">Выберите оптимизации для всех триггеров:</p>
 
-                    <!-- ИСПРАВЛЕНО v2.0: Type 1 = Вариации букв (бывший Type 3) -->
                     <label class="checkbox-wrapper">
                         <input type="checkbox" class="checkbox" id="optType1" checked>
                         <div class="checkbox-content">
@@ -158,9 +161,6 @@
                             <span class="checkbox-hint">книга, книги → книг[аи]</span>
                         </div>
                     </label>
-
-                    <!-- УДАЛЕНО v2.0: Type 3 (был дубликатом Type 1) -->
-                    <!-- Type 3 теперь используется ТОЛЬКО для связанных групп (расстояние) -->
 
                     <label class="checkbox-wrapper mt-1">
                         <input type="checkbox" class="checkbox" id="optType4" checked>
@@ -228,6 +228,64 @@
             </div>
 
         </section>
+
+        <!-- ============================================================ -->
+        <!-- НОВАЯ СЕКЦИЯ: ВИЗУАЛИЗАТОР REGEX -->
+        <!-- ============================================================ -->
+        <section id="visualizerSection" class="tool-section">
+            <div class="section-header">
+                <h2>📊 Визуализатор Regex</h2>
+            </div>
+            
+            <div class="section-content">
+                <!-- Поле для regex -->
+                <div class="visualizer-input-group">
+                    <label for="visualizerRegex">Regex для визуализации:</label>
+                    <textarea 
+                        id="visualizerRegex" 
+                        rows="3" 
+                        placeholder="Введите regex... Например: ^[a-z]+$ или (дрон|квадрокоптер)"
+                    ></textarea>
+                </div>
+                
+                <!-- Кнопки примеров -->
+                <div class="examples-container">
+                    <label>Примеры:</label>
+                    <div class="examples-buttons">
+                        <button class="example-btn" onclick="loadExample('simple')">Простой</button>
+                        <button class="example-btn" onclick="loadExample('email')">Email</button>
+                        <button class="example-btn" onclick="loadExample('phone')">Телефон</button>
+                        <button class="example-btn" onclick="loadExample('url')">URL</button>
+                        <button class="example-btn" onclick="loadExample('date')">Дата</button>
+                        <button class="example-btn" onclick="loadExample('hex')">HEX цвет</button>
+                        <button class="example-btn" onclick="loadExample('ip')">IP адрес</button>
+                    </div>
+                </div>
+                
+                <!-- Кнопка визуализации -->
+                <div class="visualizer-buttons">
+                    <button class="btn-primary" id="visualizeBtn">📊 Визуализировать</button>
+                </div>
+                
+                <!-- SVG диаграмма -->
+                <div id="diagramContainer" class="diagram-container"></div>
+                
+                <!-- Объяснение на русском -->
+                <div id="explanationContainer" class="explanation-container"></div>
+                
+                <!-- Кнопки управления -->
+                <div class="visualizer-controls">
+                    <button class="btn-secondary" id="exportSvgBtn">💾 Экспорт SVG</button>
+                    <button class="btn-secondary" id="exportPngBtn">🖼️ Экспорт PNG</button>
+                    <button class="btn-icon" id="zoomInBtn" title="Увеличить">🔍+</button>
+                    <button class="btn-icon" id="zoomOutBtn" title="Уменьшить">🔍−</button>
+                    <button class="btn-icon" id="themeToggleBtn" title="Сменить тему">🌓</button>
+                </div>
+            </div>
+        </section>
+        <!-- ============================================================ -->
+        <!-- КОНЕЦ НОВОЙ СЕКЦИИ -->
+        <!-- ============================================================ -->
 
         <!-- Tester Panel -->
         <section class="panel" id="testerPanel" style="display: none;">
@@ -342,7 +400,6 @@
                 
                 <h3>🎯 Основные символы и конструкции</h3>
                 
-                <!-- ИСПРАВЛЕНО v2.0: Обновлена секция Type 1 -->
                 <div class="regulation-section">
                     <h4>1. Вариации букв (латиница ↔ кириллица)</h4>
                     <p>Автоматическая замена похожих символов из разных алфавитов для защиты от обхода.</p>
@@ -484,7 +541,6 @@
     </div>
 
     <!-- Modal: Trigger Settings -->
-    <!-- ИСПРАВЛЕНО v2.0: Удален triggerOptType3 -->
     <div id="triggerSettingsModal" class="modal-overlay" style="display: none;">
         <div class="modal">
             <div class="modal-header">
@@ -494,7 +550,6 @@
             <div class="modal-body">
                 <p class="hint-text">Выберите оптимизации для этого триггера:</p>
                 
-                <!-- ИСПРАВЛЕНО: Type 1 = Вариации букв -->
                 <label class="checkbox-wrapper">
                     <input type="checkbox" class="checkbox" id="triggerOptType1">
                     <div class="checkbox-content">
@@ -510,8 +565,6 @@
                         <span class="checkbox-hint">книга, книги → книг[аи]</span>
                     </div>
                 </label>
-                
-                <!-- УДАЛЕНО v2.0: Type 3 (не используется для простых триггеров) -->
                 
                 <label class="checkbox-wrapper mt-1">
                     <input type="checkbox" class="checkbox" id="triggerOptType4">
@@ -540,7 +593,6 @@
     </div>
 
     <!-- Modal: Group Settings -->
-    <!-- ИСПРАВЛЕНО v2.0: Обновлен groupType1 на "Вариации букв" -->
     <div id="groupSettingsModal" class="modal-overlay" style="display: none;">
         <div class="modal">
             <div class="modal-header">
@@ -619,7 +671,6 @@
                 <div class="settings-section mt-2">
                     <h4 class="settings-section-title">Оптимизации триггеров в группе</h4>
                     
-                    <!-- ИСПРАВЛЕНО: Type 1 = Вариации букв -->
                     <label class="checkbox-wrapper">
                         <input type="checkbox" class="checkbox" id="groupType1">
                         <div class="checkbox-content">
@@ -635,8 +686,6 @@
                             <span class="checkbox-hint">книга, книги → книг[аи]</span>
                         </div>
                     </label>
-                    
-                    <!-- Type 3 НЕТ - это правильно! Он реализован через distanceType -->
                     
                     <label class="checkbox-wrapper mt-1">
                         <input type="checkbox" class="checkbox" id="groupType4">
@@ -666,43 +715,45 @@
         </div>
     </div>
 
-    <!-- ДОБАВИТЬ ЭТУ МОДАЛКУ: -->
-
-<!-- Модальное окно экспорта -->
-<div id="exportModal" class="modal-overlay" style="display: none;">
-    <div class="modal">
-        <div class="modal-header">
-            <h3>💾 Экспорт результата</h3>
-            <button class="modal-close" onclick="closeExportModal()">✕</button>
-        </div>
-        
-        <div class="modal-body">
-            <p>Выберите формат для экспорта регулярного выражения:</p>
+    <!-- Модальное окно экспорта -->
+    <div id="exportModal" class="modal-overlay" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>💾 Экспорт результата</h3>
+                <button class="modal-close" onclick="closeExportModal()">✕</button>
+            </div>
             
-            <div class="export-options">
-                <button class="btn-primary btn-block" id="exportTxtBtn">
-                    📄 Экспорт в TXT
-                    <span class="btn-description">Простой текстовый файл с regex и триггерами</span>
-                </button>
+            <div class="modal-body">
+                <p>Выберите формат для экспорта регулярного выражения:</p>
                 
-                <button class="btn-primary btn-block" id="exportJsonBtn">
-                    📦 Экспорт в JSON
-                    <span class="btn-description">Структурированные данные с настройками</span>
-                </button>
-                
-                <button class="btn-primary btn-block" id="exportCsvBtn">
-                    📊 Экспорт в CSV
-                    <span class="btn-description">Таблица для Excel/Google Sheets</span>
-                </button>
+                <div class="export-options">
+                    <button class="btn-primary btn-block" id="exportTxtBtn">
+                        📄 Экспорт в TXT
+                        <span class="btn-description">Простой текстовый файл с regex и триггерами</span>
+                    </button>
+                    
+                    <button class="btn-primary btn-block" id="exportJsonBtn">
+                        📦 Экспорт в JSON
+                        <span class="btn-description">Структурированные данные с настройками</span>
+                    </button>
+                    
+                    <button class="btn-primary btn-block" id="exportCsvBtn">
+                        📊 Экспорт в CSV
+                        <span class="btn-description">Таблица для Excel/Google Sheets</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeExportModal()">Отмена</button>
             </div>
         </div>
-        
-        <div class="modal-footer">
-            <button class="btn-secondary" onclick="closeExportModal()">Отмена</button>
-        </div>
     </div>
-</div>
 
+    
+    <!-- JavaScript Libraries -->
+    <!-- НОВОЕ: Railroad Diagrams Library -->
+    <script src="lib/railroad-diagrams.js"></script>
     
     <!-- JavaScript Modules -->
     <script src="js/utils.js"></script>
@@ -714,6 +765,8 @@
     <script src="js/export.js"></script>
     <script src="js/history.js"></script>
     <script src="js/tester.js"></script>
+    <!-- НОВОЕ: Visualizer Module -->
+    <script src="js/visualizer.js"></script>
     <script src="js/main.js"></script>
     <script src="js/inline-scripts.js"></script>
 </body>
