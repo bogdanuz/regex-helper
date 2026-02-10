@@ -1,6 +1,7 @@
 /* ============================================
    REGEXHELPER - MAIN
    Главный файл приложения
+   Версия: 2.0 (Группа 6 - конвертация связанных групп)
    ============================================ */
 
 /* ============================================
@@ -251,7 +252,7 @@ function updateSimpleTriggerCount() {
 }
 
 /* ============================================
-   ОБРАБОТЧИК КОНВЕРТАЦИИ
+   ОБРАБОТЧИК КОНВЕРТАЦИИ (ОБНОВЛЕНО - Группа 6)
    ============================================ */
 
 /**
@@ -343,7 +344,7 @@ function handleConvert() {
             
             groups.forEach((triggerList, typesKey) => {
                 const types = JSON.parse(typesKey);
-                const groupText = triggerList.join('\n');
+                const groupText = triggerList.join('\\n');
                 
                 console.log(`[Main] Конвертация группы: ${triggerList.length} триггеров с настройками:`, types);
                 
@@ -361,23 +362,42 @@ function handleConvert() {
         }
 
         // ========================================
-        // ДОБАВЛЯЕМ СВЯЗАННЫЕ ТРИГГЕРЫ
+        // КОНВЕРТАЦИЯ СВЯЗАННЫХ ТРИГГЕРОВ (НОВОЕ - Группа 6)
         // ========================================
         if (hasLinked) {
-            const permutations = generateLinkedPermutations();
-            const permutationCount = countLinkedPermutations();
-
-            if (permutationCount > 100) {
-                showToast('warning', 'Большое количество перестановок может замедлить работу приложения');
+            console.log('[Main] ========== КОНВЕРТАЦИЯ СВЯЗАННЫХ ГРУПП ==========');
+            
+            // Получаем все группы с настройками
+            const linkedGroups = getLinkedGroups();
+            
+            console.log(`[Main] Найдено ${linkedGroups.length} связанных групп`);
+            
+            if (linkedGroups.length > 0) {
+                // Конвертируем все группы (используя НОВУЮ ЛОГИКУ)
+                const linkedRegex = convertLinkedGroups(linkedGroups);
+                
+                if (linkedRegex) {
+                    console.log('[Main] Связанные группы конвертированы успешно');
+                    
+                    // Добавляем к общему regex
+                    if (regex) {
+                        regex = regex + '|' + linkedRegex;
+                    } else {
+                        regex = linkedRegex;
+                    }
+                    
+                    // Подсчитываем количество триггеров в группах
+                    linkedGroups.forEach(group => {
+                        allTriggersProcessed += group.triggers.length;
+                    });
+                    
+                    console.log(`[Main] ✓ Добавлено ${linkedGroups.length} связанных групп`);
+                } else {
+                    console.warn('[Main] Конвертация связанных групп вернула пустой результат');
+                }
             }
-
-            if (regex) {
-                regex = regex + '|' + permutations.join('|');
-            } else {
-                regex = permutations.join('|');
-            }
-
-            console.log(`[Main] Добавлено ${permutationCount} перестановок`);
+            
+            console.log('[Main] ===================================================');
         }
 
         // Проверка итогового regex
@@ -431,9 +451,11 @@ function handleConvert() {
                 allTriggers = allTriggers.concat(simpleTriggers);
             }
 
-            if (hasLinked && typeof generateLinkedPermutations === 'function') {
-                const linkedStrings = generateLinkedPermutations();
-                allTriggers = allTriggers.concat(linkedStrings);
+            if (hasLinked) {
+                const linkedGroups = getLinkedGroups();
+                linkedGroups.forEach(group => {
+                    allTriggers = allTriggers.concat(group.triggers);
+                });
             }
         } catch (e) {
             logError('handleConvert:allTriggers', e);
@@ -700,4 +722,4 @@ document.addEventListener('DOMContentLoaded', () => {
 window.clearSimpleTriggers = clearSimpleTriggers;
 window.clearResultRegex = clearResultRegex;
 
-console.log('✓ Модуль main.js загружен');
+console.log('✓ Модуль main.js загружен (v2.0 - конвертация связанных групп)');
