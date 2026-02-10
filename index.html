@@ -665,6 +665,44 @@
             </div>
         </div>
     </div>
+
+    <!-- ДОБАВИТЬ ЭТУ МОДАЛКУ: -->
+
+<!-- Модальное окно экспорта -->
+<div id="exportModal" class="modal-overlay" style="display: none;">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>💾 Экспорт результата</h3>
+            <button class="modal-close" onclick="closeExportModal()">✕</button>
+        </div>
+        
+        <div class="modal-body">
+            <p>Выберите формат для экспорта регулярного выражения:</p>
+            
+            <div class="export-options">
+                <button class="btn-primary btn-block" id="exportTxtBtn">
+                    📄 Экспорт в TXT
+                    <span class="btn-description">Простой текстовый файл с regex и триггерами</span>
+                </button>
+                
+                <button class="btn-primary btn-block" id="exportJsonBtn">
+                    📦 Экспорт в JSON
+                    <span class="btn-description">Структурированные данные с настройками</span>
+                </button>
+                
+                <button class="btn-primary btn-block" id="exportCsvBtn">
+                    📊 Экспорт в CSV
+                    <span class="btn-description">Таблица для Excel/Google Sheets</span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="modal-footer">
+            <button class="btn-secondary" onclick="closeExportModal()">Отмена</button>
+        </div>
+    </div>
+</div>
+
     
     <!-- JavaScript Modules -->
     <script src="js/utils.js"></script>
