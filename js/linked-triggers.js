@@ -1,34 +1,64 @@
 /* ============================================
    REGEXHELPER - LINKED TRIGGERS
-   Управление связанными триггерами (перестановки)
+   Управление связанными триггерами с подгруппами
    
-   ВЕРСИЯ: 2.0 (CRIT-1 исправлен + anyOrder реализован)
-   ДАТА: 10.02.2026
+   ВЕРСИЯ: 3.0 (Подгруппы + режимы связи)
+   ДАТА: 11.02.2026
    ИЗМЕНЕНИЯ:
-   - CRIT-1: Удален type3 из настроек групп
-   - Type 3 реализован через distanceType (fixed/any/paragraph/line)
-   - Задача 2.4: UI настроек группы (модалка + кнопка ⚙️)
-   - localStorage для групп
-   - Показ/скрытие полей min/max для distanceType='fixed'
+   - БЛОК 3: Подгруппы (2 уровня вложенности)
+   - БЛОК 3: 3 режима связи групп (индивидуальные/общий/альтернация)
+   - БЛОК 9: Лимиты обновлены (15/15/15)
+   - Поддержка сложных структур групп
    ============================================ */
 
 /* ============================================
-   КОНСТАНТЫ И ЛИМИТЫ
+   КОНСТАНТЫ И ЛИМИТЫ (ОБНОВЛЕНО v3.0)
    ============================================ */
 
 const LINKED_LIMITS = {
-    MAX_GROUPS: 10,              // Максимум групп
-    MAX_TRIGGERS_PER_GROUP: 9,   // Максимум триггеров в группе
-    MIN_TRIGGERS_PER_GROUP: 2,   // Минимум триггеров в группе
-    PERMUTATION_WARNING: 720     // Предупреждение если перестановок > 720 (6!)
+    MAX_GROUPS: 15,                  // Максимум групп (было 10)
+    MAX_TRIGGERS_PER_GROUP: 15,      // Максимум триггеров в группе (было 9)
+    MAX_SUBGROUPS_PER_GROUP: 15,     // Максимум подгрупп в группе (НОВОЕ)
+    MIN_TRIGGERS_PER_GROUP: 2,       // Минимум триггеров в группе
+    MIN_TRIGGERS_PER_SUBGROUP: 1,    // Минимум триггеров в подгруппе (НОВОЕ)
+    PERMUTATION_WARNING: 10          // Предупреждение если перестановок > 10 (ОБНОВЛЕНО)
 };
 
-// Счётчик для уникальных ID
+// Счётчики для уникальных ID
 let linkedGroupCounter = 0;
+let linkedSubgroupCounter = 0;
 let linkedFieldCounter = 0;
 
-// localStorage ключ для настроек групп
+// localStorage ключи
 const LINKED_SETTINGS_KEY = 'regexhelper_linked_settings';
+const LINKED_MODE_KEY = 'regexhelper_linked_mode'; // НОВОЕ: режим связи
+
+/* ============================================
+   РЕЖИМЫ СВЯЗИ ГРУПП (НОВОЕ v3.0)
+   ============================================ */
+
+const LINK_MODES = {
+    INDIVIDUAL: 'individual',     // Индивидуальные параметры для каждой пары
+    COMMON: 'common',             // Общий параметр для всех групп
+    ALTERNATION: 'alternation'    // Альтернация (объединить через |)
+};
+
+/**
+ * Получить текущий режим связи из localStorage
+ * @returns {string} - Режим связи (по умолчанию 'individual')
+ */
+function getLinkMode() {
+    return localStorage.getItem(LINKED_MODE_KEY) || LINK_MODES.INDIVIDUAL;
+}
+
+/**
+ * Установить режим связи в localStorage
+ * @param {string} mode - Режим связи
+ */
+function setLinkMode(mode) {
+    localStorage.setItem(LINKED_MODE_KEY, mode);
+    console.log(`[LinkedTriggers] Режим связи установлен: ${mode}`);
+}
 
 /* ============================================
    ИНИЦИАЛИЗАЦИЯ
@@ -45,17 +75,45 @@ function initLinkedTriggers() {
         return;
     }
     
-    // Устанавливаем event listener на кнопку "Добавить группу"
+    // Кнопка "Добавить группу"
     const addGroupBtn = document.getElementById('addLinkedGroupBtn');
     if (addGroupBtn) {
         addGroupBtn.addEventListener('click', addLinkedGroup);
     }
     
-    console.log('[LinkedTriggers] Модуль инициализирован');
+    // Радиокнопки режима связи (НОВОЕ v3.0)
+    const modeRadios = document.querySelectorAll('input[name="linkMode"]');
+    if (modeRadios.length > 0) {
+        // Устанавливаем текущий режим
+        const currentMode = getLinkMode();
+        modeRadios.forEach(radio => {
+            radio.checked = (radio.value === currentMode);
+            radio.addEventListener('change', (e) => {
+                setLinkMode(e.target.value);
+                showToast('info', `Режим связи изменен: ${getModeLabel(e.target.value)}`);
+            });
+        });
+    }
+    
+    console.log('[LinkedTriggers] Модуль инициализирован (v3.0 с подгруппами)');
+}
+
+/**
+ * Получить человекочитаемую метку режима
+ * @param {string} mode - Режим связи
+ * @returns {string}
+ */
+function getModeLabel(mode) {
+    switch (mode) {
+        case LINK_MODES.INDIVIDUAL: return 'Индивидуальные параметры';
+        case LINK_MODES.COMMON: return 'Общий параметр';
+        case LINK_MODES.ALTERNATION: return 'Альтернация';
+        default: return mode;
+    }
 }
 
 /* ============================================
-   СОЗДАНИЕ ГРУППЫ
+   СОЗДАНИЕ ГРУППЫ (ОБНОВЛЕНО v3.0)
    ============================================ */
 
 /**
@@ -69,7 +127,7 @@ function addLinkedGroup() {
         return;
     }
     
-    // Проверка лимита групп
+    // Проверка лимита групп (ОБНОВЛЕНО: 15)
     const currentGroups = container.querySelectorAll('.linked-group').length;
     if (currentGroups >= LINKED_LIMITS.MAX_GROUPS) {
         showToast('warning', `Максимум ${LINKED_LIMITS.MAX_GROUPS} групп связанных триггеров`);
@@ -78,13 +136,13 @@ function addLinkedGroup() {
     
     const groupId = `linkedGroup_${++linkedGroupCounter}`;
     
-    // Создаём HTML группы (с кнопкой ⚙️)
+    // Создаём HTML группы (ОБНОВЛЕНО: с кнопкой "Добавить подгруппу")
     const groupDiv = document.createElement('div');
     groupDiv.className = 'linked-group';
     groupDiv.id = groupId;
     groupDiv.innerHTML = `
         <div class="linked-group-header">
-            <span class="linked-group-title">Группа ${currentGroups + 1}</span>
+            <span class="linked-group-title">📁 Группа ${currentGroups + 1}</span>
             <div class="group-actions">
                 <button class="btn-icon btn-settings" id="${groupId}_settingsBtn" onclick="openGroupSettingsModal('${groupId}')" title="Настройки группы">⚙️</button>
                 <button class="btn-icon btn-icon-warning" onclick="clearLinkedGroup('${groupId}')" title="Очистить все поля группы">🗑️</button>
@@ -92,27 +150,342 @@ function addLinkedGroup() {
             </div>
         </div>
         <div class="linked-group-body" id="${groupId}_body">
-            <!-- Поля будут добавляться динамически -->
+            <!-- Подгруппы будут добавляться динамически -->
         </div>
-        <button class="btn-secondary btn-sm mt-1" onclick="addTriggerField('${groupId}')" id="${groupId}_addBtn">
-            + Добавить триггер
-        </button>
+        <div class="group-footer">
+            <button class="btn-secondary btn-sm" onclick="addSubgroup('${groupId}')" id="${groupId}_addSubgroupBtn">
+                + Добавить подгруппу
+            </button>
+        </div>
     `;
     
     container.appendChild(groupDiv);
     
-    // Добавляем 2 поля по умолчанию
-    addTriggerField(groupId);
-    addTriggerField(groupId);
+    // Добавляем 1 подгруппу по умолчанию с 2 полями
+    addSubgroup(groupId);
     
-    // Обновляем UI кнопки настроек (белая по умолчанию)
+    // Обновляем UI
     updateGroupSettingsUI();
     
     console.log(`[LinkedTriggers] Группа ${groupId} создана`);
 }
 
 /* ============================================
-   УДАЛЕНИЕ ГРУППЫ
+   ПОДГРУППЫ (НОВОЕ v3.0)
+   ============================================ */
+
+/**
+ * Добавить подгруппу в группу
+ * @param {string} groupId - ID группы
+ */
+function addSubgroup(groupId) {
+    const groupBody = document.getElementById(`${groupId}_body`);
+    
+    if (!groupBody) {
+        console.error(`[LinkedTriggers] Группа ${groupId} не найдена`);
+        return;
+    }
+    
+    // Проверка лимита подгрупп
+    const currentSubgroups = groupBody.querySelectorAll('.linked-subgroup').length;
+    if (currentSubgroups >= LINKED_LIMITS.MAX_SUBGROUPS_PER_GROUP) {
+        showToast('warning', `Максимум ${LINKED_LIMITS.MAX_SUBGROUPS_PER_GROUP} подгрупп в группе`);
+        return;
+    }
+    
+    const subgroupId = `linkedSubgroup_${++linkedSubgroupCounter}`;
+    const subgroupIndex = currentSubgroups + 1;
+    
+    // Создаём HTML подгруппы
+    const subgroupDiv = document.createElement('div');
+    subgroupDiv.className = 'linked-subgroup';
+    subgroupDiv.id = subgroupId;
+    subgroupDiv.dataset.groupId = groupId;
+    subgroupDiv.innerHTML = `
+        <div class="subgroup-header">
+            <span class="subgroup-title">📂 Подгруппа ${subgroupIndex}</span>
+            <button class="btn-icon btn-icon-sm" onclick="removeSubgroup('${groupId}', '${subgroupId}')" title="Удалить подгруппу">×</button>
+        </div>
+        <div class="subgroup-body" id="${subgroupId}_body">
+            <!-- Поля триггеров -->
+        </div>
+        <button class="btn-link btn-sm" onclick="addTriggerField('${groupId}', '${subgroupId}')" id="${subgroupId}_addBtn">
+            + Добавить триггер
+        </button>
+        
+        <!-- Связь между подгруппами (если не последняя) -->
+        <div class="subgroup-connection" id="${subgroupId}_connection" style="display: none;">
+            <label class="connection-label">↓ Связь с следующей подгруппой:</label>
+            <select class="connection-select" id="${subgroupId}_distanceType" onchange="updateConnectionUI('${subgroupId}')">
+                <option value="fixed">.{min,max} (фиксированное)</option>
+                <option value="any">[\\\\s\\\\S]+ (любое расстояние)</option>
+                <option value="paragraph">.+ (в пределах абзаца)</option>
+                <option value="line">[^\\\\n]+ (в пределах строки)</option>
+            </select>
+            <div class="connection-minmax" id="${subgroupId}_minmax">
+                <input type="number" id="${subgroupId}_min" class="input-sm" placeholder="min" value="1" min="0" max="999">
+                <span>—</span>
+                <input type="number" id="${subgroupId}_max" class="input-sm" placeholder="max" value="7" min="1" max="999">
+            </div>
+        </div>
+    `;
+    
+    groupBody.appendChild(subgroupDiv);
+    
+    // Добавляем 2 поля триггеров по умолчанию
+    addTriggerField(groupId, subgroupId);
+    addTriggerField(groupId, subgroupId);
+    
+    // Обновляем связи (показываем/скрываем connection блоки)
+    updateSubgroupConnections(groupId);
+    
+    // Обновляем состояние кнопки "Добавить подгруппу"
+    updateAddSubgroupButtonState(groupId);
+    
+    console.log(`[LinkedTriggers] Подгруппа ${subgroupId} добавлена в ${groupId}`);
+}
+
+/**
+ * Удалить подгруппу
+ * @param {string} groupId - ID группы
+ * @param {string} subgroupId - ID подгруппы
+ */
+function removeSubgroup(groupId, subgroupId) {
+    const subgroup = document.getElementById(subgroupId);
+    const groupBody = document.getElementById(`${groupId}_body`);
+    
+    if (!subgroup || !groupBody) {
+        console.error(`[LinkedTriggers] Подгруппа ${subgroupId} не найдена`);
+        return;
+    }
+    
+    // Проверка: минимум 1 подгруппа
+    const currentSubgroups = groupBody.querySelectorAll('.linked-subgroup').length;
+    if (currentSubgroups <= 1) {
+        showToast('warning', 'Минимум 1 подгруппа в группе');
+        return;
+    }
+    
+    subgroup.remove();
+    
+    // Обновляем нумерацию подгрупп
+    updateSubgroupNumbers(groupId);
+    
+    // Обновляем связи
+    updateSubgroupConnections(groupId);
+    
+    // Обновляем состояние кнопки
+    updateAddSubgroupButtonState(groupId);
+    
+    console.log(`[LinkedTriggers] Подгруппа ${subgroupId} удалена`);
+}
+
+/**
+ * Обновить нумерацию подгрупп
+ * @param {string} groupId - ID группы
+ */
+function updateSubgroupNumbers(groupId) {
+    const groupBody = document.getElementById(`${groupId}_body`);
+    if (!groupBody) return;
+    
+    const subgroups = groupBody.querySelectorAll('.linked-subgroup');
+    subgroups.forEach((subgroup, index) => {
+        const title = subgroup.querySelector('.subgroup-title');
+        if (title) {
+            title.textContent = `📂 Подгруппа ${index + 1}`;
+        }
+    });
+}
+
+/**
+ * Обновить связи между подгруппами (показать/скрыть connection блоки)
+ * @param {string} groupId - ID группы
+ */
+function updateSubgroupConnections(groupId) {
+    const groupBody = document.getElementById(`${groupId}_body`);
+    if (!groupBody) return;
+    
+    const subgroups = groupBody.querySelectorAll('.linked-subgroup');
+    
+    subgroups.forEach((subgroup, index) => {
+        const subgroupId = subgroup.id;
+        const connection = document.getElementById(`${subgroupId}_connection`);
+        
+        if (!connection) return;
+        
+        // Показываем connection только если это НЕ последняя подгруппа
+        if (index < subgroups.length - 1) {
+            connection.style.display = 'block';
+        } else {
+            connection.style.display = 'none';
+        }
+    });
+}
+
+/**
+ * Обновить UI связи (показать/скрыть min/max)
+ * @param {string} subgroupId - ID подгруппы
+ */
+function updateConnectionUI(subgroupId) {
+    const distanceTypeSelect = document.getElementById(`${subgroupId}_distanceType`);
+    const minMaxDiv = document.getElementById(`${subgroupId}_minmax`);
+    
+    if (!distanceTypeSelect || !minMaxDiv) return;
+    
+    const distanceType = distanceTypeSelect.value;
+    
+    if (distanceType === 'fixed') {
+        minMaxDiv.style.display = 'flex';
+    } else {
+        minMaxDiv.style.display = 'none';
+    }
+}
+
+/**
+ * Обновить состояние кнопки "Добавить подгруппу"
+ * @param {string} groupId - ID группы
+ */
+function updateAddSubgroupButtonState(groupId) {
+    const groupBody = document.getElementById(`${groupId}_body`);
+    const addBtn = document.getElementById(`${groupId}_addSubgroupBtn`);
+    
+    if (!groupBody || !addBtn) return;
+    
+    const currentSubgroups = groupBody.querySelectorAll('.linked-subgroup').length;
+    
+    if (currentSubgroups >= LINKED_LIMITS.MAX_SUBGROUPS_PER_GROUP) {
+        addBtn.disabled = true;
+        addBtn.title = `Максимум ${LINKED_LIMITS.MAX_SUBGROUPS_PER_GROUP} подгрупп`;
+    } else {
+        addBtn.disabled = false;
+        addBtn.title = 'Добавить подгруппу';
+    }
+}
+
+/* ============================================
+   ДОБАВЛЕНИЕ ПОЛЯ (ОБНОВЛЕНО v3.0)
+   ============================================ */
+
+/**
+ * Добавить поле триггера в подгруппу
+ * @param {string} groupId - ID группы
+ * @param {string} subgroupId - ID подгруппы
+ */
+function addTriggerField(groupId, subgroupId) {
+    const subgroupBody = document.getElementById(`${subgroupId}_body`);
+    
+    if (!subgroupBody) {
+        console.error(`[LinkedTriggers] Подгруппа ${subgroupId} не найдена`);
+        return;
+    }
+    
+    // Проверка лимита полей
+    const currentFields = subgroupBody.querySelectorAll('.linked-field').length;
+    if (currentFields >= LINKED_LIMITS.MAX_TRIGGERS_PER_GROUP) {
+        showToast('warning', `Максимум ${LINKED_LIMITS.MAX_TRIGGERS_PER_GROUP} триггеров в подгруппе`);
+        return;
+    }
+    
+    const fieldId = `linkedField_${++linkedFieldCounter}`;
+    
+    // Создаём HTML поля
+    const fieldDiv = document.createElement('div');
+    fieldDiv.className = 'linked-field';
+    fieldDiv.id = fieldId;
+    fieldDiv.innerHTML = `
+        <input 
+            type="text" 
+            class="input linked-input" 
+            placeholder="Триггер ${currentFields + 1}"
+            data-group="${groupId}"
+            data-subgroup="${subgroupId}"
+            data-field="${fieldId}"
+        >
+        <button class="btn-icon btn-icon-sm" onclick="removeTriggerField('${groupId}', '${subgroupId}', '${fieldId}')" title="Удалить триггер">×</button>
+    `;
+    
+    subgroupBody.appendChild(fieldDiv);
+    
+    // Обновляем состояние кнопки "Добавить триггер"
+    updateAddButtonState(subgroupId);
+    
+    console.log(`[LinkedTriggers] Поле ${fieldId} добавлено в ${subgroupId}`);
+}
+
+/* ============================================
+   УДАЛЕНИЕ ПОЛЯ (ОБНОВЛЕНО v3.0)
+   ============================================ */
+
+/**
+ * Удалить поле триггера из подгруппы
+ * @param {string} groupId - ID группы
+ * @param {string} subgroupId - ID подгруппы
+ * @param {string} fieldId - ID поля
+ */
+function removeTriggerField(groupId, subgroupId, fieldId) {
+    const field = document.getElementById(fieldId);
+    const subgroupBody = document.getElementById(`${subgroupId}_body`);
+    
+    if (!field || !subgroupBody) {
+        console.error(`[LinkedTriggers] Поле ${fieldId} не найдено`);
+        return;
+    }
+    
+    // Проверка минимума полей
+    const currentFields = subgroupBody.querySelectorAll('.linked-field').length;
+    if (currentFields <= LINKED_LIMITS.MIN_TRIGGERS_PER_SUBGROUP) {
+        showToast('warning', `Минимум ${LINKED_LIMITS.MIN_TRIGGERS_PER_SUBGROUP} триггер в подгруппе`);
+        return;
+    }
+    
+    field.remove();
+    
+    // Обновляем placeholder'ы
+    updateFieldPlaceholders(subgroupId);
+    
+    // Обновляем состояние кнопки
+    updateAddButtonState(subgroupId);
+    
+    console.log(`[LinkedTriggers] Поле ${fieldId} удалено`);
+}
+
+/**
+ * Обновить placeholder'ы после удаления поля
+ * @param {string} subgroupId - ID подгруппы
+ */
+function updateFieldPlaceholders(subgroupId) {
+    const subgroupBody = document.getElementById(`${subgroupId}_body`);
+    if (!subgroupBody) return;
+    
+    const fields = subgroupBody.querySelectorAll('.linked-input');
+    fields.forEach((input, index) => {
+        input.placeholder = `Триггер ${index + 1}`;
+    });
+}
+
+/**
+ * Обновить состояние кнопки "Добавить триггер"
+ * @param {string} subgroupId - ID подгруппы
+ */
+function updateAddButtonState(subgroupId) {
+    const subgroupBody = document.getElementById(`${subgroupId}_body`);
+    const addBtn = document.getElementById(`${subgroupId}_addBtn`);
+    
+    if (!subgroupBody || !addBtn) return;
+    
+    const currentFields = subgroupBody.querySelectorAll('.linked-field').length;
+    
+    if (currentFields >= LINKED_LIMITS.MAX_TRIGGERS_PER_GROUP) {
+        addBtn.disabled = true;
+        addBtn.title = `Максимум ${LINKED_LIMITS.MAX_TRIGGERS_PER_GROUP} триггеров`;
+    } else {
+        addBtn.disabled = false;
+        addBtn.title = 'Добавить триггер';
+    }
+}
+
+/* ============================================
+   УДАЛЕНИЕ ГРУППЫ (БЕЗ ИЗМЕНЕНИЙ)
    ============================================ */
 
 /**
@@ -132,13 +505,9 @@ function removeLinkedGroup(groupId) {
         'Подтверждение',
         'Удалить эту группу связанных триггеров?',
         () => {
-            // Удаляем настройки группы из localStorage
             removeGroupSettings(groupId);
-            
-            // Удаляем HTML элемент
             container.removeChild(group);
             updateGroupNumbers();
-            
             console.log(`[LinkedTriggers] Группа ${groupId} удалена`);
         },
         null
@@ -156,209 +525,53 @@ function updateGroupNumbers() {
     groups.forEach((group, index) => {
         const title = group.querySelector('.linked-group-title');
         if (title) {
-            title.textContent = `Группа ${index + 1}`;
+            title.textContent = `📁 Группа ${index + 1}`;
         }
     });
 }
 
 /* ============================================
-   ДОБАВЛЕНИЕ ПОЛЯ
+   НАСТРОЙКИ ГРУПП (БЕЗ ИЗМЕНЕНИЙ)
    ============================================ */
 
-/**
- * Добавить поле триггера в группу
- * @param {string} groupId - ID группы
- */
-function addTriggerField(groupId) {
-    const groupBody = document.getElementById(`${groupId}_body`);
-    
-    if (!groupBody) {
-        console.error(`[LinkedTriggers] Тело группы ${groupId} не найдено`);
-        return;
-    }
-    
-    // Проверка лимита полей в группе
-    const currentFields = groupBody.querySelectorAll('.linked-field').length;
-    if (currentFields >= LINKED_LIMITS.MAX_TRIGGERS_PER_GROUP) {
-        showToast('warning', `Максимум ${LINKED_LIMITS.MAX_TRIGGERS_PER_GROUP} триггеров в группе`);
-        return;
-    }
-    
-    const fieldId = `linkedField_${++linkedFieldCounter}`;
-    
-    // Создаём HTML поля
-    const fieldDiv = document.createElement('div');
-    fieldDiv.className = 'linked-field';
-    fieldDiv.id = fieldId;
-    fieldDiv.innerHTML = `
-        <input 
-            type="text" 
-            class="input linked-input" 
-            placeholder="Триггер ${currentFields + 1}"
-            data-group="${groupId}"
-            data-field="${fieldId}"
-        >
-        <button class="btn-icon btn-icon-sm" onclick="removeTriggerField('${groupId}', '${fieldId}')" title="Удалить это поле триггера">×</button>
-    `;
-    
-    groupBody.appendChild(fieldDiv);
-    
-    // Обновляем состояние кнопки "Добавить триггер"
-    updateAddButtonState(groupId);
-    
-    console.log(`[LinkedTriggers] Поле ${fieldId} добавлено в ${groupId}`);
-}
-
-/* ============================================
-   УДАЛЕНИЕ ПОЛЯ
-   ============================================ */
-
-/**
- * Удалить поле триггера из группы
- * @param {string} groupId - ID группы
- * @param {string} fieldId - ID поля
- */
-function removeTriggerField(groupId, fieldId) {
-    const field = document.getElementById(fieldId);
-    const groupBody = document.getElementById(`${groupId}_body`);
-    
-    if (!field || !groupBody) {
-        console.error(`[LinkedTriggers] Поле ${fieldId} или группа ${groupId} не найдены`);
-        return;
-    }
-    
-    // Проверка минимума полей
-    const currentFields = groupBody.querySelectorAll('.linked-field').length;
-    if (currentFields <= LINKED_LIMITS.MIN_TRIGGERS_PER_GROUP) {
-        showToast('warning', `Минимум ${LINKED_LIMITS.MIN_TRIGGERS_PER_GROUP} триггера в группе`);
-        return;
-    }
-    
-    field.remove();
-    
-    // Обновляем placeholder'ы
-    updateFieldPlaceholders(groupId);
-    
-    // Обновляем состояние кнопки "Добавить триггер"
-    updateAddButtonState(groupId);
-    
-    console.log(`[LinkedTriggers] Поле ${fieldId} удалено из ${groupId}`);
-}
-
-/**
- * Обновить placeholder'ы после удаления поля
- * @param {string} groupId - ID группы
- */
-function updateFieldPlaceholders(groupId) {
-    const groupBody = document.getElementById(`${groupId}_body`);
-    if (!groupBody) return;
-    
-    const fields = groupBody.querySelectorAll('.linked-input');
-    fields.forEach((input, index) => {
-        input.placeholder = `Триггер ${index + 1}`;
-    });
-}
-
-/**
- * Обновить состояние кнопки "Добавить триггер"
- * @param {string} groupId - ID группы
- */
-function updateAddButtonState(groupId) {
-    const groupBody = document.getElementById(`${groupId}_body`);
-    const addBtn = document.getElementById(`${groupId}_addBtn`);
-    
-    if (!groupBody || !addBtn) return;
-    
-    const currentFields = groupBody.querySelectorAll('.linked-field').length;
-    
-    if (currentFields >= LINKED_LIMITS.MAX_TRIGGERS_PER_GROUP) {
-        addBtn.disabled = true;
-        addBtn.title = `Максимум ${LINKED_LIMITS.MAX_TRIGGERS_PER_GROUP} триггеров`;
-    } else {
-        addBtn.disabled = false;
-        addBtn.title = 'Добавить триггер';
-    }
-}
-
-/* ============================================
-   НАСТРОЙКИ ГРУПП (ИСПРАВЛЕНО v2.0)
-   ============================================ */
-
-/**
- * Получить настройки группы из localStorage
- * @param {string} groupId - ID группы
- * @returns {Object|null} - Настройки группы или null
- */
 function getGroupSettings(groupId) {
     const allSettings = JSON.parse(localStorage.getItem(LINKED_SETTINGS_KEY) || '{}');
     return allSettings[groupId] || null;
 }
 
-/**
- * Установить настройки группы в localStorage
- * @param {string} groupId - ID группы
- * @param {Object} settings - Настройки группы
- */
 function setGroupSettings(groupId, settings) {
     const allSettings = JSON.parse(localStorage.getItem(LINKED_SETTINGS_KEY) || '{}');
     allSettings[groupId] = settings;
     localStorage.setItem(LINKED_SETTINGS_KEY, JSON.stringify(allSettings));
-    
     console.log(`[LinkedTriggers] Настройки группы ${groupId} сохранены:`, settings);
 }
 
-/**
- * Удалить настройки группы из localStorage
- * @param {string} groupId - ID группы
- */
 function removeGroupSettings(groupId) {
     const allSettings = JSON.parse(localStorage.getItem(LINKED_SETTINGS_KEY) || '{}');
     delete allSettings[groupId];
     localStorage.setItem(LINKED_SETTINGS_KEY, JSON.stringify(allSettings));
-    
     console.log(`[LinkedTriggers] Настройки группы ${groupId} удалены`);
 }
 
-/**
- * Проверить наличие индивидуальных настроек группы
- * @param {string} groupId - ID группы
- * @returns {boolean}
- */
 function hasGroupSettings(groupId) {
     return getGroupSettings(groupId) !== null;
 }
 
-/**
- * Получить эффективные настройки группы (индивидуальные или глобальные)
- * 
- * ИСПРАВЛЕНО v2.0: type3 УДАЛЕН!
- * Type 3 реализован через distanceType (fixed/any/paragraph/line)
- * 
- * @param {string} groupId - ID группы
- * @param {Object} globalSettings - Глобальные настройки
- * @returns {Object} - Финальные настройки
- */
 function getEffectiveGroupSettings(groupId, globalSettings) {
     const groupSettings = getGroupSettings(groupId);
     
     if (groupSettings) {
-        // Есть индивидуальные настройки → используем их
         console.log(`[LinkedTriggers] Группа ${groupId}: ИНДИВИДУАЛЬНЫЕ настройки`, groupSettings);
         return groupSettings;
     }
     
-    // Нет индивидуальных настроек → используем ГЛОБАЛЬНЫЕ + дефолт для расстояния
     const effectiveSettings = {
-        // Настройки расстояния (Type 3 реализован ЗДЕСЬ!)
         distanceType: 'fixed',
         distanceMin: 1,
         distanceMax: 7,
         anyOrder: false,
-        
-        // Оптимизации триггеров (БЕЗ type3!)
         type1: globalSettings.type1 || false,
         type2: globalSettings.type2 || false,
-        // type3: УДАЛЕН! (реализован через distanceType)
         type4: globalSettings.type4 || false,
         type5: globalSettings.type5 || false
     };
@@ -367,33 +580,23 @@ function getEffectiveGroupSettings(groupId, globalSettings) {
     return effectiveSettings;
 }
 
-/**
- * Открыть модальное окно настроек группы
- * 
- * ИСПРАВЛЕНО v2.0: type3 УДАЛЕН!
- * 
- * @param {string} groupId - ID группы
- */
 function openGroupSettingsModal(groupId) {
     const modal = document.getElementById('groupSettingsModal');
     
     if (!modal) {
         console.error('[LinkedTriggers] Модальное окно groupSettingsModal не найдено');
-        showToast('error', 'Модальное окно настроек не найдено. Проверьте index.html');
+        showToast('error', 'Модальное окно настроек не найдено');
         return;
     }
     
-    // Получаем название группы
     const group = document.getElementById(groupId);
     const groupTitle = group ? group.querySelector('.linked-group-title').textContent : groupId;
     
-    // Устанавливаем заголовок модального окна
     const modalTitle = modal.querySelector('.modal-title');
     if (modalTitle) {
         modalTitle.textContent = `⚙ Настройки: ${groupTitle}`;
     }
     
-    // Получаем текущие настройки (или глобальные по умолчанию)
     const globalSettings = getGlobalOptimizationStates();
     const currentSettings = getGroupSettings(groupId) || {
         distanceType: 'fixed',
@@ -402,63 +605,48 @@ function openGroupSettingsModal(groupId) {
         anyOrder: false,
         type1: globalSettings.type1,
         type2: globalSettings.type2,
-        // type3: УДАЛЕН!
         type4: globalSettings.type4,
         type5: globalSettings.type5
     };
     
-    // Заполняем форму
     const distanceTypeRadios = modal.querySelectorAll('input[name="groupDistanceType"]');
     distanceTypeRadios.forEach(radio => {
         radio.checked = (radio.value === currentSettings.distanceType);
     });
     
-    // Поля min/max
     const minInput = modal.querySelector('#groupDistanceMin');
     const maxInput = modal.querySelector('#groupDistanceMax');
     if (minInput) minInput.value = currentSettings.distanceMin;
     if (maxInput) maxInput.value = currentSettings.distanceMax;
     
-    // Показываем/скрываем поля min/max в зависимости от типа
     toggleDistanceFields(currentSettings.distanceType);
     
-    // Чекбокс "Любая последовательность"
     const anyOrderCheckbox = modal.querySelector('#groupAnyOrder');
     if (anyOrderCheckbox) anyOrderCheckbox.checked = currentSettings.anyOrder;
     
-    // Чекбоксы оптимизаций (ИСПРАВЛЕНО: БЕЗ type3!)
     const type1Checkbox = modal.querySelector('#groupType1');
     const type2Checkbox = modal.querySelector('#groupType2');
-    // const type3Checkbox = modal.querySelector('#groupType3');  // ← УДАЛЕНО!
     const type4Checkbox = modal.querySelector('#groupType4');
     const type5Checkbox = modal.querySelector('#groupType5');
     
     if (type1Checkbox) type1Checkbox.checked = currentSettings.type1;
     if (type2Checkbox) type2Checkbox.checked = currentSettings.type2;
-    // if (type3Checkbox) type3Checkbox.checked = currentSettings.type3;  // ← УДАЛЕНО!
     if (type4Checkbox) type4Checkbox.checked = currentSettings.type4;
     if (type5Checkbox) type5Checkbox.checked = currentSettings.type5;
     
-    // Сохраняем groupId в data-атрибуте модального окна
     modal.dataset.groupId = groupId;
     
-    // Event listeners для радиокнопок (показывать/скрывать поля min/max)
     distanceTypeRadios.forEach(radio => {
         radio.addEventListener('change', (e) => {
             toggleDistanceFields(e.target.value);
         });
     });
     
-    // Показываем модальное окно
     modal.style.display = 'block';
     
     console.log(`[LinkedTriggers] Открыто модальное окно настроек для ${groupId}`);
 }
 
-/**
- * Показать/скрыть поля min/max в зависимости от типа расстояния
- * @param {string} distanceType - Тип расстояния
- */
 function toggleDistanceFields(distanceType) {
     const modal = document.getElementById('groupSettingsModal');
     if (!modal) return;
@@ -473,22 +661,16 @@ function toggleDistanceFields(distanceType) {
     }
 }
 
-/**
- * Применить настройки группы (кнопка "Применить" в модальном окне)
- * 
- * ИСПРАВЛЕНО v2.0: type3 УДАЛЕН!
- */
 function applyGroupSettings() {
     const modal = document.getElementById('groupSettingsModal');
     if (!modal) return;
     
     const groupId = modal.dataset.groupId;
     if (!groupId) {
-        console.error('[LinkedTriggers] groupId не найден в модальном окне');
+        console.error('[LinkedTriggers] groupId не найден');
         return;
     }
     
-    // Собираем данные из формы
     const distanceTypeRadio = modal.querySelector('input[name="groupDistanceType"]:checked');
     const distanceType = distanceTypeRadio ? distanceTypeRadio.value : 'fixed';
     
@@ -500,10 +682,8 @@ function applyGroupSettings() {
     const anyOrderCheckbox = modal.querySelector('#groupAnyOrder');
     const anyOrder = anyOrderCheckbox ? anyOrderCheckbox.checked : false;
     
-    // ИСПРАВЛЕНО v2.0: БЕЗ type3!
     const type1Checkbox = modal.querySelector('#groupType1');
     const type2Checkbox = modal.querySelector('#groupType2');
-    // const type3Checkbox = modal.querySelector('#groupType3');  // ← УДАЛЕНО!
     const type4Checkbox = modal.querySelector('#groupType4');
     const type5Checkbox = modal.querySelector('#groupType5');
     
@@ -514,29 +694,18 @@ function applyGroupSettings() {
         anyOrder: anyOrder,
         type1: type1Checkbox ? type1Checkbox.checked : false,
         type2: type2Checkbox ? type2Checkbox.checked : false,
-        // type3: УДАЛЕН! (реализован через distanceType)
         type4: type4Checkbox ? type4Checkbox.checked : false,
         type5: type5Checkbox ? type5Checkbox.checked : false
     };
     
-    // Сохраняем настройки
     setGroupSettings(groupId, settings);
-    
-    // Обновляем UI кнопки (белая → зеленая)
     updateGroupSettingsUI();
-    
-    // Закрываем модальное окно
     closeGroupSettingsModal();
-    
-    // Toast уведомление
     showToast('success', 'Настройки группы применены');
     
     console.log(`[LinkedTriggers] Настройки группы ${groupId} применены`);
 }
 
-/**
- * Сбросить настройки группы (кнопка "Сбросить" в модальном окне)
- */
 function resetGroupSettings() {
     const modal = document.getElementById('groupSettingsModal');
     if (!modal) return;
@@ -544,24 +713,14 @@ function resetGroupSettings() {
     const groupId = modal.dataset.groupId;
     if (!groupId) return;
     
-    // Удаляем настройки из localStorage
     removeGroupSettings(groupId);
-    
-    // Обновляем UI кнопки (зеленая → белая)
     updateGroupSettingsUI();
-    
-    // Закрываем модальное окно
     closeGroupSettingsModal();
-    
-    // Toast уведомление
     showToast('info', 'Настройки группы сброшены');
     
     console.log(`[LinkedTriggers] Настройки группы ${groupId} сброшены`);
 }
 
-/**
- * Закрыть модальное окно настроек группы
- */
 function closeGroupSettingsModal() {
     const modal = document.getElementById('groupSettingsModal');
     if (modal) {
@@ -570,9 +729,6 @@ function closeGroupSettingsModal() {
     }
 }
 
-/**
- * Обновить UI кнопок настроек (белая/зеленая)
- */
 function updateGroupSettingsUI() {
     const container = document.getElementById('linkedTriggersContainer');
     if (!container) return;
@@ -586,11 +742,9 @@ function updateGroupSettingsUI() {
         if (!settingsBtn) return;
         
         if (hasGroupSettings(groupId)) {
-            // Есть индивидуальные настройки → зеленая кнопка
             settingsBtn.classList.add('has-settings');
             settingsBtn.title = 'Настройки группы (индивидуальные)';
         } else {
-            // Нет индивидуальных настроек → белая кнопка
             settingsBtn.classList.remove('has-settings');
             settingsBtn.title = 'Настройки группы';
         }
@@ -598,12 +752,12 @@ function updateGroupSettingsUI() {
 }
 
 /* ============================================
-   ПОЛУЧЕНИЕ ДАННЫХ (ОБНОВЛЕНО)
+   ПОЛУЧЕНИЕ ДАННЫХ (ОБНОВЛЕНО v3.0)
    ============================================ */
 
 /**
- * Получить все группы связанных триггеров (с настройками)
- * @returns {Array} - Массив групп [{id: string, triggers: [string], settings: Object}]
+ * Получить все группы с подгруппами
+ * @returns {Array}
  */
 function getLinkedGroups() {
     const container = document.getElementById('linkedTriggersContainer');
@@ -618,23 +772,51 @@ function getLinkedGroups() {
     
     groupElements.forEach(groupEl => {
         const groupId = groupEl.id;
-        const inputs = groupEl.querySelectorAll('.linked-input');
+        const subgroupElements = groupEl.querySelectorAll('.linked-subgroup');
         
-        const triggers = [];
-        inputs.forEach(input => {
-            const value = cleanString(input.value);
-            if (value) {
-                triggers.push(value);
+        const subgroups = [];
+        
+        subgroupElements.forEach((subgroupEl, subIndex) => {
+            const subgroupId = subgroupEl.id;
+            const inputs = subgroupEl.querySelectorAll('.linked-input');
+            
+            const triggers = [];
+            inputs.forEach(input => {
+                const value = cleanString(input.value);
+                if (value) {
+                    triggers.push(value);
+                }
+            });
+            
+            // Получаем настройки связи (если не последняя подгруппа)
+            let connection = null;
+            if (subIndex < subgroupElements.length - 1) {
+                const distanceTypeSelect = document.getElementById(`${subgroupId}_distanceType`);
+                const minInput = document.getElementById(`${subgroupId}_min`);
+                const maxInput = document.getElementById(`${subgroupId}_max`);
+                
+                connection = {
+                    distanceType: distanceTypeSelect ? distanceTypeSelect.value : 'fixed',
+                    distanceMin: minInput ? parseInt(minInput.value) || 1 : 1,
+                    distanceMax: maxInput ? parseInt(maxInput.value) || 7 : 7
+                };
+            }
+            
+            if (triggers.length >= LINKED_LIMITS.MIN_TRIGGERS_PER_SUBGROUP) {
+                subgroups.push({
+                    id: subgroupId,
+                    triggers: triggers,
+                    connection: connection
+                });
             }
         });
         
-        if (triggers.length >= LINKED_LIMITS.MIN_TRIGGERS_PER_GROUP) {
-            // Получаем эффективные настройки (индивидуальные или глобальные)
+        if (subgroups.length > 0) {
             const settings = getEffectiveGroupSettings(groupId, globalSettings);
             
             groups.push({
                 id: groupId,
-                triggers: triggers,
+                subgroups: subgroups,
                 settings: settings
             });
         }
@@ -653,7 +835,7 @@ function hasLinkedTriggers() {
 }
 
 /* ============================================
-   ВАЛИДАЦИЯ
+   ВАЛИДАЦИЯ (ОБНОВЛЕНО v3.0)
    ============================================ */
 
 /**
@@ -670,30 +852,37 @@ function validateLinkedGroups() {
     const groups = getLinkedGroups();
     
     if (groups.length === 0) {
-        // Нет групп - это OK, валидация проходит
         return result;
     }
     
-    groups.forEach((group, index) => {
-        // Проверка: минимум 2 триггера
-        if (group.triggers.length < LINKED_LIMITS.MIN_TRIGGERS_PER_GROUP) {
+    groups.forEach((group, groupIndex) => {
+        // Проверка подгрупп
+        if (group.subgroups.length === 0) {
             result.valid = false;
-            result.errors.push(`Группа ${index + 1}: минимум ${LINKED_LIMITS.MIN_TRIGGERS_PER_GROUP} триггера`);
+            result.errors.push(`Группа ${groupIndex + 1}: нет подгрупп`);
         }
         
-        // Проверка: есть ли дубликаты
-        const uniqueTriggers = new Set(group.triggers);
-        if (uniqueTriggers.size < group.triggers.length) {
-            result.valid = false;
-            result.errors.push(`Группа ${index + 1}: обнаружены дубликаты`);
-        }
+        group.subgroups.forEach((subgroup, subIndex) => {
+            // Проверка: минимум 1 триггер в подгруппе
+            if (subgroup.triggers.length < LINKED_LIMITS.MIN_TRIGGERS_PER_SUBGROUP) {
+                result.valid = false;
+                result.errors.push(`Группа ${groupIndex + 1}, Подгруппа ${subIndex + 1}: минимум ${LINKED_LIMITS.MIN_TRIGGERS_PER_SUBGROUP} триггер`);
+            }
+            
+            // Проверка дубликатов
+            const uniqueTriggers = new Set(subgroup.triggers);
+            if (uniqueTriggers.size < subgroup.triggers.length) {
+                result.valid = false;
+                result.errors.push(`Группа ${groupIndex + 1}, Подгруппа ${subIndex + 1}: обнаружены дубликаты`);
+            }
+        });
         
-        // Проверка: количество перестановок (если anyOrder включен)
+        // Предупреждение о перестановках (ОБНОВЛЕНО: 10 вместо 720)
         if (group.settings.anyOrder) {
-            const permutationCount = factorial(group.triggers.length);
-            if (permutationCount > LINKED_LIMITS.PERMUTATION_WARNING) {
+            const totalTriggers = group.subgroups.reduce((sum, sg) => sum + sg.triggers.length, 0);
+            if (totalTriggers > LINKED_LIMITS.PERMUTATION_WARNING) {
                 result.warnings.push(
-                    `Группа ${index + 1}: будет создано ${permutationCount} перестановок. Это может замедлить работу.`
+                    `Группа ${groupIndex + 1}: больше ${LINKED_LIMITS.PERMUTATION_WARNING} триггеров с перестановками. Это может создать слишком много вариантов!`
                 );
             }
         }
@@ -703,61 +892,11 @@ function validateLinkedGroups() {
 }
 
 /* ============================================
-   ГЕНЕРАЦИЯ ПЕРЕСТАНОВОК
+   ОЧИСТКА (ОБНОВЛЕНО v3.0)
    ============================================ */
 
 /**
- * Генерация всех перестановок для связанных триггеров
- * @returns {Array} - Массив всех перестановок (строк)
- */
-function generateLinkedPermutations() {
-    const groups = getLinkedGroups();
-    
-    if (groups.length === 0) {
-        return [];
-    }
-    
-    let allPermutations = [];
-    
-    groups.forEach(group => {
-        const permutations = getPermutations(group.triggers);
-        
-        // Объединяем триггеры в строки
-        const permutationStrings = permutations.map(perm => perm.join(' '));
-        
-        allPermutations = allPermutations.concat(permutationStrings);
-    });
-    
-    return allPermutations;
-}
-
-/**
- * Подсчёт общего количества перестановок
- * @returns {number} - Количество перестановок
- */
-function countLinkedPermutations() {
-    const groups = getLinkedGroups();
-    
-    if (groups.length === 0) {
-        return 0;
-    }
-    
-    let totalCount = 0;
-    
-    groups.forEach(group => {
-        const count = factorial(group.triggers.length);
-        totalCount += count;
-    });
-    
-    return totalCount;
-}
-
-/* ============================================
-   ОЧИСТКА
-   ============================================ */
-
-/**
- * Очистить все поля в группе (не удалять саму группу)
+ * Очистить все поля в группе
  * @param {string} groupId - ID группы
  */
 function clearLinkedGroup(groupId) {
@@ -772,7 +911,6 @@ function clearLinkedGroup(groupId) {
     
     if (inputs.length === 0) return;
     
-    // Проверяем есть ли заполненные поля
     let hasValues = false;
     inputs.forEach(input => {
         if (input.value.trim()) {
@@ -816,10 +954,7 @@ function clearAllLinkedGroups() {
         'Подтверждение',
         'Очистить все группы связанных триггеров?',
         () => {
-            // Удаляем все настройки групп
             localStorage.removeItem(LINKED_SETTINGS_KEY);
-            
-            // Удаляем HTML
             container.innerHTML = '';
             showToast('info', 'Все группы удалены');
             console.log('[LinkedTriggers] Все группы очищены');
@@ -829,54 +964,13 @@ function clearAllLinkedGroups() {
 }
 
 /* ============================================
-   ЭКСПОРТ В ПРОСТЫЕ ТРИГГЕРЫ
-   ============================================ */
-
-/**
- * Экспорт связанных триггеров в textarea простых триггеров
- */
-function exportLinkedToSimple() {
-    const permutations = generateLinkedPermutations();
-    
-    if (permutations.length === 0) {
-        showToast('info', 'Нет связанных триггеров для экспорта');
-        return;
-    }
-    
-    // Получаем textarea простых триггеров
-    const textarea = document.getElementById('simpleTriggers');
-    
-    if (!textarea) {
-        console.error('[LinkedTriggers] Textarea simpleTriggers не найдена');
-        return;
-    }
-    
-    // Получаем текущие триггеры
-    const currentTriggers = parseSimpleTriggers(textarea.value);
-    
-    // Объединяем
-    const combined = [...currentTriggers, ...permutations];
-    
-    // Удаляем дубликаты
-    const unique = [...new Set(combined)];
-    
-    // Записываем обратно
-    textarea.value = unique.join('\n');
-    
-    // Показываем уведомление
-    const addedCount = permutations.length;
-    showToast('success', `Добавлено ${addedCount} ${pluralize(addedCount, ['перестановка', 'перестановки', 'перестановок'])}`);
-    
-    console.log(`[LinkedTriggers] Экспортировано ${addedCount} перестановок`);
-}
-
-/* ============================================
    ЭКСПОРТ ФУНКЦИЙ
    ============================================ */
 
-// Делаем функции глобальными для onclick
 window.addLinkedGroup = addLinkedGroup;
 window.removeLinkedGroup = removeLinkedGroup;
+window.addSubgroup = addSubgroup;
+window.removeSubgroup = removeSubgroup;
 window.addTriggerField = addTriggerField;
 window.removeTriggerField = removeTriggerField;
 window.clearLinkedGroup = clearLinkedGroup;
@@ -885,5 +979,6 @@ window.openGroupSettingsModal = openGroupSettingsModal;
 window.applyGroupSettings = applyGroupSettings;
 window.resetGroupSettings = resetGroupSettings;
 window.closeGroupSettingsModal = closeGroupSettingsModal;
+window.updateConnectionUI = updateConnectionUI;
 
-console.log('✓ Модуль linked-triggers.js загружен (v2.0 - CRIT-1 исправлен, Type 3 реализован через distanceType)');
+console.log('✓ Модуль linked-triggers.js загружен (v3.0 - подгруппы + режимы связи)');
