@@ -1,64 +1,100 @@
 /* ============================================
    REGEXHELPER - OPTIMIZER
    5 типов оптимизации regex
+   
+   ВЕРСИЯ: 2.0 (Исправлено CRIT-1)
+   ДАТА: 10.02.2026
+   ИЗМЕНЕНИЯ:
+   - CRIT-1: Type 3 теперь ТОЛЬКО для связанных групп
+   - Старый optimizeType3 переименован в optimizeType1
+   - Создан НОВЫЙ optimizeType3 с 4 типами расстояния
    ============================================ */
 
 /* ============================================
-   ТИП 1: ОПТИМИЗАЦИЯ ПОВТОРОВ
-   джефф, джеффри → джефф(ри)?
+   ТИП 1: ВАРИАЦИИ БУКВ (ЛАТИНИЦА ↔ КИРИЛЛИЦА)
+   дрон → д[dд][pр][oо]н
+   
+   ВАЖНО: Это бывший Type 3!
    ============================================ */
 
 /**
- * Оптимизация Type 1: Повторяющиеся символы
+ * Карта замены латиница ↔ кириллица
+ */
+const LATIN_CYRILLIC_MAP = {
+    // Латиница → Кириллица
+    'a': 'а', 'e': 'е', 'o': 'о', 'p': 'р', 'c': 'с', 'y': 'у', 'x': 'х',
+    'd': 'д', 'k': 'к', 't': 'т', 'b': 'ь', 'h': 'н', 'm': 'м', 'i': 'і', 
+    'n': 'п', 'u': 'и', 'v': 'в', 's': 'ѕ', 'j': 'ј', 'r': 'г',
+    
+    'A': 'А', 'E': 'Е', 'O': 'О', 'P': 'Р', 'C': 'С', 'Y': 'У', 'X': 'Х',
+    'B': 'В', 'H': 'Н', 'K': 'К', 'M': 'М', 'T': 'Т',
+    
+    // Кириллица → Латиница (обратная карта)
+    'а': 'a', 'е': 'e', 'о': 'o', 'р': 'p', 'с': 'c', 'у': 'y', 'х': 'x',
+    'д': 'd', 'к': 'k', 'т': 't', 'ь': 'b', 'н': 'h', 'м': 'm', 'і': 'i',
+    'п': 'n', 'и': 'u', 'в': 'v', 'ѕ': 's', 'ј': 'j', 'г': 'r',
+    
+    'А': 'A', 'Е': 'E', 'О': 'O', 'Р': 'P', 'С': 'C', 'У': 'Y', 'Х': 'X',
+    'В': 'B', 'Н': 'H', 'К': 'K', 'М': 'M', 'Т': 'T'
+};
+
+/**
+ * Проверка: имеет ли строка символы из карты замены
+ * @param {string} str - Строка
+ * @returns {boolean} - true если есть заменяемые символы
+ */
+function hasReplaceableChars(str) {
+    for (let char of str) {
+        if (LATIN_CYRILLIC_MAP[char]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Оптимизация Type 1: Вариации букв (латиница ↔ кириллица)
+ * 
+ * ВАЖНО: Это бывший optimizeType3!
+ * Переименовано для соответствия спецификации.
+ * 
  * @param {Array} triggers - Массив триггеров
  * @returns {Array} - Оптимизированный массив
+ * 
+ * @example
+ * // Input: ["дрон"]
+ * // Output: ["д[dд][pр][oо]н"]
  */
 function optimizeType1(triggers) {
-    if (!Array.isArray(triggers) || triggers.length < 2) {
+    if (!Array.isArray(triggers) || triggers.length === 0) {
         return triggers;
     }
     
     const optimized = [];
-    const used = new Set();
     
-    for (let i = 0; i < triggers.length; i++) {
-        if (used.has(i)) continue;
-        
-        const current = triggers[i];
-        const grouped = [current];
-        
-        // Ищем триггеры, где current - префикс
-        for (let j = i + 1; j < triggers.length; j++) {
-            if (used.has(j)) continue;
-            
-            const other = triggers[j];
-            
-            // Проверяем: other начинается с current?
-            if (other.startsWith(current) && other.length > current.length) {
-                grouped.push(other);
-                used.add(j);
-            }
+    for (let trigger of triggers) {
+        // Проверяем есть ли заменяемые символы
+        if (!hasReplaceableChars(trigger)) {
+            optimized.push(escapeRegex(trigger));
+            continue;
         }
         
-        // Если нашли группу (2+ триггеров)
-        if (grouped.length >= 2) {
-            // Сортируем по длине
-            grouped.sort((a, b) => a.length - b.length);
+        // Создаем паттерн с заменой символов
+        let pattern = '';
+        
+        for (let char of trigger) {
+            const replacement = LATIN_CYRILLIC_MAP[char];
             
-            const base = grouped[0];
-            const suffixes = grouped.slice(1).map(t => t.substring(base.length));
-            
-            // Создаем паттерн: джефф(ри|ффри)?
-            if (suffixes.length === 1) {
-                const pattern = escapeRegex(base) + '(' + escapeRegex(suffixes[0]) + ')?';
-                optimized.push(pattern);
+            if (replacement) {
+                // Символ есть в карте - создаем группу [латиница|кириллица]
+                pattern += '[' + char + replacement + ']';
             } else {
-                const pattern = escapeRegex(base) + '(' + suffixes.map(s => escapeRegex(s)).join('|') + ')?';
-                optimized.push(pattern);
+                // Обычный символ - экранируем
+                pattern += escapeRegex(char);
             }
-        } else {
-            optimized.push(current);
         }
+        
+        optimized.push(pattern);
     }
     
     return optimized;
@@ -140,77 +176,110 @@ function optimizeType2(triggers) {
 }
 
 /* ============================================
-   ТИП 3: ЛАТИНИЦА ↔ КИРИЛЛИЦА
-   дрон → [dд][rр][oо][nп]
+   ТИП 3: РАССТОЯНИЕ МЕЖДУ СЛОВАМИ
+   
+   ⚠️ КРИТИЧНО: Type 3 - ТОЛЬКО для СВЯЗАННЫХ ГРУПП!
+   НЕ вызывать для простых триггеров!
+   
+   4 ТИПА РАССТОЯНИЯ:
+   1. fixed: .{min,max} (default: 1-7)
+   2. any: [\\s\\S]+ (любое расстояние)
+   3. paragraph: .+ (в пределах абзаца)
+   4. line: [^\\n]+ (в пределах строки)
    ============================================ */
 
 /**
- * Карта замены латиница ↔ кириллица
+ * Оптимизация Type 3: Расстояние между триггерами (ТОЛЬКО для связанных групп!)
+ * 
+ * @param {Object} linkedGroup - Объект связанной группы
+ * @param {Array} linkedGroup.triggers - Массив триггеров группы
+ * @param {Object} linkedGroup.settings - Настройки группы
+ * @param {string} linkedGroup.settings.distanceType - Тип расстояния ('fixed', 'any', 'paragraph', 'line')
+ * @param {number} linkedGroup.settings.distanceMin - Минимальное расстояние (для 'fixed')
+ * @param {number} linkedGroup.settings.distanceMax - Максимальное расстояние (для 'fixed')
+ * 
+ * @returns {string} - Regex паттерн с расстоянием между триггерами
+ * 
+ * @example
+ * // fixed (default)
+ * optimizeType3({
+ *   triggers: ['выкуп', 'дорого'],
+ *   settings: {distanceType: 'fixed', distanceMin: 1, distanceMax: 7}
+ * })
+ * // => "выкуп.{1,7}дорого"
+ * 
+ * @example
+ * // any
+ * optimizeType3({
+ *   triggers: ['военный', 'дрон'],
+ *   settings: {distanceType: 'any'}
+ * })
+ * // => "военный[\\s\\S]+дрон"
  */
-const LATIN_CYRILLIC_MAP = {
-    // Латиница → Кириллица
-    'a': 'а', 'e': 'е', 'o': 'о', 'p': 'р', 'c': 'с', 'y': 'у', 'x': 'х',
-    'A': 'А', 'E': 'Е', 'O': 'О', 'P': 'Р', 'C': 'С', 'Y': 'У', 'X': 'Х',
-    'B': 'В', 'H': 'Н', 'K': 'К', 'M': 'М', 'T': 'Т',
-    
-    // Кириллица → Латиница (обратная карта)
-    'а': 'a', 'е': 'e', 'о': 'o', 'р': 'p', 'с': 'c', 'у': 'y', 'х': 'x',
-    'А': 'A', 'Е': 'E', 'О': 'O', 'Р': 'P', 'С': 'C', 'У': 'Y', 'Х': 'X',
-    'В': 'B', 'Н': 'H', 'К': 'K', 'М': 'M', 'Т': 'T'
-};
-
-/**
- * Проверка: имеет ли строка символы из карты замены
- * @param {string} str - Строка
- * @returns {boolean} - true если есть заменяемые символы
- */
-function hasReplaceableChars(str) {
-    for (let char of str) {
-        if (LATIN_CYRILLIC_MAP[char]) {
-            return true;
-        }
-    }
-    return false;
-}
-
-/**
- * Оптимизация Type 3: Замена латиница ↔ кириллица
- * @param {Array} triggers - Массив триггеров
- * @returns {Array} - Оптимизированный массив
- */
-function optimizeType3(triggers) {
-    if (!Array.isArray(triggers) || triggers.length === 0) {
-        return triggers;
+function optimizeType3(linkedGroup, settings) {
+    // Валидация входных данных
+    if (!linkedGroup || !linkedGroup.triggers || !Array.isArray(linkedGroup.triggers)) {
+        console.error('[Optimizer Type 3] Некорректные входные данные:', linkedGroup);
+        return '';
     }
     
-    const optimized = [];
+    const triggers = linkedGroup.triggers;
     
-    for (let trigger of triggers) {
-        // Проверяем есть ли заменяемые символы
-        if (!hasReplaceableChars(trigger)) {
-            optimized.push(escapeRegex(trigger));
-            continue;
-        }
-        
-        // Создаем паттерн с заменой символов
-        let pattern = '';
-        
-        for (let char of trigger) {
-            const replacement = LATIN_CYRILLIC_MAP[char];
-            
-            if (replacement) {
-                // Символ есть в карте - создаем группу [латиница|кириллица]
-                pattern += '[' + char + replacement + ']';
+    if (triggers.length === 0) {
+        return '';
+    }
+    
+    if (triggers.length === 1) {
+        return escapeRegex(triggers[0]);
+    }
+    
+    // Получаем настройки группы
+    const groupSettings = settings || linkedGroup.settings || {};
+    const distanceType = groupSettings.distanceType || 'fixed';
+    const distanceMin = groupSettings.distanceMin !== undefined ? groupSettings.distanceMin : 1;
+    const distanceMax = groupSettings.distanceMax !== undefined ? groupSettings.distanceMax : 7;
+    
+    // Определяем разделитель по типу расстояния
+    let separator;
+    
+    switch (distanceType) {
+        case 'fixed':
+            // Валидация min/max
+            if (distanceMin < 0 || distanceMax < 1 || distanceMin > distanceMax) {
+                console.warn(`[Optimizer Type 3] Некорректные min/max: ${distanceMin}, ${distanceMax}. Используем default: 1-7`);
+                separator = '.{1,7}';
             } else {
-                // Обычный символ - экранируем
-                pattern += escapeRegex(char);
+                separator = `.{${distanceMin},${distanceMax}}`;
             }
-        }
-        
-        optimized.push(pattern);
+            break;
+            
+        case 'any':
+            // Любое расстояние (включая переносы строк)
+            separator = '[\\s\\S]+';
+            break;
+            
+        case 'paragraph':
+            // В пределах абзаца (не через разрыв строк)
+            separator = '.+';
+            break;
+            
+        case 'line':
+            // В пределах строки (не через перенос строк)
+            separator = '[^\\n]+';
+            break;
+            
+        default:
+            console.warn(`[Optimizer Type 3] Неизвестный distanceType: ${distanceType}. Используем 'fixed' (1-7)`);
+            separator = '.{1,7}';
     }
     
-    return optimized;
+    console.log(`[Optimizer Type 3] Тип расстояния: ${distanceType}, разделитель: ${separator}`);
+    
+    // Экранируем триггеры и соединяем через separator
+    const escapedTriggers = triggers.map(t => escapeRegex(t));
+    const pattern = escapedTriggers.join(separator);
+    
+    return pattern;
 }
 
 /* ============================================
@@ -667,8 +736,12 @@ function optimizeType5(triggers) {
 
 /**
  * Применить выбранные оптимизации
+ * 
+ * ВАЖНО: Type 3 НЕ вызывается здесь!
+ * Type 3 используется ТОЛЬКО для связанных групп в converter.js
+ * 
  * @param {Array} triggers - Массив триггеров
- * @param {Object} types - Объект с флагами { type1: bool, type2: bool, type3: bool, type4: bool, type5: bool }
+ * @param {Object} types - Объект с флагами { type1: bool, type2: bool, type4: bool, type5: bool }
  * @returns {Array} - Оптимизированный массив
  */
 function applyOptimizations(triggers, types) {
@@ -680,34 +753,31 @@ function applyOptimizations(triggers, types) {
     
     console.log('[Optimizer] Исходные триггеры:', result.length);
     
-    // ШАГ 1: Type 3 - Латиница ↔ Кириллица (посимвольная замена)
-    if (types.type3) {
-        result = optimizeType3(result);
-        console.log('[Optimizer] После Type 3 (латиница↔кириллица):', result.length);
-    }
-    
-    // ШАГ 2: Type 5 - Опциональный символ ? (работает с простыми триггерами)
-    if (types.type5) {
-        result = optimizeType5(result);
-        console.log('[Optimizer] После Type 5 (опциональный ?):', result.length);
-    }
-    
-    // ШАГ 3: Type 1 - Повторы (группирует префиксы)
+    // ШАГ 1: Type 1 - Вариации букв (латиница ↔ кириллица)
     if (types.type1) {
         result = optimizeType1(result);
-        console.log('[Optimizer] После Type 1 (повторы):', result.length);
+        console.log('[Optimizer] После Type 1 (вариации букв):', result.length);
     }
     
-    // ШАГ 4: Type 2 - Общий корень (группирует суффиксы)
+    // ШАГ 2: Type 2 - Общий корень (группирует суффиксы)
     if (types.type2) {
         result = optimizeType2(result);
         console.log('[Optimizer] После Type 2 (общий корень):', result.length);
     }
     
-    // ШАГ 5: Type 4 - Склонения (создает сложные паттерны)
+    // ⚠️ Type 3 ПРОПУЩЕН! Используется только для связанных групп!
+    // if (types.type3) { ... } ← УДАЛЕНО!
+    
+    // ШАГ 3: Type 4 - Склонения (создает сложные паттерны)
     if (types.type4) {
         result = optimizeType4(result);
         console.log('[Optimizer] После Type 4 (склонения):', result.length);
+    }
+    
+    // ШАГ 4: Type 5 - Опциональный символ ? (работает с простыми триггерами)
+    if (types.type5) {
+        result = optimizeType5(result);
+        console.log('[Optimizer] После Type 5 (опциональный ?):', result.length);
     }
     
     console.log('[Optimizer] Финальный результат:', result.length, 'паттернов');
@@ -755,7 +825,8 @@ function performConversionWithOptimizations(text, types, showWarnings = true) {
         clearAllInlineErrors();
         
         // Проверка: выбрана ли хотя бы одна оптимизация
-        const hasOptimizations = types.type1 || types.type2 || types.type3 || types.type4 || types.type5;
+        const hasOptimizations = types.type1 || types.type2 || types.type4 || types.type5;
+        // ⚠️ type3 убран из проверки!
         
         if (!hasOptimizations && showWarnings) {
             showToast('warning', WARNING_MESSAGES.NO_OPTIMIZATIONS);
@@ -838,4 +909,4 @@ function performConversionWithOptimizations(text, types, showWarnings = true) {
    ЭКСПОРТ
    ============================================ */
 
-console.log('✓ Модуль optimizer.js загружен (5 типов оптимизаций)');
+console.log('✓ Модуль optimizer.js загружен (v2.0 - CRIT-1 исправлен, Type 3 для связанных групп)');
