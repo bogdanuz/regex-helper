@@ -1,15 +1,25 @@
 /* ============================================
    REGEXHELPER - SUGGESTIONS
    Индивидуальные настройки триггеров
+   
+   ВЕРСИЯ: 2.0 (Исправлено CRIT-1)
+   ДАТА: 10.02.2026
+   ИЗМЕНЕНИЯ:
+   - CRIT-1: Удален type3 из настроек триггеров
+   - Теперь только: type1, type2, type4, type5
+   - Type 3 используется ТОЛЬКО для связанных групп
    ============================================ */
 
 /**
  * Модуль для работы с индивидуальными настройками триггеров
  * Хранит настройки оптимизаций для каждого триггера отдельно
+ * 
+ * ВАЖНО: Type 3 НЕ используется для простых триггеров!
+ * Type 3 = расстояние между словами (только для связанных групп)
  */
 
 // Глобальный объект для хранения индивидуальных настроек
-const triggerSettings = new Map(); // Map<triggerText, {type1, type2, type3, type4, type5}>
+const triggerSettings = new Map(); // Map<triggerText, {type1, type2, type4, type5}>
 
 /**
  * Сохранение настроек триггера в localStorage
@@ -36,7 +46,13 @@ function loadTriggerSettings() {
         if (data) {
             const parsed = JSON.parse(data);
             Object.keys(parsed).forEach(trigger => {
-                triggerSettings.set(trigger, parsed[trigger]);
+                // ИСПРАВЛЕНИЕ CRIT-1: Удаляем type3 если он есть в старых данных
+                const settings = parsed[trigger];
+                if (settings.type3 !== undefined) {
+                    delete settings.type3;
+                    console.log('[Suggestions] Удален type3 из настроек триггера:', trigger);
+                }
+                triggerSettings.set(trigger, settings);
             });
             console.log('[Suggestions] Настройки триггеров загружены:', triggerSettings.size, 'триггеров');
         }
@@ -48,7 +64,7 @@ function loadTriggerSettings() {
 /**
  * Получить настройки для конкретного триггера
  * @param {string} trigger - Текст триггера
- * @returns {Object|null} - Настройки или null
+ * @returns {Object|null} - Настройки {type1, type2, type4, type5} или null
  */
 function getTriggerSettings(trigger) {
     return triggerSettings.get(trigger) || null;
@@ -57,12 +73,19 @@ function getTriggerSettings(trigger) {
 /**
  * Установить настройки для триггера
  * @param {string} trigger - Текст триггера
- * @param {Object} settings - Настройки {type1, type2, type3, type4, type5}
+ * @param {Object} settings - Настройки {type1, type2, type4, type5}
  */
 function setTriggerSettings(trigger, settings) {
-    triggerSettings.set(trigger, settings);
+    // ИСПРАВЛЕНИЕ CRIT-1: Удаляем type3 если он передан
+    const cleanSettings = { ...settings };
+    if (cleanSettings.type3 !== undefined) {
+        delete cleanSettings.type3;
+        console.log('[Suggestions] Type 3 удален из настроек (не используется для триггеров)');
+    }
+    
+    triggerSettings.set(trigger, cleanSettings);
     saveTriggerSettings();
-    console.log('[Suggestions] Настройки установлены для:', trigger, settings);
+    console.log('[Suggestions] Настройки установлены для:', trigger, cleanSettings);
 }
 
 /**
@@ -95,9 +118,12 @@ function clearAllTriggerSettings() {
 
 /**
  * Получить настройки оптимизаций для триггера (индивидуальные или глобальные)
+ * 
+ * ВАЖНО: Type 3 НЕ возвращается! Используется только для связанных групп.
+ * 
  * @param {string} trigger - Текст триггера
- * @param {Object} globalTypes - Глобальные настройки {type1, type2, type3, type4, type5}
- * @returns {Object} - Финальные настройки для триггера
+ * @param {Object} globalTypes - Глобальные настройки {type1, type2, type4, type5}
+ * @returns {Object} - Финальные настройки для триггера {type1, type2, type4, type5}
  */
 function getEffectiveSettings(trigger, globalTypes) {
     const individual = getTriggerSettings(trigger);
@@ -107,7 +133,13 @@ function getEffectiveSettings(trigger, globalTypes) {
         return individual;
     }
     
-    return globalTypes;
+    // ИСПРАВЛЕНИЕ CRIT-1: Убираем type3 из глобальных настроек
+    const cleanGlobalTypes = { ...globalTypes };
+    if (cleanGlobalTypes.type3 !== undefined) {
+        delete cleanGlobalTypes.type3;
+    }
+    
+    return cleanGlobalTypes;
 }
 
 /* ============================================
@@ -116,13 +148,16 @@ function getEffectiveSettings(trigger, globalTypes) {
 
 /**
  * Объект для хранения состояния глобальных чекбоксов
+ * 
+ * ВАЖНО: Type 3 УДАЛЕН! (CRIT-1 исправлен)
+ * Type 3 используется только для связанных групп.
  */
 const globalOptimizationStates = {
-    type1: true,
-    type2: true,
-    type3: true,
-    type4: true,
-    type5: true
+    type1: true,  // Вариации букв (латиница↔кириллица)
+    type2: true,  // Общий корень
+    // type3: УДАЛЕН! (только для связанных групп)
+    type4: true,  // Склонения
+    type5: true   // Опциональный ?
 };
 
 /**
@@ -145,6 +180,13 @@ function loadGlobalOptimizationStates() {
         const saved = localStorage.getItem('regexhelper_global_optimizations');
         if (saved) {
             const parsed = JSON.parse(saved);
+            
+            // ИСПРАВЛЕНИЕ CRIT-1: Удаляем type3 если он есть в старых данных
+            if (parsed.type3 !== undefined) {
+                delete parsed.type3;
+                console.log('[Suggestions] Type 3 удален из глобальных настроек (старые данные)');
+            }
+            
             Object.assign(globalOptimizationStates, parsed);
             console.log('[Suggestions] Загружены сохранённые настройки:', globalOptimizationStates);
         }
@@ -155,20 +197,31 @@ function loadGlobalOptimizationStates() {
 
 /**
  * Применение сохранённых состояний к чекбоксам
+ * 
+ * ВАЖНО: Type 3 пропущен (чекбокса для него нет)
  */
 function applyGlobalOptimizationStates() {
-    for (let i = 1; i <= 5; i++) {
+    // Только Type 1, 2, 4, 5 (без Type 3!)
+    const types = [1, 2, 4, 5];
+    
+    types.forEach(i => {
         const checkbox = document.getElementById(`optType${i}`);
         if (checkbox) {
             checkbox.checked = globalOptimizationStates[`type${i}`];
         }
-    }
+    });
 }
 
 /**
  * Обработчик изменения глобального чекбокса
  */
 function handleGlobalOptimizationChange(typeNumber, isChecked) {
+    // ИСПРАВЛЕНИЕ CRIT-1: Игнорируем type3
+    if (typeNumber === 3) {
+        console.warn('[Suggestions] Type 3 не используется для простых триггеров');
+        return;
+    }
+    
     globalOptimizationStates[`type${typeNumber}`] = isChecked;
     saveGlobalOptimizationStates();
     console.log('[Suggestions]', `type${typeNumber}`, '=', isChecked);
@@ -176,12 +229,16 @@ function handleGlobalOptimizationChange(typeNumber, isChecked) {
 
 /**
  * Получение текущих состояний глобальных оптимизаций
+ * 
+ * ВАЖНО: Type 3 НЕ включен (CRIT-1 исправлен)
+ * 
+ * @returns {Object} - {type1, type2, type4, type5}
  */
 function getGlobalOptimizationStates() {
     return {
         type1: document.getElementById('optType1')?.checked || false,
         type2: document.getElementById('optType2')?.checked || false,
-        type3: document.getElementById('optType3')?.checked || false,
+        // type3: УДАЛЕН! (только для связанных групп)
         type4: document.getElementById('optType4')?.checked || false,
         type5: document.getElementById('optType5')?.checked || false
     };
@@ -311,6 +368,8 @@ function updateTriggerSettingsUI() {
 
 /**
  * Открытие модального окна настроек триггера
+ * 
+ * ВАЖНО: Type 3 НЕ отображается (CRIT-1 исправлен)
  */
 function openTriggerSettingsModal(trigger) {
     const modal = document.getElementById('triggerSettingsModal');
@@ -324,13 +383,14 @@ function openTriggerSettingsModal(trigger) {
     // Загружаем текущие настройки (индивидуальные или глобальные)
     const settings = getTriggerSettings(trigger) || getGlobalOptimizationStates();
     
-    // Применяем к чекбоксам
-    for (let i = 1; i <= 5; i++) {
+    // Применяем к чекбоксам (ТОЛЬКО Type 1, 2, 4, 5 - БЕЗ Type 3!)
+    const types = [1, 2, 4, 5];
+    types.forEach(i => {
         const checkbox = document.getElementById(`triggerOptType${i}`);
         if (checkbox) {
-            checkbox.checked = settings[`type${i}`];
+            checkbox.checked = settings[`type${i}`] || false;
         }
-    }
+    });
     
     // Показываем модальное окно
     modal.style.display = 'flex';
@@ -342,17 +402,18 @@ function openTriggerSettingsModal(trigger) {
         // Удаляем старые обработчики
         applyBtn.onclick = null;
         applyBtn.onclick = () => {
+            // ИСПРАВЛЕНИЕ CRIT-1: Собираем только type1, 2, 4, 5 (БЕЗ type3!)
             const newSettings = {
                 type1: document.getElementById('triggerOptType1')?.checked || false,
                 type2: document.getElementById('triggerOptType2')?.checked || false,
-                type3: document.getElementById('triggerOptType3')?.checked || false,
+                // type3: ПРОПУЩЕН! (не используется для триггеров)
                 type4: document.getElementById('triggerOptType4')?.checked || false,
                 type5: document.getElementById('triggerOptType5')?.checked || false
             };
             
-            // ИСПРАВЛЕНИЕ: Проверяем, все ли галочки сняты
+            // Проверяем, все ли галочки сняты
             const allUnchecked = !newSettings.type1 && !newSettings.type2 && 
-                                 !newSettings.type3 && !newSettings.type4 && !newSettings.type5;
+                                 !newSettings.type4 && !newSettings.type5;
             
             if (allUnchecked) {
                 // Если все галочки сняты - удаляем индивидуальные настройки
@@ -378,7 +439,7 @@ function openTriggerSettingsModal(trigger) {
         };
     }
     
-    // Обработчик кнопки "Сбросить настройки" (БЕЗ ПОДТВЕРЖДЕНИЯ)
+    // Обработчик кнопки "Сбросить настройки"
     const resetBtn = document.getElementById('resetTriggerSettingsBtn');
     if (resetBtn) {
         // Удаляем старые обработчики
@@ -413,15 +474,16 @@ function initSuggestions() {
     // Загружаем индивидуальные настройки триггеров
     loadTriggerSettings();
     
-    // Добавляем обработчики на глобальные чекбоксы
-    for (let i = 1; i <= 5; i++) {
+    // Добавляем обработчики на глобальные чекбоксы (ТОЛЬКО 1, 2, 4, 5 - БЕЗ 3!)
+    const types = [1, 2, 4, 5];
+    types.forEach(i => {
         const checkbox = document.getElementById(`optType${i}`);
         if (checkbox) {
             checkbox.addEventListener('change', (e) => {
                 handleGlobalOptimizationChange(i, e.target.checked);
             });
         }
-    }
+    });
     
     // Обновляем UI при изменении textarea
     const textarea = document.getElementById('simpleTriggers');
@@ -434,11 +496,11 @@ function initSuggestions() {
         updateTriggerSettingsUI();
     }
     
-    console.log('[Suggestions] Модуль инициализирован');
+    console.log('[Suggestions] Модуль инициализирован (v2.0 - CRIT-1 исправлен)');
 }
 
 /* ============================================
    ЭКСПОРТ
    ============================================ */
 
-console.log('✓ Модуль suggestions.js загружен');
+console.log('✓ Модуль suggestions.js загружен (v2.0 - Type 3 удален из настроек триггеров)');
