@@ -192,6 +192,19 @@ if (zoomOutBtn) {
     });
 }
 
+// Кнопка "На весь экран" (ДОБАВИТЬ ЭТУ СЕКЦИЮ)
+const openFullscreenBtn = document.getElementById('openFullscreenBtn');
+if (openFullscreenBtn) {
+    openFullscreenBtn.addEventListener('click', () => {
+        if (typeof openFullscreen === 'function') {
+            openFullscreen();
+        } else {
+            console.error('[Main] Функция openFullscreen не найдена');
+        }
+    });
+}
+
+
 // УДАЛЕНО: Кнопка переключения темы
     
     // ============================================================
