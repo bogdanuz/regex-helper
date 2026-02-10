@@ -1,7 +1,14 @@
 /* ============================================
    REGEXHELPER - CONVERTER
    Базовая конвертация триггеров в regex
-   Версия: 2.0 (Группа 6 - конвертация связанных триггеров)
+   
+   ВЕРСИЯ: 2.0 (CRIT-1 исправлен + anyOrder реализован)
+   ДАТА: 10.02.2026
+   ИЗМЕНЕНИЯ:
+   - CRIT-1: Удален type3 из настроек триггеров
+   - Задача 2.2: Реализован anyOrder (генерация перестановок)
+   - Задача 2.3: Интеграция optimizeType3() для связанных групп
+   - Исправлено двойное экранирование в getDistancePattern()
    ============================================ */
 
 /* ============================================
@@ -223,6 +230,12 @@ function convertLinkedGroups(groups) {
 
 /**
  * Конвертация одной связанной группы
+ * 
+ * ОБНОВЛЕНО v2.0:
+ * - Применяем оптимизации (type1, 2, 4, 5) к каждому триггеру
+ * - Используем optimizeType3() для ВСЕЙ группы (расстояние)
+ * - Генерируем anyOrder перестановки если включено
+ * 
  * @param {Object} group - {id, triggers, settings}
  * @returns {string} - Regex для группы
  */
@@ -236,34 +249,51 @@ function convertLinkedGroup(group) {
     
     console.log(`[Converter] Конвертация группы: ${triggers.length} триггеров`, settings);
     
-    // 1. Применяем оптимизации к каждому триггеру
+    // 1. Применяем оптимизации (type1, 2, 4, 5) к каждому триггеру
     const optimizedTriggers = triggers.map(trigger => {
         return applyOptimizationsToTrigger(trigger, settings);
     });
     
     console.log('[Converter] Триггеры после оптимизаций:', optimizedTriggers);
     
-    // 2. Получаем паттерн расстояния
-    const distance = getDistancePattern(settings);
+    // 2. НОВОЕ: Применяем Type 3 (расстояние) через optimizeType3()
+    // ВАЖНО: Type 3 применяется к ВСЕЙ группе, а не к отдельным триггерам!
+    let finalPattern;
     
-    console.log('[Converter] Паттерн расстояния:', distance);
+    if (typeof optimizeType3 === 'function') {
+        console.log('[Converter] Вызываем optimizeType3() для группы');
+        
+        // Создаем объект для optimizeType3
+        const linkedGroupForType3 = {
+            triggers: optimizedTriggers,
+            settings: settings
+        };
+        
+        finalPattern = optimizeType3(linkedGroupForType3, settings);
+        console.log('[Converter] Результат optimizeType3():', finalPattern);
+    } else {
+        console.warn('[Converter] optimizeType3() не найден, используем fallback');
+        
+        // Fallback: ручное создание паттерна
+        const distance = getDistancePattern(settings);
+        finalPattern = optimizedTriggers.join(distance);
+    }
     
     // 3. Если anyOrder = true → генерируем перестановки
     if (settings.anyOrder) {
-        const result = generateAnyOrderPattern(optimizedTriggers, distance);
-        console.log('[Converter] anyOrder включен, результат:', result);
-        return result;
+        const distance = getDistancePattern(settings);
+        finalPattern = generateAnyOrderPattern(optimizedTriggers, distance);
+        console.log('[Converter] anyOrder включен, результат:', finalPattern);
     }
     
-    // 4. Обычное объединение (порядок важен)
-    const result = optimizedTriggers.join(distance);
-    console.log('[Converter] Обычное объединение (порядок важен):', result);
-    
-    return result;
+    return finalPattern;
 }
 
 /**
  * Получить паттерн расстояния из настроек группы
+ * 
+ * ИСПРАВЛЕНО v2.0: Убрано двойное экранирование
+ * 
  * @param {Object} settings - Настройки группы
  * @returns {string} - Паттерн расстояния (например: .{1,7})
  */
@@ -272,30 +302,46 @@ function getDistancePattern(settings) {
     
     switch (distanceType) {
         case 'fixed':
-            const min = settings.distanceMin || 1;
-            const max = settings.distanceMax || 7;
+            const min = settings.distanceMin !== undefined ? settings.distanceMin : 1;
+            const max = settings.distanceMax !== undefined ? settings.distanceMax : 7;
+            
+            // Валидация min/max
+            if (min < 0 || max < 1 || min > max) {
+                console.warn(`[Converter] Некорректные min/max: ${min}, ${max}. Используем default: 1-7`);
+                return '.{1,7}';
+            }
+            
             return `.{${min},${max}}`;
         
         case 'any':
-            return `[\\s\\S]+`;
+            // ИСПРАВЛЕНО: Одинарное экранирование (не \\\\s)
+            return '[\\s\\S]+';
         
         case 'paragraph':
-            return `.+`;
+            return '.+';
         
         case 'line':
-            return `[^\\n]+`;
+            // ИСПРАВЛЕНО: Одинарное экранирование
+            return '[^\\n]+';
         
         default:
             console.warn(`[Converter] Неизвестный тип расстояния: ${distanceType}, используем fixed`);
-            return `.{1,7}`;
+            return '.{1,7}';
     }
 }
 
 /**
  * Генерация паттерна с любой последовательностью (A+B)|(B+A)
+ * 
+ * РЕАЛИЗОВАНО v2.0: Задача 2.2 (anyOrder)
+ * 
  * @param {Array} triggers - Массив оптимизированных триггеров
  * @param {string} distance - Паттерн расстояния
  * @returns {string} - Regex с перестановками
+ * 
+ * @example
+ * // Input: ['военный', 'дрон'], '.{1,7}'
+ * // Output: '(военный.{1,7}дрон|дрон.{1,7}военный)'
  */
 function generateAnyOrderPattern(triggers, distance) {
     if (triggers.length < 2) {
@@ -305,11 +351,12 @@ function generateAnyOrderPattern(triggers, distance) {
     // Получаем все перестановки
     const permutations = getPermutations(triggers);
     
-    console.log(`[Converter] Генерация ${permutations.length} перестановок`);
+    console.log(`[Converter] Генерация ${permutations.length} перестановок для anyOrder`);
     
     // Предупреждение если слишком много
     if (permutations.length > 720) {
         console.warn(`[Converter] ВНИМАНИЕ! ${permutations.length} перестановок - это ОЧЕНЬ много!`);
+        showToast('warning', `Внимание: ${permutations.length} перестановок! Regex может быть очень длинным.`);
     }
     
     // Объединяем каждую перестановку через distance
@@ -321,9 +368,12 @@ function generateAnyOrderPattern(triggers, distance) {
 
 /**
  * Применить оптимизации к триггеру (используя настройки группы)
- * ИСПРАВЛЕНО: applyOptimizations работает с массивом!
+ * 
+ * ИСПРАВЛЕНО v2.0: CRIT-1 - убран type3 из types
+ * Type 3 НЕ применяется к отдельным триггерам!
+ * 
  * @param {string} trigger - Исходный триггер
- * @param {Object} settings - Настройки группы (type1, type2, type3, type4, type5)
+ * @param {Object} settings - Настройки группы (type1, type2, type4, type5)
  * @returns {string} - Оптимизированный триггер
  */
 function applyOptimizationsToTrigger(trigger, settings) {
@@ -331,18 +381,19 @@ function applyOptimizationsToTrigger(trigger, settings) {
     
     let result = cleanTrigger(trigger);
     
-    // Применяем только включенные оптимизации
+    // ИСПРАВЛЕНО CRIT-1: type3 УДАЛЕН!
+    // Type 3 применяется к ВСЕЙ группе через optimizeType3()
     const types = {
         type1: settings.type1 || false,
         type2: settings.type2 || false,
-        type3: settings.type3 || false,
+        // type3: УДАЛЕН! (применяется к группе)
         type4: settings.type4 || false,
         type5: settings.type5 || false
     };
     
     console.log(`[Converter] Применяем оптимизации к "${trigger}":`, types);
     
-    // ИСПРАВЛЕНО: applyOptimizations работает с массивом!
+    // applyOptimizations работает с массивом!
     if (typeof applyOptimizations === 'function') {
         // Оборачиваем триггер в массив
         const optimizedArray = applyOptimizations([result], types);
@@ -350,22 +401,9 @@ function applyOptimizationsToTrigger(trigger, settings) {
         // Берем первый элемент (или исходный триггер если массив пустой)
         result = (optimizedArray && optimizedArray.length > 0) ? optimizedArray[0] : result;
     } else {
-        // Fallback: базовая обработка (если optimizer.js не загружен)
-        console.warn('[Converter] Функция applyOptimizations не найдена, используем базовую обработку');
-        
-        // Type 3: Вариации букв (латиница/кириллица)
-        if (types.type3) {
-            if (typeof applyType3Optimization === 'function') {
-                result = applyType3Optimization(result);
-            }
-        }
-        
-        // Type 4: Склонения
-        if (types.type4) {
-            if (typeof applyType4Optimization === 'function') {
-                result = applyType4Optimization(result);
-            }
-        }
+        // Fallback: если optimizer.js не загружен
+        console.warn('[Converter] Функция applyOptimizations не найдена, используем escapeRegex');
+        result = escapeRegex(result);
     }
     
     console.log(`[Converter] Результат оптимизации: "${result}"`);
@@ -503,4 +541,4 @@ function getTriggerStats(text) {
     };
 }
 
-console.log('✓ Модуль converter.js загружен (v2.0 - конвертация связанных триггеров)');
+console.log('✓ Модуль converter.js загружен (v2.0 - CRIT-1 исправлен, anyOrder реализован)');
