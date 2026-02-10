@@ -2,13 +2,11 @@
    REGEXHELPER - MAIN
    Главный файл приложения
    
-   ВЕРСИЯ: 2.0 (Группа 6 - связанные триггеры полностью интегрированы)
+   ВЕРСИЯ: 2.1 (Интеграция визуализатора)
    ДАТА: 10.02.2026
    ИЗМЕНЕНИЯ:
-   - Группа 6: Полная интеграция convertLinkedGroups()
-   - Исправлена обработка пустых строк (\\n → \n)
-   - Добавлена функция performConversionWithOptimizations()
-   - Обновлена версия до 2.0
+   - Добавлены event listeners для визуализатора (Чат 2)
+   - Версия обновлена до 2.1
    ============================================ */
 
 /* ============================================
@@ -20,7 +18,7 @@
  */
 function initApp() {
     console.log('='.repeat(50));
-    console.log('RegexHelper v2.0 - Запуск приложения');
+    console.log('RegexHelper v2.1 - Запуск приложения');
     console.log('='.repeat(50));
     
     // Проверка совместимости браузера
@@ -36,16 +34,6 @@ function initApp() {
         initExport();
         initHistory();
         // initTester(); // Отключено: тестер будет отдельным инструментом
-        
-        // ДОБАВЛЕНО: Инициализация визуализатора (если есть)
-        if (typeof initVisualizer === 'function') {
-            initVisualizer();
-        }
-        
-        // ДОБАВЛЕНО: Инициализация обратного конвертера (если есть)
-        if (typeof initReverse === 'function') {
-            initReverse();
-        }
         
         console.log('[Main] Все модули инициализированы');
     } catch (error) {
@@ -138,29 +126,87 @@ function setupEventListeners() {
         testRegexBtn.addEventListener('click', toggleTester);
     }
 
-    // ДОБАВЛЕНО: Кнопка "Визуализация"
+    // ============================================================
+    // НОВОЕ (ЧАТ 2): EVENT LISTENERS ДЛЯ ВИЗУАЛИЗАТОРА
+    // ============================================================
+    
+    // Кнопка "Визуализировать"
     const visualizeBtn = document.getElementById('visualizeBtn');
     if (visualizeBtn) {
         visualizeBtn.addEventListener('click', () => {
-            if (typeof showVisualizer === 'function') {
-                showVisualizer();
+            const regex = document.getElementById('visualizerRegex')?.value || '';
+            if (typeof visualizeRegex === 'function') {
+                visualizeRegex(regex);
             } else {
+                console.error('[Main] Функция visualizeRegex не найдена');
                 showToast('error', 'Визуализатор не загружен');
             }
         });
     }
     
-    // ДОБАВЛЕНО: Кнопка "Обратный конвертер"
-    const reverseBtn = document.getElementById('reverseBtn');
-    if (reverseBtn) {
-        reverseBtn.addEventListener('click', () => {
-            if (typeof showReverse === 'function') {
-                showReverse();
+    // Кнопка "Экспорт SVG"
+    const exportSvgBtn = document.getElementById('exportSvgBtn');
+    if (exportSvgBtn) {
+        exportSvgBtn.addEventListener('click', () => {
+            if (typeof exportSVG === 'function') {
+                exportSVG();
             } else {
-                showToast('error', 'Обратный конвертер не загружен');
+                console.error('[Main] Функция exportSVG не найдена');
             }
         });
     }
+    
+    // Кнопка "Экспорт PNG"
+    const exportPngBtn = document.getElementById('exportPngBtn');
+    if (exportPngBtn) {
+        exportPngBtn.addEventListener('click', () => {
+            if (typeof exportPNG === 'function') {
+                exportPNG();
+            } else {
+                console.error('[Main] Функция exportPNG не найдена');
+            }
+        });
+    }
+    
+    // Кнопка "Zoom In"
+    const zoomInBtn = document.getElementById('zoomInBtn');
+    if (zoomInBtn) {
+        zoomInBtn.addEventListener('click', () => {
+            if (typeof zoomDiagram === 'function') {
+                zoomDiagram(1.2);
+            } else {
+                console.error('[Main] Функция zoomDiagram не найдена');
+            }
+        });
+    }
+    
+    // Кнопка "Zoom Out"
+    const zoomOutBtn = document.getElementById('zoomOutBtn');
+    if (zoomOutBtn) {
+        zoomOutBtn.addEventListener('click', () => {
+            if (typeof zoomDiagram === 'function') {
+                zoomDiagram(0.8);
+            } else {
+                console.error('[Main] Функция zoomDiagram не найдена');
+            }
+        });
+    }
+    
+    // Кнопка "Переключение темы"
+    const themeToggleBtn = document.getElementById('themeToggleBtn');
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => {
+            if (typeof toggleTheme === 'function') {
+                toggleTheme();
+            } else {
+                console.error('[Main] Функция toggleTheme не найдена');
+            }
+        });
+    }
+    
+    // ============================================================
+    // КОНЕЦ НОВЫХ EVENT LISTENERS
+    // ============================================================
     
     // Закрытие модалок по крестику
     setupModalCloseButtons();
@@ -800,14 +846,14 @@ function focusFirstInput() {
  * Показать версию приложения в консоли
  */
 function showVersionInfo() {
-    console.log('%c RegexHelper v2.0 ', 'background: #4CAF50; color: white; padding: 5px 10px; border-radius: 3px;');
-    console.log('%c Конвертер триггеров в regex с поддержкой связанных групп ', 'background: #2196F3; color: white; padding: 3px 8px;');
+    console.log('%c RegexHelper v2.1 ', 'background: #4CAF50; color: white; padding: 5px 10px; border-radius: 3px;');
+    console.log('%c Конвертер триггеров в regex + Визуализатор ', 'background: #2196F3; color: white; padding: 3px 8px;');
     console.log('');
     console.log('Разработчик: bogdanuz');
     console.log('GitHub: https://github.com/bogdanuz/regex-helper');
     console.log('');
-    console.log('✓ Группа 6: Связанные триггеры с anyOrder реализованы');
-    console.log('✓ CRIT-1: Type 3 корректно реализован');
+    console.log('✓ Чат 2: Визуализатор regex добавлен');
+    console.log('✓ Railroad diagrams + объяснение на русском');
     console.log('');
 }
 
@@ -825,4 +871,4 @@ document.addEventListener('DOMContentLoaded', () => {
 window.confirmClearSimpleTriggers = confirmClearSimpleTriggers;
 window.confirmClearResult = confirmClearResult;
 
-console.log('✓ Модуль main.js загружен (v2.0 - Группа 6 полностью интегрирована)');
+console.log('✓ Модуль main.js загружен (v2.1 - Визуализатор интегрирован)');
