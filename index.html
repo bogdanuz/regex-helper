@@ -522,6 +522,125 @@
     </div>
 </div>
 
+        <!-- Modal: Group Settings (НОВОЕ - Группа 6) -->
+    <div id="groupSettingsModal" class="modal-overlay" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">⚙ Настройки связанной группы</h3>
+                <button class="modal-close" onclick="closeGroupSettingsModal()">&times;</button>
+            </div>
+            <div class="modal-body modal-body-scrollable">
+                
+                <!-- Расстояние между триггерами -->
+                <div class="settings-section">
+                    <h4 class="settings-section-title">Расстояние между триггерами</h4>
+                    
+                    <label class="radio-wrapper">
+                        <input type="radio" name="groupDistanceType" value="fixed" class="radio" checked>
+                        <div class="radio-content">
+                            <span class="radio-label">Фиксированное .{min,max}</span>
+                            <span class="radio-hint">Точное расстояние (например: выкуп.{1,7}дорого)</span>
+                        </div>
+                    </label>
+                    
+                    <!-- Поля min/max (показываются только для fixed) -->
+                    <div class="distance-minmax" style="margin-left: 28px; margin-top: 8px; display: block;">
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <label style="display: flex; align-items: center; gap: 5px;">
+                                <span style="font-size: 14px; color: #666;">Min:</span>
+                                <input type="number" id="groupDistanceMin" class="input input-sm" 
+                                       style="width: 60px;" min="0" max="999" value="1">
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 5px;">
+                                <span style="font-size: 14px; color: #666;">Max:</span>
+                                <input type="number" id="groupDistanceMax" class="input input-sm" 
+                                       style="width: 60px;" min="0" max="999" value="7">
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <label class="radio-wrapper mt-1">
+                        <input type="radio" name="groupDistanceType" value="any" class="radio">
+                        <div class="radio-content">
+                            <span class="radio-label">Любое расстояние [\s\S]+</span>
+                            <span class="radio-hint">Независимо от расстояния (военный[\s\S]+дрон)</span>
+                        </div>
+                    </label>
+                    
+                    <label class="radio-wrapper mt-1">
+                        <input type="radio" name="groupDistanceType" value="paragraph" class="radio">
+                        <div class="radio-content">
+                            <span class="radio-label">В пределах абзаца .+</span>
+                            <span class="radio-hint">Не через разрыв абзаца (военный.+дрон)</span>
+                        </div>
+                    </label>
+                    
+                    <label class="radio-wrapper mt-1">
+                        <input type="radio" name="groupDistanceType" value="line" class="radio">
+                        <div class="radio-content">
+                            <span class="radio-label">В пределах строки [^\n]+</span>
+                            <span class="radio-hint">Не через перенос строки (военный[^\n]+дрон)</span>
+                        </div>
+                    </label>
+                </div>
+                
+                <!-- Порядок триггеров -->
+                <div class="settings-section mt-2">
+                    <h4 class="settings-section-title">Порядок триггеров</h4>
+                    
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" class="checkbox" id="groupAnyOrder">
+                        <div class="checkbox-content">
+                            <span class="checkbox-label">Любая последовательность (A+B)|(B+A)</span>
+                            <span class="checkbox-hint">Триггеры могут быть в любом порядке</span>
+                        </div>
+                    </label>
+                </div>
+                
+                <!-- Оптимизации триггеров в группе -->
+                <div class="settings-section mt-2">
+                    <h4 class="settings-section-title">Оптимизации триггеров в группе</h4>
+                    
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" class="checkbox" id="groupType1">
+                        <div class="checkbox-content">
+                            <span class="checkbox-label">Повторы (префиксы)</span>
+                        </div>
+                    </label>
+                    
+                    <label class="checkbox-wrapper mt-1">
+                        <input type="checkbox" class="checkbox" id="groupType2">
+                        <div class="checkbox-content">
+                            <span class="checkbox-label">Общий корень</span>
+                        </div>
+                    </label>
+                    
+                    <label class="checkbox-wrapper mt-1">
+                        <input type="checkbox" class="checkbox" id="groupType4">
+                        <div class="checkbox-content">
+                            <span class="checkbox-label">Склонения</span>
+                        </div>
+                    </label>
+                    
+                    <label class="checkbox-wrapper mt-1">
+                        <input type="checkbox" class="checkbox" id="groupType5">
+                        <div class="checkbox-content">
+                            <span class="checkbox-label">Опциональный символ ?</span>
+                        </div>
+                    </label>
+                </div>
+                
+            </div>
+            <div class="modal-footer" style="display: flex; gap: 10px; justify-content: space-between;">
+                <button class="btn-danger" onclick="resetGroupSettings()">Сбросить настройки</button>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-primary" onclick="applyGroupSettings()">Применить</button>
+                    <button class="btn-secondary" onclick="closeGroupSettingsModal()">Отмена</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- JavaScript Modules -->
     <script src="js/utils.js"></script>
     <script src="js/errors.js"></script>
