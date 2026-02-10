@@ -1,7 +1,7 @@
 // ============================================================================
 // ФАЙЛ: js/visualizer.js
 // ОПИСАНИЕ: Визуализатор regex с railroad diagrams
-// ВЕРСИЯ: 1.0
+// ВЕРСИЯ: 2.0 (улучшенная визуализация, без объяснения)
 // ДАТА: 10.02.2026
 // ============================================================================
 
@@ -11,17 +11,13 @@
  * Функции:
  * - parseRegex(regex) - парсинг regex → AST
  * - renderDiagram(ast) - рендеринг railroad diagram (SVG)
- * - explainRegex(ast) - объяснение на русском
- * - renderExplanation(explanation) - рендеринг объяснения
- * - highlightSyntax(regex) - подсветка синтаксиса
  * - exportSVG() - экспорт диаграммы в SVG
- * - exportPNG() - конвертация SVG → PNG
+ * - exportPNG() - конвертация SVG → PNG (исправлено)
  * - setupInteractivity() - hover, клик на элементы
  * - clearDiagram() - очистка
  * - zoomDiagram(scale) - масштабирование
- * - toggleTheme() - темная/светлая тема
  * 
- * Зависимости: errors.js, export.js, lib/railroad-diagrams.js
+ * Зависимости: errors.js, lib/railroad-diagrams.js
  */
 
 // ============================================================================
@@ -30,7 +26,6 @@
 
 let currentDiagram = null;
 let currentScale = 1.0;
-let currentTheme = 'light';
 let currentRegex = '';
 
 // ============================================================================
@@ -68,13 +63,6 @@ function visualizeRegex(regex) {
         
         // Рендеринг диаграммы
         renderDiagram(ast);
-        
-        // Объяснение на русском
-        const explanation = explainRegex(ast);
-        renderExplanation(explanation);
-        
-        // Подсветка синтаксиса
-        highlightSyntax(regex);
         
         // Настройка интерактивности
         setupInteractivity();
@@ -160,24 +148,24 @@ function parseRegex(regex) {
         // Специальные символы
         if (ch === '.') {
             consume();
-            return { type: 'any' };
+            return { type: 'any', label: 'любой символ' };
         }
         
         if (ch === '^') {
             consume();
-            return { type: 'start' };
+            return { type: 'start', label: 'начало строки' };
         }
         
         if (ch === '$') {
             consume();
-            return { type: 'end' };
+            return { type: 'end', label: 'конец строки' };
         }
         
         // Escape последовательности
         if (ch === '\\') {
             consume();
             const next = consume();
-            return { type: 'escape', value: '\\' + next };
+            return { type: 'escape', value: '\\' + next, label: getEscapeLabel('\\' + next) };
         }
         
         // Обычный символ
@@ -194,6 +182,7 @@ function parseRegex(regex) {
         let isNonCapturing = false;
         let isLookahead = false;
         let isLookbehind = false;
+        let isNegative = false;
         
         // Проверка типа группы
         if (peek() === '?') {
@@ -208,11 +197,16 @@ function parseRegex(regex) {
             } else if (next === '!') {
                 consume();
                 isLookahead = true;
+                isNegative = true;
             } else if (next === '<') {
                 consume();
                 if (peek() === '=') {
                     consume();
                     isLookbehind = true;
+                } else if (peek() === '!') {
+                    consume();
+                    isLookbehind = true;
+                    isNegative = true;
                 }
             }
         }
@@ -243,6 +237,7 @@ function parseRegex(regex) {
                 nonCapturing: isNonCapturing,
                 lookahead: isLookahead,
                 lookbehind: isLookbehind,
+                negative: isNegative,
                 content: { type: 'choice', alternatives }
             };
         } else {
@@ -251,6 +246,7 @@ function parseRegex(regex) {
                 nonCapturing: isNonCapturing,
                 lookahead: isLookahead,
                 lookbehind: isLookbehind,
+                negative: isNegative,
                 content: alternatives[0]
             };
         }
@@ -277,7 +273,12 @@ function parseRegex(regex) {
         
         consume(); // ]
         
-        return { type: 'char-class', value: '[' + (negated ? '^' : '') + chars + ']', negated };
+        return { 
+            type: 'char-class', 
+            value: '[' + (negated ? '^' : '') + chars + ']', 
+            negated,
+            label: negated ? 'не ' + chars : chars
+        };
     }
     
     function parseQuantifier() {
@@ -322,8 +323,30 @@ function parseRegex(regex) {
     }
 }
 
+/**
+ * Получить читаемую метку для escape последовательности
+ */
+function getEscapeLabel(escape) {
+    const labels = {
+        '\\d': 'цифра',
+        '\\D': 'не цифра',
+        '\\w': 'слово',
+        '\\W': 'не слово',
+        '\\s': 'пробел',
+        '\\S': 'не пробел',
+        '\\b': 'граница',
+        '\\B': 'не граница',
+        '\\n': 'перенос',
+        '\\r': 'возврат',
+        '\\t': 'таб',
+        '\\0': 'null'
+    };
+    
+    return labels[escape] || escape;
+}
+
 // ============================================================================
-// РЕНДЕРИНГ ДИАГРАММЫ
+// РЕНДЕРИНГ ДИАГРАММЫ (УЛУЧШЕННЫЙ)
 // ============================================================================
 
 /**
@@ -344,21 +367,66 @@ function renderDiagram(ast) {
         const diagram = Diagram(diagramElements);
         
         // Рендеринг SVG
-        container.innerHTML = diagram.toString();
+        const svgString = diagram.toString();
+        container.innerHTML = svgString;
         
         // Сохранение текущей диаграммы
         currentDiagram = container.querySelector('svg');
         
-        // Применение масштаба и темы
+        // Применение улучшенных стилей
         if (currentDiagram) {
+            applyImprovedStyles(currentDiagram);
             currentDiagram.style.transform = `scale(${currentScale})`;
-            currentDiagram.setAttribute('data-theme', currentTheme);
+            currentDiagram.style.transformOrigin = 'top left';
         }
         
     } catch (error) {
         console.error('Ошибка рендеринга диаграммы:', error);
         throw error;
     }
+}
+
+/**
+ * Применение улучшенных стилей к SVG (как на regexper.com)
+ */
+function applyImprovedStyles(svg) {
+    // Фон
+    svg.style.background = '#fff';
+    svg.style.padding = '20px';
+    svg.style.borderRadius = '8px';
+    
+    // Стили путей
+    const paths = svg.querySelectorAll('path');
+    paths.forEach(path => {
+        path.setAttribute('stroke', '#000');
+        path.setAttribute('stroke-width', '2');
+        path.setAttribute('fill', 'none');
+    });
+    
+    // Стили текста
+    const texts = svg.querySelectorAll('text');
+    texts.forEach(text => {
+        text.setAttribute('font-family', 'monospace');
+        text.setAttribute('font-size', '14');
+        text.setAttribute('fill', '#000');
+    });
+    
+    // Стили прямоугольников (терминалы)
+    const rects = svg.querySelectorAll('rect');
+    rects.forEach(rect => {
+        const parent = rect.parentElement;
+        if (parent && parent.classList.contains('terminal')) {
+            rect.setAttribute('fill', '#dae9e5');
+            rect.setAttribute('stroke', '#6b9080');
+            rect.setAttribute('stroke-width', '2');
+            rect.setAttribute('rx', '4');
+        } else if (parent && parent.classList.contains('non-terminal')) {
+            rect.setAttribute('fill', '#cbdadb');
+            rect.setAttribute('stroke', '#88a5b0');
+            rect.setAttribute('stroke-width', '2');
+            rect.setAttribute('rx', '4');
+        }
+    });
 }
 
 /**
@@ -371,22 +439,23 @@ function astToRailroad(node) {
     
     switch (node.type) {
         case 'literal':
-            return Terminal(node.value);
+            return Terminal(node.value, {class: 'literal'});
         
         case 'escape':
-            return Terminal(node.value);
+            // Используем NonTerminal для escape последовательностей (синий фон)
+            return NonTerminal(node.label || node.value, {class: 'escape'});
         
         case 'any':
-            return Terminal('.');
+            return NonTerminal(node.label || 'любой', {class: 'any'});
         
         case 'start':
-            return Terminal('^');
+            return NonTerminal(node.label || '^', {class: 'anchor'});
         
         case 'end':
-            return Terminal('$');
+            return NonTerminal(node.label || '$', {class: 'anchor'});
         
         case 'char-class':
-            return Terminal(node.value);
+            return NonTerminal(node.label || node.value, {class: 'char-class'});
         
         case 'sequence':
             return Sequence(...node.items.map(astToRailroad));
@@ -405,21 +474,26 @@ function astToRailroad(node) {
         
         case 'repeat':
             return Sequence(
-                Comment('повтор ' + node.quantifier),
+                NonTerminal(node.quantifier),
                 astToRailroad(node.item)
             );
         
         case 'group':
             const content = astToRailroad(node.content);
+            let groupLabel = 'группа';
+            
             if (node.nonCapturing) {
-                return Sequence(Comment('(?:...)'), content);
+                groupLabel = '(?:)';
             } else if (node.lookahead) {
-                return Sequence(Comment('(?=...)'), content);
+                groupLabel = node.negative ? '(?!)' : '(?=)';
             } else if (node.lookbehind) {
-                return Sequence(Comment('(?<=...)'), content);
-            } else {
-                return Sequence(Comment('группа'), content);
+                groupLabel = node.negative ? '(?<!)' : '(?<=)';
             }
+            
+            return Sequence(
+                NonTerminal(groupLabel),
+                content
+            );
         
         case 'empty':
             return Skip();
@@ -427,173 +501,6 @@ function astToRailroad(node) {
         default:
             return Terminal('?');
     }
-}
-
-// ============================================================================
-// ОБЪЯСНЕНИЕ НА РУССКОМ
-// ============================================================================
-
-/**
- * Генерация объяснения regex на русском языке
- * @param {Object} ast - AST дерево
- * @returns {Array} массив строк объяснения
- */
-function explainRegex(ast) {
-    const explanations = [];
-    
-    function walk(node, depth = 0) {
-        if (!node) return;
-        
-        const indent = '  '.repeat(depth);
-        
-        switch (node.type) {
-            case 'literal':
-                explanations.push(`${indent}• Символ "${node.value}"`);
-                break;
-            
-            case 'escape':
-                explanations.push(`${indent}• Спецсимвол: ${node.value} ${getEscapeExplanation(node.value)}`);
-                break;
-            
-            case 'any':
-                explanations.push(`${indent}• Любой символ (.)`);
-                break;
-            
-            case 'start':
-                explanations.push(`${indent}• Начало строки (^)`);
-                break;
-            
-            case 'end':
-                explanations.push(`${indent}• Конец строки ($)`);
-                break;
-            
-            case 'char-class':
-                explanations.push(`${indent}• Класс символов: ${node.value}`);
-                break;
-            
-            case 'sequence':
-                explanations.push(`${indent}• Последовательность:`);
-                node.items.forEach(item => walk(item, depth + 1));
-                break;
-            
-            case 'choice':
-                explanations.push(`${indent}• Альтернатива (одно из):`);
-                node.alternatives.forEach(alt => walk(alt, depth + 1));
-                break;
-            
-            case 'optional':
-                explanations.push(`${indent}• Опциональное (0 или 1 раз):`);
-                walk(node.item, depth + 1);
-                break;
-            
-            case 'zero-or-more':
-                explanations.push(`${indent}• Ноль или более раз (*):`);
-                walk(node.item, depth + 1);
-                break;
-            
-            case 'one-or-more':
-                explanations.push(`${indent}• Один или более раз (+):`);
-                walk(node.item, depth + 1);
-                break;
-            
-            case 'repeat':
-                explanations.push(`${indent}• Повтор ${node.quantifier}:`);
-                walk(node.item, depth + 1);
-                break;
-            
-            case 'group':
-                let groupType = 'Группа';
-                if (node.nonCapturing) groupType = 'Незахватывающая группа (?:...)';
-                if (node.lookahead) groupType = 'Проверка вперед (?=...)';
-                if (node.lookbehind) groupType = 'Проверка назад (?<=...)';
-                explanations.push(`${indent}• ${groupType}:`);
-                walk(node.content, depth + 1);
-                break;
-            
-            case 'empty':
-                explanations.push(`${indent}• Пустое выражение`);
-                break;
-        }
-    }
-    
-    walk(ast);
-    
-    return explanations;
-}
-
-/**
- * Получить объяснение escape последовательности
- * @param {string} escape - escape последовательность
- * @returns {string} объяснение
- */
-function getEscapeExplanation(escape) {
-    const explanations = {
-        '\\d': '(цифра 0-9)',
-        '\\D': '(не цифра)',
-        '\\w': '(буква, цифра или _)',
-        '\\W': '(не буква, цифра или _)',
-        '\\s': '(пробельный символ)',
-        '\\S': '(не пробельный символ)',
-        '\\b': '(граница слова)',
-        '\\B': '(не граница слова)',
-        '\\n': '(перенос строки)',
-        '\\r': '(возврат каретки)',
-        '\\t': '(табуляция)',
-        '\\0': '(null символ)',
-        '\\\\': '(обратный слеш)',
-        '\\.': '(точка)',
-        '\\*': '(звездочка)',
-        '\\+': '(плюс)',
-        '\\?': '(вопросительный знак)',
-        '\\[': '(открывающая скобка)',
-        '\\]': '(закрывающая скобка)',
-        '\\(': '(открывающая скобка)',
-        '\\)': '(закрывающая скобка)',
-        '\\{': '(открывающая фигурная скобка)',
-        '\\}': '(закрывающая фигурная скобка)',
-        '\\|': '(вертикальная черта)',
-        '\\^': '(крышка)',
-        '\\$': '(знак доллара)'
-    };
-    
-    return explanations[escape] || '';
-}
-
-// ============================================================================
-// РЕНДЕРИНГ ОБЪЯСНЕНИЯ
-// ============================================================================
-
-/**
- * Рендеринг объяснения в контейнер
- * @param {Array} explanation - массив строк объяснения
- */
-function renderExplanation(explanation) {
-    const container = document.getElementById('explanationContainer');
-    if (!container) return;
-    
-    container.innerHTML = `
-        <h3>📝 Объяснение на русском:</h3>
-        <div class="explanation-content">
-            ${explanation.map(line => `<div>${line}</div>`).join('')}
-        </div>
-    `;
-}
-
-// ============================================================================
-// ПОДСВЕТКА СИНТАКСИСА
-// ============================================================================
-
-/**
- * Подсветка синтаксиса regex в textarea
- * @param {string} regex - регулярное выражение
- */
-function highlightSyntax(regex) {
-    // Простая подсветка (можно расширить)
-    const textarea = document.getElementById('visualizerRegex');
-    if (!textarea) return;
-    
-    // Добавляем класс для визуального эффекта
-    textarea.classList.add('syntax-highlighted');
 }
 
 // ============================================================================
@@ -610,18 +517,26 @@ function exportSVG() {
             return;
         }
         
+        // Клонируем SVG для экспорта
+        const svgClone = currentDiagram.cloneNode(true);
+        
+        // Удаляем transform для экспорта
+        svgClone.style.transform = '';
+        
         // Получение SVG content
-        const svgContent = currentDiagram.outerHTML;
+        const svgContent = new XMLSerializer().serializeToString(svgClone);
         
         // Создание blob
-        const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+        const blob = new Blob([svgContent], { type: 'image/svg+xml;charset=utf-8' });
         
         // Создание ссылки для скачивания
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
         link.download = `regex-diagram-${Date.now()}.svg`;
+        document.body.appendChild(link);
         link.click();
+        document.body.removeChild(link);
         
         // Освобождение памяти
         URL.revokeObjectURL(url);
@@ -635,7 +550,7 @@ function exportSVG() {
 }
 
 // ============================================================================
-// ЭКСПОРТ PNG
+// ЭКСПОРТ PNG (ИСПРАВЛЕНО)
 // ============================================================================
 
 /**
@@ -648,27 +563,42 @@ function exportPNG() {
             return;
         }
         
-        // Получение размеров SVG
-        const svgRect = currentDiagram.getBoundingClientRect();
-        const svgWidth = svgRect.width;
-        const svgHeight = svgRect.height;
+        // Клонируем SVG
+        const svgClone = currentDiagram.cloneNode(true);
+        svgClone.style.transform = '';
         
-        // Создание canvas
-        const canvas = document.createElement('canvas');
-        canvas.width = svgWidth * 2; // Увеличиваем для качества
-        canvas.height = svgHeight * 2;
-        const ctx = canvas.getContext('2d');
+        // Получаем размеры
+        const bbox = currentDiagram.getBBox();
+        const width = bbox.width + 40;
+        const height = bbox.height + 40;
         
-        // Создание Image из SVG
-        const svgBlob = new Blob([currentDiagram.outerHTML], { type: 'image/svg+xml' });
+        // Устанавливаем размеры
+        svgClone.setAttribute('width', width);
+        svgClone.setAttribute('height', height);
+        
+        // Сериализуем SVG
+        const svgData = new XMLSerializer().serializeToString(svgClone);
+        const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
         const url = URL.createObjectURL(svgBlob);
         
+        // Создаем Image
         const img = new Image();
+        
         img.onload = function() {
-            // Рисуем на canvas
-            ctx.fillStyle = currentTheme === 'dark' ? '#1a1a1a' : '#ffffff';
+            // Создаем canvas
+            const canvas = document.createElement('canvas');
+            canvas.width = width * 2; // Увеличиваем для качества
+            canvas.height = height * 2;
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Белый фон
+            ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            
+            // Масштабируем и рисуем
+            ctx.scale(2, 2);
+            ctx.drawImage(img, 0, 0);
             
             // Конвертация в PNG
             canvas.toBlob(function(blob) {
@@ -676,16 +606,19 @@ function exportPNG() {
                 const link = document.createElement('a');
                 link.href = pngUrl;
                 link.download = `regex-diagram-${Date.now()}.png`;
+                document.body.appendChild(link);
                 link.click();
+                document.body.removeChild(link);
                 
                 URL.revokeObjectURL(url);
                 URL.revokeObjectURL(pngUrl);
                 
                 showToast('success', 'PNG экспортирован');
-            });
+            }, 'image/png');
         };
         
-        img.onerror = function() {
+        img.onerror = function(e) {
+            console.error('Ошибка загрузки изображения:', e);
             showToast('error', 'Ошибка конвертации SVG в PNG');
             URL.revokeObjectURL(url);
         };
@@ -709,14 +642,20 @@ function setupInteractivity() {
     if (!currentDiagram) return;
     
     // Hover эффекты для элементов диаграммы
-    const elements = currentDiagram.querySelectorAll('g');
-    elements.forEach(el => {
+    const groups = currentDiagram.querySelectorAll('g.terminal, g.non-terminal');
+    groups.forEach(el => {
         el.addEventListener('mouseenter', function() {
-            this.style.opacity = '0.8';
+            const rect = this.querySelector('rect');
+            if (rect) {
+                rect.setAttribute('fill-opacity', '0.8');
+            }
         });
         
         el.addEventListener('mouseleave', function() {
-            this.style.opacity = '1';
+            const rect = this.querySelector('rect');
+            if (rect) {
+                rect.setAttribute('fill-opacity', '1');
+            }
         });
     });
 }
@@ -726,18 +665,13 @@ function setupInteractivity() {
 // ============================================================================
 
 /**
- * Очистка диаграммы и объяснения
+ * Очистка диаграммы
  */
 function clearDiagram() {
     const diagramContainer = document.getElementById('diagramContainer');
-    const explanationContainer = document.getElementById('explanationContainer');
     
     if (diagramContainer) {
         diagramContainer.innerHTML = '';
-    }
-    
-    if (explanationContainer) {
-        explanationContainer.innerHTML = '';
     }
     
     currentDiagram = null;
@@ -767,35 +701,6 @@ function zoomDiagram(scale) {
     currentDiagram.style.transformOrigin = 'top left';
     
     showToast('info', `Масштаб: ${Math.round(currentScale * 100)}%`);
-}
-
-// ============================================================================
-// ПЕРЕКЛЮЧЕНИЕ ТЕМЫ
-// ============================================================================
-
-/**
- * Переключение темы (светлая/темная)
- */
-function toggleTheme() {
-    currentTheme = currentTheme === 'light' ? 'dark' : 'light';
-    
-    if (currentDiagram) {
-        currentDiagram.setAttribute('data-theme', currentTheme);
-    }
-    
-    // Применение темы к контейнерам
-    const diagramContainer = document.getElementById('diagramContainer');
-    const explanationContainer = document.getElementById('explanationContainer');
-    
-    if (diagramContainer) {
-        diagramContainer.setAttribute('data-theme', currentTheme);
-    }
-    
-    if (explanationContainer) {
-        explanationContainer.setAttribute('data-theme', currentTheme);
-    }
-    
-    showToast('info', `Тема: ${currentTheme === 'light' ? 'Светлая' : 'Темная'}`);
 }
 
 // ============================================================================
