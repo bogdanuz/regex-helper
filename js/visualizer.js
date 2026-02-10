@@ -1,27 +1,26 @@
 // ============================================================================
 // ФАЙЛ: js/visualizer.js
-// ОПИСАНИЕ: Интерфейс для визуализатора regex
-// ВЕРСИЯ: 3.0 (использует lib/regex-visualizer.js)
+// ОПИСАНИЕ: Визуализатор regex с railroad-diagrams.js (УЛУЧШЕННЫЙ ПАРСЕР)
+// ВЕРСИЯ: 4.0 (правильное объединение литералов)
 // ДАТА: 10.02.2026
 // ============================================================================
 
 /*
- * ВИЗУАЛИЗАТОР REGEX - ИНТЕРФЕЙС
+ * ВИЗУАЛИЗАТОР REGEX - ПРАВИЛЬНАЯ РЕАЛИЗАЦИЯ
  * 
- * Использует библиотеку RegexVisualizer из lib/regex-visualizer.js
- * Функции интерфейса:
+ * Использует railroad-diagrams.js от Tab Atkins
+ * КЛЮЧЕВОЕ УЛУЧШЕНИЕ: Объединяем последовательные литералы!
+ * 
+ * Функции:
  * - visualizeRegex(regex) - главная функция
- * - exportSVG() - экспорт SVG
- * - exportPNG() - экспорт PNG
- * - openFullscreen() - модальное окно
- * - zoomDiagram() - масштабирование
+ * - parseRegex(regex) - парсер с объединением литералов
+ * - astToRailroad(ast) - конвертация в railroad элементы
  */
 
 // ============================================================================
 // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
 // ============================================================================
 
-let visualizer = null;
 let currentDiagram = null;
 let currentScale = 1.0;
 let currentRegex = '';
@@ -32,36 +31,11 @@ let scrollLeft = 0;
 let scrollTop = 0;
 
 // ============================================================================
-// ИНИЦИАЛИЗАЦИЯ
-// ============================================================================
-
-/**
- * Инициализация визуализатора (вызывается автоматически)
- */
-function initVisualizer() {
-    if (typeof RegexVisualizer === 'undefined') {
-        console.error('[Visualizer] Библиотека RegexVisualizer не загружена!');
-        return;
-    }
-    
-    visualizer = new RegexVisualizer();
-    console.log('[Visualizer] Инициализирован (v3.0)');
-}
-
-// Автоинициализация
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initVisualizer);
-} else {
-    initVisualizer();
-}
-
-// ============================================================================
 // ГЛАВНАЯ ФУНКЦИЯ ВИЗУАЛИЗАЦИИ
 // ============================================================================
 
 /**
  * Визуализация regex
- * @param {string} regex - регулярное выражение
  */
 function visualizeRegex(regex) {
     try {
@@ -80,28 +54,39 @@ function visualizeRegex(regex) {
             return;
         }
         
-        if (!visualizer) {
-            showToast('error', 'Визуализатор не инициализирован');
+        // Проверка наличия библиотеки
+        if (typeof Diagram === 'undefined') {
+            showToast('error', 'Библиотека railroad-diagrams не загружена');
             return;
         }
         
         currentRegex = regex;
         
-        // Рендеринг через библиотеку
-        const svg = visualizer.render(regex);
+        // ПАРСИНГ С ОБЪЕДИНЕНИЕМ ЛИТЕРАЛОВ
+        const ast = parseRegex(regex);
+        console.log('[Visualizer] AST:', ast);
         
+        // КОНВЕРТАЦИЯ В RAILROAD
+        const railroadElements = astToRailroad(ast);
+        
+        // СОЗДАНИЕ ДИАГРАММЫ
+        const diagram = Diagram(railroadElements);
+        
+        // РЕНДЕРИНГ
         const container = document.getElementById('diagramContainer');
-        if (!container) {
-            throw new Error('Контейнер диаграммы не найден');
+        const svgString = diagram.toString();
+        container.innerHTML = svgString;
+        
+        currentDiagram = container.querySelector('svg');
+        
+        // Применяем стили
+        if (currentDiagram) {
+            applyCustomStyles(currentDiagram);
+            currentDiagram.style.transform = `scale(${currentScale})`;
+            currentDiagram.style.transformOrigin = 'top left';
         }
         
-        container.innerHTML = '';
-        container.appendChild(svg);
-        
-        currentDiagram = svg;
-        currentScale = 1.0;
-        
-        // Включаем drag & scroll
+        // Drag & scroll
         enableDragAndScroll(container);
         
         showToast('success', 'Диаграмма построена успешно');
@@ -113,12 +98,438 @@ function visualizeRegex(regex) {
 }
 
 // ============================================================================
-// DRAG & SCROLL
+// УЛУЧШЕННЫЙ ПАРСЕР (ОБЪЕДИНЯЕТ ЛИТЕРАЛЫ!)
 // ============================================================================
 
 /**
- * Включить drag and scroll для контейнера
+ * Парсинг regex с объединением последовательных литералов
  */
+function parseRegex(regex) {
+    let position = 0;
+    
+    function peek() { return regex[position]; }
+    function consume() { return regex[position++]; }
+    function isEnd() { return position >= regex.length; }
+    
+    // ГЛАВНАЯ ФУНКЦИЯ: Парсинг с объединением
+    function parseSequence() {
+        const items = [];
+        
+        while (!isEnd() && peek() !== ')' && peek() !== '|') {
+            const item = parseItem();
+            if (item) items.push(item);
+        }
+        
+        // КЛЮЧЕВОЕ УЛУЧШЕНИЕ: Объединяем последовательные литералы
+        const merged = mergeLiterals(items);
+        
+        return merged.length === 1 ? merged[0] : { type: 'sequence', items: merged };
+    }
+    
+    /**
+     * ОБЪЕДИНЕНИЕ ПОСЛЕДОВАТЕЛЬНЫХ ЛИТЕРАЛОВ
+     * ["д", "р", "о", "н"] → "дрон"
+     */
+    function mergeLiterals(items) {
+        const result = [];
+        let literalBuffer = '';
+        
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            
+            // Если это простой литерал без квантификатора
+            if (item.type === 'literal' && !hasQuantifier(items, i)) {
+                literalBuffer += item.value;
+            } else {
+                // Сбрасываем буфер
+                if (literalBuffer) {
+                    result.push({ type: 'literal', value: literalBuffer });
+                    literalBuffer = '';
+                }
+                result.push(item);
+            }
+        }
+        
+        // Добавляем остаток
+        if (literalBuffer) {
+            result.push({ type: 'literal', value: literalBuffer });
+        }
+        
+        return result;
+    }
+    
+    /**
+     * Проверка: есть ли квантификатор после элемента?
+     */
+    function hasQuantifier(items, index) {
+        // Смотрим на следующий символ в regex
+        const savedPos = position;
+        const nextChar = peek();
+        position = savedPos;
+        
+        return nextChar === '*' || nextChar === '+' || nextChar === '?' || nextChar === '{';
+    }
+    
+    function parseItem() {
+        let item = parseAtom();
+        if (!item) return null;
+        
+        // Квантификаторы
+        const ch = peek();
+        if (ch === '*') {
+            consume();
+            return { type: 'zero-or-more', item };
+        } else if (ch === '+') {
+            consume();
+            return { type: 'one-or-more', item };
+        } else if (ch === '?') {
+            consume();
+            return { type: 'optional', item };
+        } else if (ch === '{') {
+            const quant = parseQuantifier();
+            return { type: 'repeat', item, quantifier: quant };
+        }
+        
+        return item;
+    }
+    
+    function parseAtom() {
+        const ch = peek();
+        
+        if (ch === '(') return parseGroup();
+        if (ch === '[') return parseCharClass();
+        if (ch === '|') { consume(); return { type: 'or' }; }
+        if (ch === '.') { consume(); return { type: 'any' }; }
+        if (ch === '^') { consume(); return { type: 'anchor-start' }; }
+        if (ch === '$') { consume(); return { type: 'anchor-end' }; }
+        
+        if (ch === '\\') {
+            consume();
+            const next = consume();
+            return { type: 'escape', value: '\\' + next };
+        }
+        
+        if (ch && ch !== ')' && ch !== '|') {
+            return { type: 'literal', value: consume() };
+        }
+        
+        return null;
+    }
+    
+    function parseGroup() {
+        consume(); // (
+        
+        let nonCapturing = false;
+        let lookahead = false;
+        let lookbehind = false;
+        let negative = false;
+        
+        if (peek() === '?') {
+            consume();
+            const type = peek();
+            if (type === ':') { consume(); nonCapturing = true; }
+            else if (type === '=') { consume(); lookahead = true; }
+            else if (type === '!') { consume(); lookahead = true; negative = true; }
+            else if (type === '<') {
+                consume();
+                if (peek() === '=') { consume(); lookbehind = true; }
+                else if (peek() === '!') { consume(); lookbehind = true; negative = true; }
+            }
+        }
+        
+        const alternatives = [];
+        let current = [];
+        
+        while (!isEnd() && peek() !== ')') {
+            if (peek() === '|') {
+                consume();
+                const seq = parseSequence();
+                alternatives.push(seq);
+                current = [];
+            } else {
+                const item = parseItem();
+                if (item) current.push(item);
+            }
+        }
+        
+        if (current.length > 0) {
+            const merged = mergeLiterals(current);
+            alternatives.push(merged.length === 1 ? merged[0] : { type: 'sequence', items: merged });
+        }
+        
+        consume(); // )
+        
+        const content = alternatives.length > 1 
+            ? { type: 'choice', alternatives } 
+            : alternatives[0];
+        
+        return {
+            type: 'group',
+            nonCapturing,
+            lookahead,
+            lookbehind,
+            negative,
+            content
+        };
+    }
+    
+    function parseCharClass() {
+        consume(); // [
+        let negated = peek() === '^';
+        if (negated) consume();
+        
+        let chars = '';
+        while (!isEnd() && peek() !== ']') {
+            if (peek() === '\\') {
+                chars += consume();
+                chars += consume();
+            } else {
+                chars += consume();
+            }
+        }
+        consume(); // ]
+        
+        return { type: 'char-class', value: chars, negated };
+    }
+    
+    function parseQuantifier() {
+        consume(); // {
+        let q = '';
+        while (!isEnd() && peek() !== '}') {
+            q += consume();
+        }
+        consume(); // }
+        return '{' + q + '}';
+    }
+    
+    // ГЛАВНЫЙ ПАРСИНГ
+    const alternatives = [];
+    let current = [];
+    
+    while (!isEnd()) {
+        if (peek() === '|') {
+            consume();
+            const seq = parseSequence();
+            alternatives.push(seq);
+            current = [];
+        } else {
+            const item = parseItem();
+            if (item) current.push(item);
+        }
+    }
+    
+    if (current.length > 0) {
+        const merged = mergeLiterals(current);
+        alternatives.push(merged.length === 1 ? merged[0] : { type: 'sequence', items: merged });
+    }
+    
+    if (alternatives.length > 1) {
+        return { type: 'choice', alternatives };
+    } else if (alternatives.length === 1) {
+        return alternatives[0];
+    }
+    
+    return { type: 'empty' };
+}
+
+// ============================================================================
+// КОНВЕРТАЦИЯ AST → RAILROAD ЭЛЕМЕНТЫ
+// ============================================================================
+
+/**
+ * Конвертация AST в railroad-diagrams элементы
+ */
+function astToRailroad(node) {
+    if (!node) return Skip();
+    
+    switch (node.type) {
+        case 'literal':
+            // Теперь value - это целая строка, не одна буква!
+            return Terminal(node.value);
+        
+        case 'escape':
+            return NonTerminal(getEscapeLabel(node.value));
+        
+        case 'any':
+            return NonTerminal('any character');
+        
+        case 'anchor-start':
+            return NonTerminal('start of line');
+        
+        case 'anchor-end':
+            return NonTerminal('end of line');
+        
+        case 'char-class':
+            return renderCharClass(node);
+        
+        case 'sequence':
+            return Sequence(...node.items.map(astToRailroad));
+        
+        case 'choice':
+            return Choice(0, ...node.alternatives.map(astToRailroad));
+        
+        case 'optional':
+            return Optional(astToRailroad(node.item));
+        
+        case 'zero-or-more':
+            return ZeroOrMore(astToRailroad(node.item));
+        
+        case 'one-or-more':
+            return OneOrMore(astToRailroad(node.item));
+        
+        case 'repeat':
+            return Sequence(
+                Comment(node.quantifier),
+                astToRailroad(node.item)
+            );
+        
+        case 'group':
+            return renderGroup(node);
+        
+        case 'empty':
+            return Skip();
+        
+        default:
+            return Terminal('?');
+    }
+}
+
+/**
+ * Рендеринг класса символов
+ */
+function renderCharClass(node) {
+    const prefix = node.negated ? 'None of' : 'One of';
+    const chars = node.value;
+    
+    // Разбиваем на отдельные элементы
+    const items = parseCharClassItems(chars);
+    
+    if (items.length <= 5) {
+        return Stack(
+            Comment(prefix),
+            Choice(0, ...items.map(ch => Terminal(ch)))
+        );
+    } else {
+        return NonTerminal(`${prefix}: ${chars}`);
+    }
+}
+
+/**
+ * Рендеринг группы
+ */
+function renderGroup(node) {
+    let label = 'group';
+    if (node.nonCapturing) label = 'non-capturing group (?:)';
+    else if (node.lookahead) label = node.negative ? 'negative lookahead (?!)' : 'positive lookahead (?=)';
+    else if (node.lookbehind) label = node.negative ? 'negative lookbehind (?<!)' : 'positive lookbehind (?<=)';
+    
+    return Stack(
+        Comment(label),
+        astToRailroad(node.content)
+    );
+}
+
+/**
+ * Разбор элементов класса символов
+ */
+function parseCharClassItems(chars) {
+    const items = [];
+    let i = 0;
+    
+    while (i < chars.length) {
+        if (chars[i] === '\\' && i + 1 < chars.length) {
+            items.push(chars[i] + chars[i + 1]);
+            i += 2;
+        } else if (i + 2 < chars.length && chars[i + 1] === '-') {
+            items.push(chars[i] + '-' + chars[i + 2]);
+            i += 3;
+        } else {
+            items.push(chars[i]);
+            i++;
+        }
+    }
+    
+    return items;
+}
+
+/**
+ * Метки для escape последовательностей
+ */
+function getEscapeLabel(escape) {
+    const labels = {
+        '\\d': 'digit [0-9]',
+        '\\D': 'not digit',
+        '\\w': 'word character [a-zA-Z0-9_]',
+        '\\W': 'not word character',
+        '\\s': 'whitespace [ \\t\\n\\r]',
+        '\\S': 'not whitespace',
+        '\\b': 'word boundary',
+        '\\B': 'not word boundary',
+        '\\n': 'line feed',
+        '\\r': 'carriage return',
+        '\\t': 'tab',
+        '\\0': 'null'
+    };
+    return labels[escape] || escape;
+}
+
+// ============================================================================
+// СТИЛИЗАЦИЯ
+// ============================================================================
+
+/**
+ * Применение кастомных стилей (как на regexper.com)
+ */
+function applyCustomStyles(svg) {
+    svg.style.background = '#fff';
+    svg.style.padding = '20px';
+    
+    // Пути
+    const paths = svg.querySelectorAll('path');
+    paths.forEach(path => {
+        path.setAttribute('stroke', '#000');
+        path.setAttribute('stroke-width', '2');
+    });
+    
+    // Текст
+    const texts = svg.querySelectorAll('text');
+    texts.forEach(text => {
+        text.setAttribute('font-family', 'Monaco, Menlo, Consolas, monospace');
+        text.setAttribute('font-size', '14');
+        text.setAttribute('fill', '#000');
+    });
+    
+    // Терминалы (литералы) - зеленый
+    const terminals = svg.querySelectorAll('g.terminal rect');
+    terminals.forEach(rect => {
+        rect.setAttribute('fill', '#dae9e5');
+        rect.setAttribute('stroke', '#6b9080');
+        rect.setAttribute('stroke-width', '2');
+        rect.setAttribute('rx', '5');
+    });
+    
+    // NonTerminal (escape) - желто-зеленый
+    const nonTerminals = svg.querySelectorAll('g.non-terminal rect');
+    nonTerminals.forEach(rect => {
+        rect.setAttribute('fill', '#bada55');
+        rect.setAttribute('stroke', '#769b3b');
+        rect.setAttribute('stroke-width', '2');
+        rect.setAttribute('rx', '5');
+    });
+    
+    // Комментарии (метки) - серый
+    const comments = svg.querySelectorAll('g.comment text');
+    comments.forEach(text => {
+        text.setAttribute('fill', '#666');
+        text.setAttribute('font-size', '12');
+        text.setAttribute('font-style', 'italic');
+    });
+}
+
+// ============================================================================
+// DRAG & SCROLL
+// ============================================================================
+
 function enableDragAndScroll(container) {
     container.style.cursor = 'grab';
     container.style.overflow = 'auto';
@@ -154,7 +565,6 @@ function enableDragAndScroll(container) {
         container.style.cursor = 'grab';
     });
     
-    // Скролл колесиком (горизонтальный и вертикальный)
     container.addEventListener('wheel', (e) => {
         e.preventDefault();
         container.scrollLeft += e.deltaX;
@@ -163,19 +573,15 @@ function enableDragAndScroll(container) {
 }
 
 // ============================================================================
-// МОДАЛЬНОЕ ОКНО НА ВЕСЬ ЭКРАН
+// МОДАЛЬНОЕ ОКНО
 // ============================================================================
 
-/**
- * Открыть модальное окно на весь экран
- */
 function openFullscreen() {
     if (!currentDiagram) {
         showToast('warning', 'Сначала создайте диаграмму');
         return;
     }
     
-    // Создаем модальное окно
     const modal = document.createElement('div');
     modal.id = 'fullscreenModal';
     modal.className = 'fullscreen-modal';
@@ -196,23 +602,16 @@ function openFullscreen() {
     
     document.body.appendChild(modal);
     
-    // Клонируем диаграмму
     const diagramClone = currentDiagram.cloneNode(true);
-    diagramClone.style.transform = ''; // Сброс transform
+    diagramClone.style.transform = '';
     
     const fullscreenDiagram = document.getElementById('fullscreenDiagram');
     fullscreenDiagram.appendChild(diagramClone);
     
-    // Включаем drag & scroll
     enableDragAndScroll(fullscreenDiagram);
-    
-    // Блокируем скролл body
     document.body.style.overflow = 'hidden';
 }
 
-/**
- * Закрыть модальное окно
- */
 function closeFullscreen() {
     const modal = document.getElementById('fullscreenModal');
     if (modal) {
@@ -221,9 +620,6 @@ function closeFullscreen() {
     }
 }
 
-/**
- * Zoom в модальном окне
- */
 function fullscreenZoom(scale, reset = false) {
     const diagram = document.querySelector('#fullscreenDiagram svg');
     if (!diagram) return;
@@ -248,9 +644,6 @@ function fullscreenZoom(scale, reset = false) {
 // ЭКСПОРТ
 // ============================================================================
 
-/**
- * Экспорт SVG
- */
 function exportSVG() {
     if (!currentDiagram) {
         showToast('warning', 'Сначала создайте диаграмму');
@@ -280,9 +673,6 @@ function exportSVG() {
     }
 }
 
-/**
- * Экспорт PNG
- */
 function exportPNG() {
     if (!currentDiagram) {
         showToast('warning', 'Сначала создайте диаграмму');
@@ -293,7 +683,7 @@ function exportPNG() {
         const svgClone = currentDiagram.cloneNode(true);
         svgClone.style.transform = '';
         
-        const bbox = currentDiagram.getBBox ? currentDiagram.getBBox() : { width: 800, height: 400 };
+        const bbox = currentDiagram.getBBox();
         const width = bbox.width + 40;
         const height = bbox.height + 40;
         
@@ -349,9 +739,6 @@ function exportPNG() {
 // МАСШТАБИРОВАНИЕ
 // ============================================================================
 
-/**
- * Масштабирование диаграммы
- */
 function zoomDiagram(scale) {
     if (!currentDiagram) {
         showToast('warning', 'Сначала создайте диаграмму');
@@ -371,9 +758,6 @@ function zoomDiagram(scale) {
 // ОЧИСТКА
 // ============================================================================
 
-/**
- * Очистка диаграммы
- */
 function clearDiagram() {
     const container = document.getElementById('diagramContainer');
     if (container) {
