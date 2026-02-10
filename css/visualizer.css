@@ -1,7 +1,7 @@
 /* ============================================================================
    ФАЙЛ: css/visualizer.css
-   ОПИСАНИЕ: Стили для визуализатора regex (улучшенная версия)
-   ВЕРСИЯ: 2.0
+   ОПИСАНИЕ: Стили для визуализатора regex (v3.0)
+   ВЕРСИЯ: 3.0
    ДАТА: 10.02.2026
    ============================================================================ */
 
@@ -12,15 +12,15 @@
 #visualizerSection {
     margin-bottom: 30px;
     background: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     overflow: hidden;
 }
 
 #visualizerSection .section-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
     color: white;
-    padding: 20px;
+    padding: 24px 30px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -28,12 +28,12 @@
 
 #visualizerSection .section-header h2 {
     margin: 0;
-    font-size: 24px;
+    font-size: 26px;
     font-weight: 600;
 }
 
 #visualizerSection .section-content {
-    padding: 25px;
+    padding: 30px;
 }
 
 /* ============================================================================
@@ -46,28 +46,31 @@
 
 .visualizer-input-group label {
     display: block;
-    margin-bottom: 8px;
-    font-weight: 500;
+    margin-bottom: 10px;
+    font-weight: 600;
     color: #333;
+    font-size: 15px;
 }
 
 #visualizerRegex {
     width: 100%;
-    min-height: 80px;
-    padding: 12px;
+    min-height: 100px;
+    padding: 15px;
     border: 2px solid #e0e0e0;
-    border-radius: 6px;
+    border-radius: 8px;
     font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
-    font-size: 14px;
+    font-size: 15px;
     line-height: 1.6;
     resize: vertical;
-    transition: border-color 0.3s ease;
+    transition: all 0.3s ease;
+    background: #fafafa;
 }
 
 #visualizerRegex:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: #4A90E2;
+    box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.1);
+    background: #fff;
 }
 
 /* ============================================================================
@@ -76,27 +79,27 @@
 
 .visualizer-buttons {
     display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
+    gap: 12px;
+    margin-bottom: 25px;
     flex-wrap: wrap;
 }
 
 #visualizeBtn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
     color: white;
     border: none;
-    padding: 12px 24px;
-    border-radius: 6px;
+    padding: 14px 28px;
+    border-radius: 8px;
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 4px 8px rgba(74, 144, 226, 0.3);
 }
 
 #visualizeBtn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 6px 16px rgba(74, 144, 226, 0.4);
 }
 
 #visualizeBtn:active {
@@ -104,18 +107,24 @@
 }
 
 /* ============================================================================
-   КОНТЕЙНЕР ДИАГРАММЫ (УЛУЧШЕННЫЙ)
+   КОНТЕЙНЕР ДИАГРАММЫ
    ============================================================================ */
 
 #diagramContainer {
     background: #f8f9fa;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 30px;
-    margin-bottom: 20px;
-    min-height: 300px;
+    border: 3px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 40px;
+    margin-bottom: 25px;
+    min-height: 400px;
+    max-height: 600px;
     overflow: auto;
     position: relative;
+    cursor: grab;
+}
+
+#diagramContainer:active {
+    cursor: grabbing;
 }
 
 #diagramContainer:empty::before {
@@ -125,65 +134,18 @@
     left: 50%;
     transform: translate(-50%, -50%);
     color: #999;
-    font-size: 16px;
+    font-size: 18px;
     text-align: center;
     width: 80%;
+    pointer-events: none;
 }
 
-/* Стили для SVG диаграммы (улучшенные) */
+/* Стили для SVG диаграммы */
 #diagramContainer svg {
     display: block;
     margin: 0 auto;
-    max-width: 100%;
-    height: auto;
     transition: transform 0.3s ease;
-    background: #fff;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* Стили railroad элементов (как на regexper.com) */
-#diagramContainer svg.railroad-diagram path {
-    stroke: #000;
-    stroke-width: 2;
-    fill: none;
-}
-
-#diagramContainer svg.railroad-diagram text {
-    font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
-    font-size: 14px;
-    fill: #000;
-    font-weight: 500;
-}
-
-/* Терминалы (литералы) - зеленый фон */
-#diagramContainer svg.railroad-diagram g.terminal rect {
-    fill: #dae9e5;
-    stroke: #6b9080;
-    stroke-width: 2;
-    rx: 4;
-}
-
-/* NonTerminal (escape, классы) - синий фон */
-#diagramContainer svg.railroad-diagram g.non-terminal rect {
-    fill: #cbdadb;
-    stroke: #88a5b0;
-    stroke-width: 2;
-    rx: 4;
-}
-
-/* Hover эффект */
-#diagramContainer svg.railroad-diagram g.terminal:hover rect,
-#diagramContainer svg.railroad-diagram g.non-terminal:hover rect {
-    fill-opacity: 0.8;
-    cursor: pointer;
-}
-
-/* Комментарии */
-#diagramContainer svg.railroad-diagram g.comment text {
-    font-size: 12px;
-    font-style: italic;
-    fill: #666;
 }
 
 /* ============================================================================
@@ -192,31 +154,32 @@
 
 .visualizer-controls {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     flex-wrap: wrap;
     align-items: center;
 }
 
 .visualizer-controls button {
-    padding: 10px 16px;
+    padding: 12px 20px;
     border: 2px solid #e0e0e0;
-    border-radius: 6px;
+    border-radius: 8px;
     background: #ffffff;
     color: #333;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
 }
 
 .visualizer-controls button:hover {
-    border-color: #667eea;
-    background: #f0f4ff;
-    color: #667eea;
-    transform: translateY(-1px);
+    border-color: #4A90E2;
+    background: #f0f7ff;
+    color: #4A90E2;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .visualizer-controls button:active {
@@ -228,12 +191,24 @@
     background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
     color: white;
     border: none;
-    box-shadow: 0 3px 6px rgba(17, 153, 142, 0.3);
+    box-shadow: 0 4px 8px rgba(17, 153, 142, 0.3);
 }
 
 #exportSvgBtn:hover,
 #exportPngBtn:hover {
-    box-shadow: 0 5px 10px rgba(17, 153, 142, 0.4);
+    box-shadow: 0 6px 12px rgba(17, 153, 142, 0.4);
+    transform: translateY(-2px);
+}
+
+#openFullscreenBtn {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 8px rgba(245, 87, 108, 0.3);
+}
+
+#openFullscreenBtn:hover {
+    box-shadow: 0 6px 12px rgba(245, 87, 108, 0.4);
     transform: translateY(-2px);
 }
 
@@ -241,63 +216,160 @@
 #zoomOutBtn {
     background: #f8f9fa;
     border: 2px solid #e0e0e0;
-    width: 44px;
-    height: 44px;
+    width: 48px;
+    height: 48px;
     padding: 0;
     justify-content: center;
     border-radius: 50%;
+    font-size: 18px;
 }
 
 #zoomInBtn:hover,
 #zoomOutBtn:hover {
-    background: #667eea;
+    background: #4A90E2;
     color: white;
-    border-color: #667eea;
+    border-color: #4A90E2;
 }
 
 /* ============================================================================
-   ПРИМЕРЫ REGEX
+   МОДАЛЬНОЕ ОКНО НА ВЕСЬ ЭКРАН
    ============================================================================ */
 
-.examples-container {
-    margin-top: 15px;
-    padding: 15px;
-    background: #f8f9fa;
-    border-radius: 6px;
-}
-
-.examples-container label {
-    display: block;
-    margin-bottom: 10px;
-    font-weight: 500;
-    color: #333;
-}
-
-.examples-buttons {
+.fullscreen-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 10000;
     display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s ease;
 }
 
-.example-btn {
-    padding: 8px 14px;
-    background: #ffffff;
-    border: 2px solid #e0e0e0;
+.fullscreen-content {
+    width: 95%;
+    height: 95%;
+    background: #fff;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.fullscreen-header {
+    background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+    color: white;
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.fullscreen-header h3 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.fullscreen-controls {
+    display: flex;
+    gap: 10px;
+}
+
+.fs-btn {
+    padding: 10px 18px;
+    border: none;
     border-radius: 6px;
-    color: #555;
-    font-size: 13px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
-.example-btn:hover {
-    border-color: #667eea;
-    color: #667eea;
-    background: #f0f4ff;
+.fs-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
 }
 
-.example-btn:active {
-    transform: scale(0.98);
+.fullscreen-close-btn {
+    padding: 10px 20px !important;
+    background: #f44336 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 6px;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.fullscreen-close-btn:hover {
+    background: #d32f2f !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(244, 67, 54, 0.4);
+}
+
+.fullscreen-diagram {
+    flex: 1;
+    overflow: auto;
+    padding: 30px;
+    background: #f8f9fa;
+    cursor: grab;
+}
+
+.fullscreen-diagram:active {
+    cursor: grabbing;
+}
+
+.fullscreen-diagram svg {
+    display: block;
+    margin: 0 auto;
+}
+
+/* ============================================================================
+   СКРОЛЛБАР (КАСТОМНЫЙ)
+   ============================================================================ */
+
+#diagramContainer::-webkit-scrollbar,
+.fullscreen-diagram::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+#diagramContainer::-webkit-scrollbar-track,
+.fullscreen-diagram::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 6px;
+}
+
+#diagramContainer::-webkit-scrollbar-thumb,
+.fullscreen-diagram::-webkit-scrollbar-thumb {
+    background: #4A90E2;
+    border-radius: 6px;
+}
+
+#diagramContainer::-webkit-scrollbar-thumb:hover,
+.fullscreen-diagram::-webkit-scrollbar-thumb:hover {
+    background: #357ABD;
+}
+
+/* ============================================================================
+   АНИМАЦИИ
+   ============================================================================ */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 /* ============================================================================
@@ -306,7 +378,7 @@
 
 @media (max-width: 768px) {
     #visualizerSection .section-content {
-        padding: 15px;
+        padding: 20px;
     }
     
     .visualizer-buttons {
@@ -322,87 +394,42 @@
     }
     
     #diagramContainer {
-        padding: 15px;
-        overflow-x: auto;
+        padding: 20px;
+        min-height: 300px;
     }
     
-    .examples-buttons {
-        flex-direction: column;
-    }
-    
-    .example-btn {
+    .fullscreen-content {
         width: 100%;
-        text-align: center;
+        height: 100%;
+        border-radius: 0;
     }
 }
 
 @media (max-width: 480px) {
     #visualizerSection .section-header h2 {
-        font-size: 18px;
+        font-size: 20px;
     }
     
     #visualizerRegex {
-        font-size: 12px;
-        min-height: 60px;
+        font-size: 13px;
+        min-height: 80px;
     }
     
     #visualizeBtn {
         font-size: 14px;
-        padding: 10px 18px;
+        padding: 12px 20px;
     }
     
     .visualizer-controls button {
         font-size: 12px;
-        padding: 8px 12px;
+        padding: 10px 14px;
     }
     
     #zoomInBtn,
     #zoomOutBtn {
-        width: 38px;
-        height: 38px;
+        width: 42px;
+        height: 42px;
     }
-}
-
-/* ============================================================================
-   АНИМАЦИИ
-   ============================================================================ */
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-#diagramContainer svg {
-    animation: fadeIn 0.5s ease;
-}
-
-/* ============================================================================
-   СКРОЛЛБАР (КАСТОМНЫЙ)
-   ============================================================================ */
-
-#diagramContainer::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-}
-
-#diagramContainer::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 5px;
-}
-
-#diagramContainer::-webkit-scrollbar-thumb {
-    background: #667eea;
-    border-radius: 5px;
-}
-
-#diagramContainer::-webkit-scrollbar-thumb:hover {
-    background: #5568d3;
 }
 
 /* ============================================================================
