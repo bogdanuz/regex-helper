@@ -1,6 +1,13 @@
 /* ============================================
    REGEXHELPER - ERRORS
    Обработка ошибок и валидация
+   
+   ВЕРСИЯ: 2.0
+   ДАТА: 10.02.2026
+   ИЗМЕНЕНИЯ:
+   - Добавлены недостающие сообщения об ошибках
+   - Улучшена функция confirmAction() (fallback на window.confirm)
+   - Добавлены CSS анимации для toast
    ============================================ */
 
 /* ============================================
@@ -14,18 +21,26 @@ const ERROR_MESSAGES = {
     
     // Ошибки триггеров
     NO_TRIGGERS: 'Введите хотя бы один триггер',
-    TRIGGERS_LIMIT_EXCEEDED: 'Превышен лимит триггеров (максимум 200)',
+    EMPTY_TRIGGERS: 'Введите хотя бы один триггер',
+    TRIGGERS_LIMIT_HARD: 'Превышен лимит триггеров (максимум 200)',
+    TRIGGERS_LIMIT_SOFT: 'Приближение к лимиту (рекомендуется использовать до 150 триггеров)',
     TRIGGER_TOO_SHORT: 'Триггер слишком короткий (минимум 1 символ)',
     TRIGGER_TOO_LONG: 'Триггер слишком длинный (максимум 100 символов)',
     INVALID_CHARACTERS: 'Триггер содержит недопустимые символы',
     
     // Ошибки regex
     REGEX_TOO_LONG: 'Regex слишком длинный (максимум 10000 символов)',
+    REGEX_LENGTH_LIMIT: 'Regex слишком длинный (максимум 10000 символов)',
     REGEX_INVALID: 'Неверный синтаксис regex',
     
     // Ошибки связанных триггеров
     LINKED_TRIGGERS_EMPTY: 'Оба поля связанных триггеров должны быть заполнены',
+    LINKED_MIN_TRIGGERS: 'Минимум 2 триггера в группе',
+    LINKED_DUPLICATES: 'В группе обнаружены одинаковые триггеры',
     LINKED_DISTANCE_INVALID: 'Некорректное значение расстояния',
+    
+    // Ошибки валидации
+    VALIDATION_FAILED: 'Проверка не пройдена',
     
     // Ошибки буфера обмена
     CLIPBOARD_NOT_SUPPORTED: 'Копирование в буфер обмена не поддерживается вашим браузером',
@@ -44,8 +59,10 @@ const ERROR_MESSAGES = {
 const WARNING_MESSAGES = {
     NO_OPTIMIZATIONS: 'Не выбрана ни одна оптимизация. Regex будет создан без оптимизаций.',
     DUPLICATES_FOUND: 'Найдены дубликаты триггеров. Они будут удалены автоматически.',
+    DUPLICATES_REMOVED: 'Удалено дубликатов: {0}',
     REGEX_LENGTH_WARNING: 'Regex приближается к максимальной длине',
-    PERMUTATIONS_TOO_MANY: 'Большое количество перестановок может замедлить работу приложения'
+    PERMUTATIONS_TOO_MANY: 'Большое количество перестановок может замедлить работу приложения',
+    TRIGGERS_LIMIT_SOFT: 'Приближение к лимиту (рекомендуется использовать до 150 триггеров)'
 };
 
 const SUCCESS_MESSAGES = {
@@ -53,7 +70,8 @@ const SUCCESS_MESSAGES = {
     COPIED_TO_CLIPBOARD: 'Regex скопирован в буфер обмена',
     EXPORTED_SUCCESS: 'Данные успешно экспортированы',
     HISTORY_CLEARED: 'История очищена',
-    SETTINGS_SAVED: 'Настройки сохранены'
+    SETTINGS_SAVED: 'Настройки сохранены',
+    SETTINGS_RESET: 'Настройки сброшены'
 };
 
 /* ============================================
@@ -157,6 +175,9 @@ function showToast(type, message, duration = 4000) {
             pointer-events: none;
         `;
         document.body.appendChild(container);
+        
+        // Добавляем CSS анимации (если их еще нет)
+        addToastAnimations();
     }
     
     // Цвета для разных типов
@@ -191,7 +212,7 @@ function showToast(type, message, duration = 4000) {
     
     toast.innerHTML = `
         <span style="font-size: 18px; font-weight: bold;">${color.icon}</span>
-        <span style="flex: 1;">${message}</span>
+        <span style="flex: 1;">${escapeHTML(message)}</span>
     `;
     
     // Клик для закрытия
@@ -211,6 +232,55 @@ function showToast(type, message, duration = 4000) {
     }, duration);
     
     console.log(`[Toast] ${type.toUpperCase()}: ${message}`);
+}
+
+/**
+ * Добавить CSS анимации для toast (если их еще нет)
+ */
+function addToastAnimations() {
+    // Проверяем есть ли уже стили
+    if (document.getElementById('toastAnimationsStyle')) {
+        return;
+    }
+    
+    const style = document.createElement('style');
+    style.id = 'toastAnimationsStyle';
+    style.textContent = `
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes slideDown {
+            from {
+                transform: translateY(-10px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    `;
+    
+    document.head.appendChild(style);
 }
 
 /**
@@ -249,6 +319,9 @@ function showMessage(type, messageKey, params = null) {
 
 /**
  * Универсальная функция подтверждения действия
+ * 
+ * ИСПРАВЛЕНО v2.0: Добавлен fallback на window.confirm()
+ * 
  * @param {string} title - Заголовок
  * @param {string} message - Сообщение
  * @param {Function} onConfirm - Callback при подтверждении
@@ -263,8 +336,9 @@ function confirmAction(title, message, onConfirm, onCancel) {
     
     // ИСПРАВЛЕНИЕ: проверяем наличие всех элементов
     if (!modal || !titleEl || !textEl || !yesBtn || !noBtn) {
-        console.error('[confirmAction] Модальное окно или его элементы не найдены');
-        // Если модалка не найдена, используем стандартный confirm
+        console.warn('[confirmAction] Модальное окно не найдено, используем window.confirm()');
+        
+        // Fallback на стандартный confirm
         if (window.confirm(message)) {
             if (typeof onConfirm === 'function') {
                 onConfirm();
@@ -285,7 +359,7 @@ function confirmAction(title, message, onConfirm, onCancel) {
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
     
-    // Удаляем старые обработчики
+    // Удаляем старые обработчики (чтобы избежать дублирования)
     const newYesBtn = yesBtn.cloneNode(true);
     const newNoBtn = noBtn.cloneNode(true);
     yesBtn.parentNode.replaceChild(newYesBtn, yesBtn);
@@ -308,6 +382,53 @@ function confirmAction(title, message, onConfirm, onCancel) {
             onCancel();
         }
     };
+    
+    // Закрытие по клику вне модалки
+    modal.onclick = (e) => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+            if (typeof onCancel === 'function') {
+                onCancel();
+            }
+        }
+    };
+}
+
+/* ============================================
+   МОДАЛЬНЫЕ ОКНА (ОБЩИЕ)
+   ============================================ */
+
+/**
+ * Показать модальное окно
+ * @param {string} modalId - ID модального окна
+ */
+function showModal(modalId) {
+    const modal = document.getElementById(modalId);
+    
+    if (!modal) {
+        console.error('[Errors] Модальное окно не найдено:', modalId);
+        return;
+    }
+    
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+/**
+ * Закрыть модальное окно
+ * @param {string} modalId - ID модального окна
+ */
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    
+    if (!modal) {
+        console.error('[Errors] Модальное окно не найдено:', modalId);
+        return;
+    }
+    
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
 }
 
 /* ============================================
@@ -330,4 +451,8 @@ function logError(context, error) {
    ЭКСПОРТ
    ============================================ */
 
-console.log('✓ Модуль errors.js загружен');
+// Делаем функции глобальными
+window.showModal = showModal;
+window.closeModal = closeModal;
+
+console.log('✓ Модуль errors.js загружен (v2.0)');
