@@ -1,15 +1,18 @@
 // ============================================================================
 // ФАЙЛ: js/visualizer.js
 // ОПИСАНИЕ: Визуализатор regex с railroad-diagrams.js (УЛУЧШЕННЫЙ ПАРСЕР)
-// ВЕРСИЯ: 4.0 (правильное объединение литералов)
+// ВЕРСИЯ: 4.1 (проверка готовности библиотеки + объединение литералов)
 // ДАТА: 10.02.2026
 // ============================================================================
 
 /*
  * ВИЗУАЛИЗАТОР REGEX - ПРАВИЛЬНАЯ РЕАЛИЗАЦИЯ
  * 
- * Использует railroad-diagrams.js от Tab Atkins
- * КЛЮЧЕВОЕ УЛУЧШЕНИЕ: Объединяем последовательные литералы!
+ * Использует railroad-diagrams.js от Tab Atkins (GitHub gh-pages)
+ * КЛЮЧЕВЫЕ УЛУЧШЕНИЯ:
+ * - Проверка готовности библиотеки (асинхронная загрузка ES6)
+ * - Объединение последовательных литералов
+ * - Правильный парсинг групп и альтернаций
  * 
  * Функции:
  * - visualizeRegex(regex) - главная функция
@@ -29,6 +32,51 @@ let dragStartX = 0;
 let dragStartY = 0;
 let scrollLeft = 0;
 let scrollTop = 0;
+
+// ============================================================================
+// ПРОВЕРКА ГОТОВНОСТИ БИБЛИОТЕКИ RAILROAD
+// ============================================================================
+
+let railroadReady = false;
+let railroadCheckAttempts = 0;
+const MAX_ATTEMPTS = 50; // 5 секунд (50 * 100ms)
+
+// Проверяем каждые 100ms, пока библиотека не загрузится
+const checkRailroad = setInterval(() => {
+    railroadCheckAttempts++;
+    
+    if (typeof Diagram !== 'undefined' && 
+        typeof Terminal !== 'undefined' && 
+        typeof Sequence !== 'undefined' &&
+        typeof Choice !== 'undefined' &&
+        typeof Optional !== 'undefined') {
+        
+        railroadReady = true;
+        clearInterval(checkRailroad);
+        console.log('[Visualizer] ✅ Railroad библиотека готова');
+        console.log('[Visualizer] Доступные функции:', {
+            Diagram: typeof Diagram,
+            Terminal: typeof Terminal,
+            Sequence: typeof Sequence,
+            Choice: typeof Choice,
+            Optional: typeof Optional,
+            OneOrMore: typeof OneOrMore,
+            ZeroOrMore: typeof ZeroOrMore,
+            NonTerminal: typeof NonTerminal,
+            Comment: typeof Comment,
+            Skip: typeof Skip,
+            Stack: typeof Stack
+        });
+        
+    } else if (railroadCheckAttempts >= MAX_ATTEMPTS) {
+        clearInterval(checkRailroad);
+        console.error('[Visualizer] ❌ Railroad библиотека не загрузилась за 5 секунд');
+        console.error('[Visualizer] Проверьте:', {
+            Diagram: typeof Diagram,
+            Terminal: typeof Terminal
+        });
+    }
+}, 100);
 
 // ============================================================================
 // ГЛАВНАЯ ФУНКЦИЯ ВИЗУАЛИЗАЦИИ
@@ -54,20 +102,33 @@ function visualizeRegex(regex) {
             return;
         }
         
-        // Проверка наличия библиотеки
+        // ПРОВЕРКА ГОТОВНОСТИ БИБЛИОТЕКИ
+        if (!railroadReady) {
+            console.log('[Visualizer] Библиотека еще загружается, попытка:', railroadCheckAttempts);
+            showToast('warning', 'Библиотека загружается, подождите...');
+            
+            // Повторная попытка через 500ms
+            setTimeout(() => visualizeRegex(regex), 500);
+            return;
+        }
+        
+        // Проверка наличия функций
         if (typeof Diagram === 'undefined') {
             showToast('error', 'Библиотека railroad-diagrams не загружена');
+            console.error('[Visualizer] Diagram не определен');
             return;
         }
         
         currentRegex = regex;
         
         // ПАРСИНГ С ОБЪЕДИНЕНИЕМ ЛИТЕРАЛОВ
+        console.log('[Visualizer] Парсинг regex:', regex);
         const ast = parseRegex(regex);
         console.log('[Visualizer] AST:', ast);
         
         // КОНВЕРТАЦИЯ В RAILROAD
         const railroadElements = astToRailroad(ast);
+        console.log('[Visualizer] Railroad elements:', railroadElements);
         
         // СОЗДАНИЕ ДИАГРАММЫ
         const diagram = Diagram(railroadElements);
@@ -92,7 +153,8 @@ function visualizeRegex(regex) {
         showToast('success', 'Диаграмма построена успешно');
         
     } catch (error) {
-        console.error('Ошибка визуализации:', error);
+        console.error('[Visualizer] Ошибка визуализации:', error);
+        console.error('[Visualizer] Stack:', error.stack);
         showToast('error', 'Ошибка: ' + error.message);
     }
 }
@@ -137,9 +199,26 @@ function parseRegex(regex) {
         for (let i = 0; i < items.length; i++) {
             const item = items[i];
             
-            // Если это простой литерал без квантификатора
-            if (item.type === 'literal' && !hasQuantifier(items, i)) {
-                literalBuffer += item.value;
+            // Если это простой литерал (проверяем, что следующий элемент не квантификатор)
+            if (item.type === 'literal') {
+                // Проверяем следующий элемент
+                const nextItem = items[i + 1];
+                const isNextQuantifier = nextItem && 
+                    (nextItem.type === 'zero-or-more' || 
+                     nextItem.type === 'one-or-more' || 
+                     nextItem.type === 'optional' ||
+                     nextItem.type === 'repeat');
+                
+                if (!isNextQuantifier) {
+                    literalBuffer += item.value;
+                } else {
+                    // Сбрасываем буфер перед квантификатором
+                    if (literalBuffer) {
+                        result.push({ type: 'literal', value: literalBuffer });
+                        literalBuffer = '';
+                    }
+                    result.push(item);
+                }
             } else {
                 // Сбрасываем буфер
                 if (literalBuffer) {
@@ -156,18 +235,6 @@ function parseRegex(regex) {
         }
         
         return result;
-    }
-    
-    /**
-     * Проверка: есть ли квантификатор после элемента?
-     */
-    function hasQuantifier(items, index) {
-        // Смотрим на следующий символ в regex
-        const savedPos = position;
-        const nextChar = peek();
-        position = savedPos;
-        
-        return nextChar === '*' || nextChar === '+' || nextChar === '?' || nextChar === '{';
     }
     
     function parseItem() {
@@ -243,9 +310,11 @@ function parseRegex(regex) {
         while (!isEnd() && peek() !== ')') {
             if (peek() === '|') {
                 consume();
-                const seq = parseSequence();
-                alternatives.push(seq);
-                current = [];
+                if (current.length > 0) {
+                    const merged = mergeLiterals(current);
+                    alternatives.push(merged.length === 1 ? merged[0] : { type: 'sequence', items: merged });
+                    current = [];
+                }
             } else {
                 const item = parseItem();
                 if (item) current.push(item);
@@ -309,9 +378,11 @@ function parseRegex(regex) {
     while (!isEnd()) {
         if (peek() === '|') {
             consume();
-            const seq = parseSequence();
-            alternatives.push(seq);
-            current = [];
+            if (current.length > 0) {
+                const merged = mergeLiterals(current);
+                alternatives.push(merged.length === 1 ? merged[0] : { type: 'sequence', items: merged });
+                current = [];
+            }
         } else {
             const item = parseItem();
             if (item) current.push(item);
@@ -390,6 +461,7 @@ function astToRailroad(node) {
             return Skip();
         
         default:
+            console.warn('[Visualizer] Неизвестный тип узла:', node.type);
             return Terminal('?');
     }
 }
@@ -419,7 +491,7 @@ function renderCharClass(node) {
  */
 function renderGroup(node) {
     let label = 'group';
-    if (node.nonCapturing) label = 'non-capturing group (?:)';
+    if (node.nonCapturing) label = 'non-capturing (?:)';
     else if (node.lookahead) label = node.negative ? 'negative lookahead (?!)' : 'positive lookahead (?=)';
     else if (node.lookbehind) label = node.negative ? 'negative lookbehind (?<!)' : 'positive lookbehind (?<=)';
     
@@ -459,12 +531,12 @@ function getEscapeLabel(escape) {
     const labels = {
         '\\d': 'digit [0-9]',
         '\\D': 'not digit',
-        '\\w': 'word character [a-zA-Z0-9_]',
-        '\\W': 'not word character',
-        '\\s': 'whitespace [ \\t\\n\\r]',
+        '\\w': 'word [a-zA-Z0-9_]',
+        '\\W': 'not word',
+        '\\s': 'whitespace',
         '\\S': 'not whitespace',
         '\\b': 'word boundary',
-        '\\B': 'not word boundary',
+        '\\B': 'not boundary',
         '\\n': 'line feed',
         '\\r': 'carriage return',
         '\\t': 'tab',
@@ -668,7 +740,7 @@ function exportSVG() {
         
         showToast('success', 'SVG экспортирован');
     } catch (error) {
-        console.error('Ошибка экспорта SVG:', error);
+        console.error('[Visualizer] Ошибка экспорта SVG:', error);
         showToast('error', 'Ошибка экспорта SVG');
     }
 }
@@ -730,7 +802,7 @@ function exportPNG() {
         img.src = url;
         
     } catch (error) {
-        console.error('Ошибка экспорта PNG:', error);
+        console.error('[Visualizer] Ошибка экспорта PNG:', error);
         showToast('error', 'Ошибка экспорта PNG');
     }
 }
