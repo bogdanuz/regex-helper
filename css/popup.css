@@ -160,6 +160,12 @@
     color: var(--dark-text);
 }
 
+/* Modal Body Scrollable */
+.modal-body-scrollable {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
 /* Modal Footer */
 .modal-footer {
     padding: 16px 24px;
@@ -167,6 +173,146 @@
     display: flex;
     justify-content: flex-end;
     gap: 12px;
+}
+
+/* ============================================
+   GROUP SETTINGS MODAL (НОВОЕ - Группа 6)
+   ============================================ */
+
+/* Секции настроек */
+.settings-section {
+    margin-bottom: 20px;
+}
+
+.settings-section:last-child {
+    margin-bottom: 0;
+}
+
+.settings-section-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--dark-text);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--gray-light);
+}
+
+/* Радиокнопки */
+.radio-wrapper {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.radio-wrapper:hover {
+    background-color: var(--gray-bg);
+}
+
+.radio {
+    margin-top: 2px;
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.radio-content {
+    flex: 1;
+}
+
+.radio-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--dark-text);
+    margin-bottom: 4px;
+}
+
+.radio-hint {
+    display: block;
+    font-size: 12px;
+    color: var(--medium-text);
+    line-height: 1.4;
+}
+
+/* Поля min/max для расстояния */
+.distance-minmax {
+    margin-left: 28px;
+    margin-top: 8px;
+}
+
+.distance-minmax label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 14px;
+    color: #666;
+}
+
+.distance-minmax .input-sm {
+    width: 60px;
+    padding: 6px 10px;
+    font-size: 14px;
+}
+
+/* ============================================
+   КНОПКА НАСТРОЕК ГРУППЫ ⚙️ (НОВОЕ!)
+   ============================================ */
+
+/* Кнопка настроек группы (⚙️) - БЕЛАЯ по умолчанию */
+.btn-settings {
+    background: #fff;
+    border: 2px solid #ddd;
+    color: #666;
+    font-size: 16px;
+    padding: 6px 10px;
+    cursor: pointer;
+    border-radius: var(--radius-md);
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+}
+
+.btn-settings:hover {
+    background: #f5f5f5;
+    border-color: #ccc;
+    transform: scale(1.05);
+}
+
+/* ЗЕЛЕНАЯ кнопка = есть индивидуальные настройки */
+.btn-settings.has-settings {
+    background: #28a745;
+    border-color: #28a745;
+    color: #fff;
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+    font-weight: bold;
+}
+
+.btn-settings.has-settings:hover {
+    background: #218838;
+    border-color: #1e7e34;
+    transform: scale(1.05);
+}
+
+/* Пульсирующая анимация для has-settings */
+@keyframes pulse-green {
+    0%, 100% {
+        box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 0 6px rgba(40, 167, 69, 0.1);
+    }
+}
+
+.btn-settings.has-settings {
+    animation: pulse-green 2s infinite;
 }
 
 /* ============================================
