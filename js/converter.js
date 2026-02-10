@@ -1,6 +1,7 @@
 /* ============================================
    REGEXHELPER - CONVERTER
    Базовая конвертация триггеров в regex
+   Версия: 2.0 (Группа 6 - конвертация связанных триггеров)
    ============================================ */
 
 /* ============================================
@@ -52,7 +53,7 @@ function cleanTrigger(trigger) {
     // Переводим в lowercase
     cleaned = cleaned.toLowerCase();
     
-    // ИСПРАВЛЕНО: Удаляем множественные пробелы (\s+ вместо \\s+)
+    // Удаляем множественные пробелы
     cleaned = cleaned.replace(/\s+/g, ' ');
     
     return cleaned;
@@ -165,7 +166,7 @@ function removeDuplicatesFromTriggers(triggers) {
 }
 
 /* ============================================
-   КОНВЕРТАЦИЯ В REGEX
+   КОНВЕРТАЦИЯ В REGEX (БАЗОВАЯ)
    ============================================ */
 
 /**
@@ -188,6 +189,179 @@ function convertToRegex(triggers) {
     const regex = sorted.join('|');
     
     return regex;
+}
+
+/* ============================================
+   КОНВЕРТАЦИЯ СВЯЗАННЫХ ТРИГГЕРОВ (НОВОЕ - Группа 6)
+   ============================================ */
+
+/**
+ * Конвертация всех связанных групп
+ * @param {Array} groups - Массив групп [{id, triggers, settings}]
+ * @returns {string} - Regex для всех групп
+ */
+function convertLinkedGroups(groups) {
+    if (!groups || groups.length === 0) {
+        return '';
+    }
+    
+    const regexParts = [];
+    
+    groups.forEach((group, index) => {
+        try {
+            const groupRegex = convertLinkedGroup(group);
+            if (groupRegex) {
+                regexParts.push(groupRegex);
+            }
+        } catch (error) {
+            console.error(`[Converter] Ошибка конвертации группы ${index + 1}:`, error);
+        }
+    });
+    
+    return regexParts.join('|');
+}
+
+/**
+ * Конвертация одной связанной группы
+ * @param {Object} group - {id, triggers, settings}
+ * @returns {string} - Regex для группы
+ */
+function convertLinkedGroup(group) {
+    if (!group || !group.triggers || group.triggers.length < 2) {
+        console.warn('[Converter] Группа пропущена: недостаточно триггеров');
+        return '';
+    }
+    
+    const { triggers, settings } = group;
+    
+    console.log(`[Converter] Конвертация группы: ${triggers.length} триггеров`, settings);
+    
+    // 1. Применяем оптимизации к каждому триггеру
+    const optimizedTriggers = triggers.map(trigger => {
+        return applyOptimizationsToTrigger(trigger, settings);
+    });
+    
+    console.log('[Converter] Триггеры после оптимизаций:', optimizedTriggers);
+    
+    // 2. Получаем паттерн расстояния
+    const distance = getDistancePattern(settings);
+    
+    console.log('[Converter] Паттерн расстояния:', distance);
+    
+    // 3. Если anyOrder = true → генерируем перестановки
+    if (settings.anyOrder) {
+        const result = generateAnyOrderPattern(optimizedTriggers, distance);
+        console.log('[Converter] anyOrder включен, результат:', result);
+        return result;
+    }
+    
+    // 4. Обычное объединение (порядок важен)
+    const result = optimizedTriggers.join(distance);
+    console.log('[Converter] Обычное объединение (порядок важен):', result);
+    
+    return result;
+}
+
+/**
+ * Получить паттерн расстояния из настроек группы
+ * @param {Object} settings - Настройки группы
+ * @returns {string} - Паттерн расстояния (например: .{1,7})
+ */
+function getDistancePattern(settings) {
+    const distanceType = settings.distanceType || 'fixed';
+    
+    switch (distanceType) {
+        case 'fixed':
+            const min = settings.distanceMin || 1;
+            const max = settings.distanceMax || 7;
+            return `.{${min},${max}}`;
+        
+        case 'any':
+            return `[\\s\\S]+`;
+        
+        case 'paragraph':
+            return `.+`;
+        
+        case 'line':
+            return `[^\\n]+`;
+        
+        default:
+            console.warn(`[Converter] Неизвестный тип расстояния: ${distanceType}, используем fixed`);
+            return `.{1,7}`;
+    }
+}
+
+/**
+ * Генерация паттерна с любой последовательностью (A+B)|(B+A)
+ * @param {Array} triggers - Массив оптимизированных триггеров
+ * @param {string} distance - Паттерн расстояния
+ * @returns {string} - Regex с перестановками
+ */
+function generateAnyOrderPattern(triggers, distance) {
+    if (triggers.length < 2) {
+        return triggers[0] || '';
+    }
+    
+    // Получаем все перестановки
+    const permutations = getPermutations(triggers);
+    
+    console.log(`[Converter] Генерация ${permutations.length} перестановок`);
+    
+    // Предупреждение если слишком много
+    if (permutations.length > 720) {
+        console.warn(`[Converter] ВНИМАНИЕ! ${permutations.length} перестановок - это ОЧЕНЬ много!`);
+    }
+    
+    // Объединяем каждую перестановку через distance
+    const patterns = permutations.map(perm => perm.join(distance));
+    
+    // Оборачиваем в группу с альтернацией
+    return `(${patterns.join('|')})`;
+}
+
+/**
+ * Применить оптимизации к триггеру (используя настройки группы)
+ * @param {string} trigger - Исходный триггер
+ * @param {Object} settings - Настройки группы (type1, type2, type4, type5)
+ * @returns {string} - Оптимизированный триггер
+ */
+function applyOptimizationsToTrigger(trigger, settings) {
+    if (!trigger) return '';
+    
+    let result = cleanTrigger(trigger);
+    
+    // Применяем только включенные оптимизации
+    const types = {
+        type1: settings.type1 || false,
+        type2: settings.type2 || false,
+        type3: settings.type3 || false, // Вариации букв (всегда применяем если включен)
+        type4: settings.type4 || false,
+        type5: settings.type5 || false
+    };
+    
+    console.log(`[Converter] Применяем оптимизации к "${trigger}":`, types);
+    
+    // Используем функцию из optimizer.js (если доступна)
+    if (typeof applyOptimizations === 'function') {
+        result = applyOptimizations(result, types);
+    } else {
+        // Fallback: базовая обработка
+        console.warn('[Converter] Функция applyOptimizations не найдена, используем базовую обработку');
+        
+        // Type 3: Вариации букв (латиница/кириллица)
+        if (types.type3) {
+            result = applyType3Optimization(result);
+        }
+        
+        // Type 4: Склонения
+        if (types.type4) {
+            result = applyType4Optimization(result);
+        }
+    }
+    
+    console.log(`[Converter] Результат оптимизации: "${result}"`);
+    
+    return result;
 }
 
 /* ============================================
@@ -320,4 +494,4 @@ function getTriggerStats(text) {
     };
 }
 
-console.log('✓ Модуль converter.js загружен');
+console.log('✓ Модуль converter.js загружен (v2.0 - конвертация связанных триггеров)');
