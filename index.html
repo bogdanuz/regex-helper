@@ -142,11 +142,12 @@
                     
                     <p class="hint-text">Выберите оптимизации для всех триггеров:</p>
 
+                    <!-- ИСПРАВЛЕНО v2.0: Type 1 = Вариации букв (бывший Type 3) -->
                     <label class="checkbox-wrapper">
                         <input type="checkbox" class="checkbox" id="optType1" checked>
                         <div class="checkbox-content">
-                            <span class="checkbox-label">Повторы (префиксы)</span>
-                            <span class="checkbox-hint">джефф, джеффри → джефф(ри)?</span>
+                            <span class="checkbox-label">Вариации букв (латиница ↔ кириллица)</span>
+                            <span class="checkbox-hint">дрон → д[dд][pр][oо]н</span>
                         </div>
                     </label>
 
@@ -158,13 +159,8 @@
                         </div>
                     </label>
 
-                    <label class="checkbox-wrapper mt-1">
-                        <input type="checkbox" class="checkbox" id="optType3" checked>
-                        <div class="checkbox-content">
-                            <span class="checkbox-label">Вариации букв (латиница ↔ кириллица)</span>
-                            <span class="checkbox-hint">test → [tт][eе][sѕ][tт]</span>
-                        </div>
-                    </label>
+                    <!-- УДАЛЕНО v2.0: Type 3 (был дубликатом Type 1) -->
+                    <!-- Type 3 теперь используется ТОЛЬКО для связанных групп (расстояние) -->
 
                     <label class="checkbox-wrapper mt-1">
                         <input type="checkbox" class="checkbox" id="optType4" checked>
@@ -349,18 +345,32 @@
                 
                 <h3>🎯 Основные символы и конструкции</h3>
                 
+                <!-- ИСПРАВЛЕНО v2.0: Обновлена секция Type 1 -->
                 <div class="regulation-section">
-                    <h4>1. Вертикальная черта "|" (Альтернация)</h4>
-                    <p>Обозначает "или". Перечисляет синонимы или варианты.</p>
+                    <h4>1. Вариации букв (латиница ↔ кириллица)</h4>
+                    <p>Автоматическая замена похожих символов из разных алфавитов для защиты от обхода.</p>
                     <div class="example-box">
-                        <strong>Пример:</strong> <code>дрон|беспилотник|квадрокоптер|бпла</code><br>
-                        <em>Означает: найти "дрон" ИЛИ "беспилотник" ИЛИ "квадрокоптер" ИЛИ "бпла"</em>
+                        <strong>Пример:</strong> <code>дрон → д[dд][pр][oо]н</code><br>
+                        <em>Находит: "дрон" (кириллица) и варианты с латиницей (dron, drоn и т.д.)</em>
+                    </div>
+                    <div class="example-box">
+                        <strong>Пример:</strong> <code>test → [tт][eе][sѕ][tт]</code><br>
+                        <em>Находит: "test", "тest", "теѕt" и другие варианты с заменами</em>
                     </div>
                 </div>
 
                 <div class="regulation-section">
-                    <h4>2. Круглые скобки "()" (Группировка)</h4>
-                    <p>Используются для группировки и захвата содержимого.</p>
+                    <h4>2. Общий корень (окончания)</h4>
+                    <p>Группирует слова с общим корнем и короткими окончаниями (1-2 буквы).</p>
+                    <div class="example-box">
+                        <strong>Пример:</strong> <code>книг[аи]</code><br>
+                        <em>Находит: "книга" и "книги"</em>
+                    </div>
+                </div>
+
+                <div class="regulation-section">
+                    <h4>3. Круглые скобки "()" (Группировка и альтернация)</h4>
+                    <p>Используются для группировки и перечисления вариантов.</p>
                     <div class="example-box">
                         <strong>Пример:</strong> <code>(чер|клуб)ника</code><br>
                         <em>Находит: "черника" и "клубника"</em>
@@ -368,7 +378,7 @@
                 </div>
 
                 <div class="regulation-section">
-                    <h4>3. Квадратные скобки "[]" (Набор символов)</h4>
+                    <h4>4. Квадратные скобки "[]" (Набор символов)</h4>
                     <p>Указывают набор символов, допустимых на этом месте.</p>
                     <div class="example-box">
                         <strong>Пример:</strong> <code>алкогол[ьяю]</code><br>
@@ -381,19 +391,19 @@
                 </div>
 
                 <div class="regulation-section">
-                    <h4>4. Граница слова "\b"</h4>
+                    <h4>5. Граница слова "\\b"</h4>
                     <p>Указывает границы триггера. Обязательно для триггеров ≤ 3 символов.</p>
                     <div class="example-box">
-                        <strong>Пример:</strong> <code>\bкот\b</code><br>
+                        <strong>Пример:</strong> <code>\\bкот\\b</code><br>
                         <em>Находит: "кот" (но НЕ "который", "апперкот")</em>
                     </div>
                     <div class="warning-box">
-                        ⚠️ <strong>Автоматическое правило:</strong> Границы <code>\b</code> добавляются автоматически для триггеров из 3 и менее символов.
+                        ⚠️ <strong>Автоматическое правило:</strong> Границы <code>\\b</code> добавляются автоматически для триггеров из 3 и менее символов.
                     </div>
                 </div>
 
                 <div class="regulation-section">
-                    <h4>5. Знак вопроса "?" (Опциональный символ)</h4>
+                    <h4>6. Знак вопроса "?" (Опциональный символ)</h4>
                     <p>Ставится после символа, который может быть, а может не быть.</p>
                     <div class="example-box">
                         <strong>Пример:</strong> <code>пасс?ивный</code><br>
@@ -401,10 +411,19 @@
                     </div>
                 </div>
 
+                <div class="regulation-section">
+                    <h4>7. Вертикальная черта "|" (Альтернация)</h4>
+                    <p>Обозначает "или". Перечисляет синонимы или варианты.</p>
+                    <div class="example-box">
+                        <strong>Пример:</strong> <code>дрон|беспилотник|квадрокоптер|бпла</code><br>
+                        <em>Означает: найти "дрон" ИЛИ "беспилотник" ИЛИ "квадрокоптер" ИЛИ "бпла"</em>
+                    </div>
+                </div>
+
                 <h3>🔗 Связанные триггеры (расстояние)</h3>
 
                 <div class="regulation-section">
-                    <h4>6. Фиксированное расстояние ".{min,max}"</h4>
+                    <h4>8. Фиксированное расстояние ".{min,max}"</h4>
                     <p>Любой символ в указанном количестве.</p>
                     <div class="example-box">
                         <strong>Пример:</strong> <code>выкуп.{1,7}дорого</code><br>
@@ -413,19 +432,19 @@
                 </div>
 
                 <div class="regulation-section">
-                    <h4>7. Любое расстояние "[\s\S]+"</h4>
+                    <h4>9. Любое расстояние "[\\s\\S]+"</h4>
                     <p>Независимо от расстояния между триггерами. Важна последовательность.</p>
                     <div class="example-box">
-                        <strong>Пример:</strong> <code>военный[\s\S]+дрон</code><br>
+                        <strong>Пример:</strong> <code>военный[\\s\\S]+дрон</code><br>
                         <em>Находит: "военный дрон" даже через 10 абзацев</em>
                     </div>
                 </div>
 
                 <div class="regulation-section">
-                    <h4>8. Любая последовательность (A→B или B→A)</h4>
+                    <h4>10. Любая последовательность (A→B или B→A)</h4>
                     <p>Триггеры в любом порядке.</p>
                     <div class="example-box">
-                        <strong>Пример:</strong> <code>(военный[\s\S]+дрон)|(дрон[\s\S]+военный)</code><br>
+                        <strong>Пример:</strong> <code>(военный[\\s\\S]+дрон)|(дрон[\\s\\S]+военный)</code><br>
                         <em>Находит: "военный...дрон" И "дрон...военный"</em>
                     </div>
                 </div>
@@ -468,61 +487,63 @@
     </div>
 
     <!-- Modal: Trigger Settings -->
-<div id="triggerSettingsModal" class="modal-overlay" style="display: none;">
-    <div class="modal">
-        <div class="modal-header">
-            <h3 class="modal-title">⚙ Настройки для "<span id="triggerSettingsTitle"></span>"</h3>
-            <button class="modal-close">&times;</button>
-        </div>
-        <div class="modal-body">
-            <p class="hint-text">Выберите оптимизации для этого триггера:</p>
-            
-            <label class="checkbox-wrapper">
-                <input type="checkbox" class="checkbox" id="triggerOptType1">
-                <div class="checkbox-content">
-                    <span class="checkbox-label">Повторы (префиксы)</span>
+    <!-- ИСПРАВЛЕНО v2.0: Удален triggerOptType3 -->
+    <div id="triggerSettingsModal" class="modal-overlay" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">⚙ Настройки для "<span id="triggerSettingsTitle"></span>"</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="hint-text">Выберите оптимизации для этого триггера:</p>
+                
+                <!-- ИСПРАВЛЕНО: Type 1 = Вариации букв -->
+                <label class="checkbox-wrapper">
+                    <input type="checkbox" class="checkbox" id="triggerOptType1">
+                    <div class="checkbox-content">
+                        <span class="checkbox-label">Вариации букв (латиница ↔ кириллица)</span>
+                        <span class="checkbox-hint">дрон → д[dд][pр][oо]н</span>
+                    </div>
+                </label>
+                
+                <label class="checkbox-wrapper mt-1">
+                    <input type="checkbox" class="checkbox" id="triggerOptType2">
+                    <div class="checkbox-content">
+                        <span class="checkbox-label">Общий корень</span>
+                        <span class="checkbox-hint">книга, книги → книг[аи]</span>
+                    </div>
+                </label>
+                
+                <!-- УДАЛЕНО v2.0: Type 3 (не используется для простых триггеров) -->
+                
+                <label class="checkbox-wrapper mt-1">
+                    <input type="checkbox" class="checkbox" id="triggerOptType4">
+                    <div class="checkbox-content">
+                        <span class="checkbox-label">Склонения</span>
+                        <span class="checkbox-hint">дрон → дрон(а|у|ом|е|ов)</span>
+                    </div>
+                </label>
+                
+                <label class="checkbox-wrapper mt-1">
+                    <input type="checkbox" class="checkbox" id="triggerOptType5">
+                    <div class="checkbox-content">
+                        <span class="checkbox-label">Опциональный символ ?</span>
+                        <span class="checkbox-hint">пасс?ивный</span>
+                    </div>
+                </label>
+            </div>
+            <div class="modal-footer" style="display: flex; gap: 10px; justify-content: space-between;">
+                <button class="btn-danger" id="resetTriggerSettingsBtn">Сбросить настройки</button>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-primary" id="applyTriggerSettingsBtn">Применить</button>
+                    <button class="btn-secondary" onclick="closeModal('triggerSettingsModal')">Отмена</button>
                 </div>
-            </label>
-            
-            <label class="checkbox-wrapper mt-1">
-                <input type="checkbox" class="checkbox" id="triggerOptType2">
-                <div class="checkbox-content">
-                    <span class="checkbox-label">Общий корень</span>
-                </div>
-            </label>
-            
-            <label class="checkbox-wrapper mt-1">
-                <input type="checkbox" class="checkbox" id="triggerOptType3">
-                <div class="checkbox-content">
-                    <span class="checkbox-label">Вариации букв</span>
-                </div>
-            </label>
-            
-            <label class="checkbox-wrapper mt-1">
-                <input type="checkbox" class="checkbox" id="triggerOptType4">
-                <div class="checkbox-content">
-                    <span class="checkbox-label">Склонения</span>
-                </div>
-            </label>
-            
-            <label class="checkbox-wrapper mt-1">
-                <input type="checkbox" class="checkbox" id="triggerOptType5">
-                <div class="checkbox-content">
-                    <span class="checkbox-label">Опциональный символ ?</span>
-                </div>
-            </label>
-        </div>
-        <div class="modal-footer" style="display: flex; gap: 10px; justify-content: space-between;">
-            <button class="btn-danger" id="resetTriggerSettingsBtn">Сбросить настройки</button>
-            <div style="display: flex; gap: 10px;">
-                <button class="btn-primary" id="applyTriggerSettingsBtn">Применить</button>
-                <button class="btn-secondary" onclick="closeModal('triggerSettingsModal')">Отмена</button>
             </div>
         </div>
     </div>
-</div>
 
-        <!-- Modal: Group Settings (НОВОЕ - Группа 6) -->
+    <!-- Modal: Group Settings -->
+    <!-- ИСПРАВЛЕНО v2.0: Обновлен groupType1 на "Вариации букв" -->
     <div id="groupSettingsModal" class="modal-overlay" style="display: none;">
         <div class="modal">
             <div class="modal-header">
@@ -562,8 +583,8 @@
                     <label class="radio-wrapper mt-1">
                         <input type="radio" name="groupDistanceType" value="any" class="radio">
                         <div class="radio-content">
-                            <span class="radio-label">Любое расстояние [\s\S]+</span>
-                            <span class="radio-hint">Независимо от расстояния (военный[\s\S]+дрон)</span>
+                            <span class="radio-label">Любое расстояние [\\s\\S]+</span>
+                            <span class="radio-hint">Независимо от расстояния (военный[\\s\\S]+дрон)</span>
                         </div>
                     </label>
                     
@@ -578,8 +599,8 @@
                     <label class="radio-wrapper mt-1">
                         <input type="radio" name="groupDistanceType" value="line" class="radio">
                         <div class="radio-content">
-                            <span class="radio-label">В пределах строки [^\n]+</span>
-                            <span class="radio-hint">Не через перенос строки (военный[^\n]+дрон)</span>
+                            <span class="radio-label">В пределах строки [^\\n]+</span>
+                            <span class="radio-hint">Не через перенос строки (военный[^\\n]+дрон)</span>
                         </div>
                     </label>
                 </div>
@@ -601,10 +622,12 @@
                 <div class="settings-section mt-2">
                     <h4 class="settings-section-title">Оптимизации триггеров в группе</h4>
                     
+                    <!-- ИСПРАВЛЕНО: Type 1 = Вариации букв -->
                     <label class="checkbox-wrapper">
                         <input type="checkbox" class="checkbox" id="groupType1">
                         <div class="checkbox-content">
-                            <span class="checkbox-label">Повторы (префиксы)</span>
+                            <span class="checkbox-label">Вариации букв (латиница ↔ кириллица)</span>
+                            <span class="checkbox-hint">дрон → д[dд][pр][oо]н</span>
                         </div>
                     </label>
                     
@@ -612,13 +635,17 @@
                         <input type="checkbox" class="checkbox" id="groupType2">
                         <div class="checkbox-content">
                             <span class="checkbox-label">Общий корень</span>
+                            <span class="checkbox-hint">книга, книги → книг[аи]</span>
                         </div>
                     </label>
+                    
+                    <!-- Type 3 НЕТ - это правильно! Он реализован через distanceType -->
                     
                     <label class="checkbox-wrapper mt-1">
                         <input type="checkbox" class="checkbox" id="groupType4">
                         <div class="checkbox-content">
                             <span class="checkbox-label">Склонения</span>
+                            <span class="checkbox-hint">дрон → дрон(а|у|ом|е|ов)</span>
                         </div>
                     </label>
                     
@@ -626,6 +653,7 @@
                         <input type="checkbox" class="checkbox" id="groupType5">
                         <div class="checkbox-content">
                             <span class="checkbox-label">Опциональный символ ?</span>
+                            <span class="checkbox-hint">пасс?ивный</span>
                         </div>
                     </label>
                 </div>
