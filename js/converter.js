@@ -2,13 +2,13 @@
    REGEXHELPER - CONVERTER
    Базовая конвертация триггеров в regex
    
-   ВЕРСИЯ: 2.0 (CRIT-1 исправлен + anyOrder реализован)
-   ДАТА: 10.02.2026
+   ВЕРСИЯ: 3.0 (Автозамена ё + Confirm с отложением)
+   ДАТА: 11.02.2026
    ИЗМЕНЕНИЯ:
-   - CRIT-1: Удален type3 из настроек триггеров
-   - Задача 2.2: Реализован anyOrder (генерация перестановок)
-   - Задача 2.3: Интеграция optimizeType3() для связанных групп
-   - Исправлено двойное экранирование в getDistancePattern()
+   - БЛОК 5: Автозамена ё → [её] в каждом триггере
+   - БЛОК 6: Confirm с отложением (5 минут)
+   - Поддержка подгрупп из linked-triggers v3.0
+   - Интеграция с 3 режимами связи
    ============================================ */
 
 /* ============================================
@@ -24,12 +24,46 @@ const LIMITS = {
     MAX_TRIGGER_LENGTH: 100      // Максимум символов в триггере
 };
 
+// Ключ для sessionStorage (confirm с отложением)
+const SKIP_CONFIRM_KEY = 'regexhelper_skip_confirm_until';
+
 /* ============================================
-   ПАРСИНГ ТРИГГЕРОВ
+   АВТОЗАМЕНА Ё → [ЕЁ] (НОВОЕ v3.0 - БЛОК 5)
+   ============================================ */
+
+/**
+ * Автозамена ё → [её], Ё → [ЕЁ]
+ * 
+ * БЛОК 5: Применяется ко ВСЕМ триггерам автоматически
+ * 
+ * @param {string} text - Исходный текст
+ * @returns {string} - Текст с заменой ё
+ * 
+ * @example
+ * replaceYo('ёж') // => '[её]ж'
+ * replaceYo('актёр') // => 'акт[её]р'
+ * replaceYo('Ёлка') // => '[ЕЁ]лка'
+ */
+function replaceYo(text) {
+    if (!text || typeof text !== 'string') {
+        return text;
+    }
+    
+    // Заменяем ё/Ё на [её]/[ЕЁ]
+    return text.replace(/ё/gi, (match) => {
+        return match === 'ё' ? '[её]' : '[ЕЁ]';
+    });
+}
+
+/* ============================================
+   ПАРСИНГ ТРИГГЕРОВ (ОБНОВЛЕНО v3.0)
    ============================================ */
 
 /**
  * Парсинг простых триггеров из textarea
+ * 
+ * ОБНОВЛЕНО v3.0: Применяем replaceYo() к каждому триггеру
+ * 
  * @param {string} text - Текст из textarea
  * @returns {Array} - Массив триггеров
  */
@@ -41,8 +75,11 @@ function parseSimpleTriggers(text) {
     // Разбиваем по строкам и очищаем
     const lines = splitLines(text);
     
-    // Очищаем каждый триггер
-    const triggers = lines.map(line => cleanTrigger(line)).filter(t => t);
+    // Очищаем каждый триггер + применяем replaceYo()
+    const triggers = lines
+        .map(line => cleanTrigger(line))
+        .filter(t => t)
+        .map(t => replaceYo(t)); // НОВОЕ v3.0!
     
     return triggers;
 }
@@ -151,6 +188,117 @@ function validateRegexLength(regex) {
 }
 
 /* ============================================
+   CONFIRM С ОТЛОЖЕНИЕМ (НОВОЕ v3.0 - БЛОК 6)
+   ============================================ */
+
+/**
+ * Проверить, нужно ли показывать confirm перед конвертацией
+ * @returns {boolean} - true если нужно показать confirm
+ */
+function shouldShowConversionConfirm() {
+    const regexField = document.getElementById('regexResult');
+    
+    if (!regexField) {
+        return false;
+    }
+    
+    // Если поле пустое - confirm не нужен
+    if (!regexField.value || regexField.value.trim() === '') {
+        return false;
+    }
+    
+    // Проверяем, не отложен ли confirm
+    const skipUntil = sessionStorage.getItem(SKIP_CONFIRM_KEY);
+    
+    if (skipUntil) {
+        const skipUntilTime = parseInt(skipUntil);
+        const now = Date.now();
+        
+        if (now < skipUntilTime) {
+            // Confirm отложен
+            console.log('[Converter] Confirm отложен до:', new Date(skipUntilTime));
+            return false;
+        } else {
+            // Время истекло, удаляем ключ
+            sessionStorage.removeItem(SKIP_CONFIRM_KEY);
+        }
+    }
+    
+    // Нужно показать confirm
+    return true;
+}
+
+/**
+ * Показать confirm перед конвертацией
+ * @param {Function} onConfirm - Callback если пользователь нажал "Да"
+ * @param {Function} onCancel - Callback если пользователь нажал "Нет"
+ */
+function showConversionConfirm(onConfirm, onCancel) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.id = 'conversionConfirmModal';
+    modal.innerHTML = `
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h3 class="modal-title">⚠️ Заменить существующий regex?</h3>
+            </div>
+            <div class="modal-body">
+                <p>В панели 3 уже есть regex. Заменить его новым результатом?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="confirmNo">Нет</button>
+                <button class="btn-primary" id="confirmYes">Да</button>
+                <button class="btn-link" id="confirmSkip5min">Да, не спрашивать 5 минут</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Обработчики кнопок
+    const btnYes = modal.querySelector('#confirmYes');
+    const btnNo = modal.querySelector('#confirmNo');
+    const btnSkip = modal.querySelector('#confirmSkip5min');
+    
+    // Функция закрытия модального окна
+    const closeModal = () => {
+        document.body.removeChild(modal);
+    };
+    
+    // Кнопка "Да"
+    btnYes.addEventListener('click', () => {
+        closeModal();
+        if (onConfirm) onConfirm();
+    });
+    
+    // Кнопка "Нет"
+    btnNo.addEventListener('click', () => {
+        closeModal();
+        if (onCancel) onCancel();
+    });
+    
+    // Кнопка "Да, не спрашивать 5 минут"
+    btnSkip.addEventListener('click', () => {
+        // Устанавливаем время отложения (5 минут)
+        const skipUntil = Date.now() + 5 * 60 * 1000;
+        sessionStorage.setItem(SKIP_CONFIRM_KEY, skipUntil.toString());
+        
+        console.log('[Converter] Confirm отложен на 5 минут');
+        
+        closeModal();
+        if (onConfirm) onConfirm();
+    });
+    
+    // Закрытие по клику вне модального окна
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
+            if (onCancel) onCancel();
+        }
+    });
+}
+
+/* ============================================
    УДАЛЕНИЕ ДУБЛИКАТОВ
    ============================================ */
 
@@ -199,12 +347,15 @@ function convertToRegex(triggers) {
 }
 
 /* ============================================
-   КОНВЕРТАЦИЯ СВЯЗАННЫХ ТРИГГЕРОВ (НОВОЕ - Группа 6)
+   КОНВЕРТАЦИЯ СВЯЗАННЫХ ТРИГГЕРОВ (ОБНОВЛЕНО v3.0)
    ============================================ */
 
 /**
- * Конвертация всех связанных групп
- * @param {Array} groups - Массив групп [{id, triggers, settings}]
+ * Конвертация всех связанных групп с подгруппами
+ * 
+ * ОБНОВЛЕНО v3.0: Поддержка подгрупп и 3 режимов связи
+ * 
+ * @param {Array} groups - Массив групп с подгруппами
  * @returns {string} - Regex для всех групп
  */
 function convertLinkedGroups(groups) {
@@ -212,11 +363,14 @@ function convertLinkedGroups(groups) {
         return '';
     }
     
+    const linkMode = getLinkMode(); // Получаем режим связи
+    console.log(`[Converter] Режим связи: ${linkMode}`);
+    
     const regexParts = [];
     
     groups.forEach((group, index) => {
         try {
-            const groupRegex = convertLinkedGroup(group);
+            const groupRegex = convertLinkedGroup(group, linkMode);
             if (groupRegex) {
                 regexParts.push(groupRegex);
             }
@@ -225,64 +379,98 @@ function convertLinkedGroups(groups) {
         }
     });
     
-    return regexParts.join('|');
+    // Объединяем группы в зависимости от режима связи
+    if (linkMode === 'alternation') {
+        // Режим 3: Альтернация (A|B|C)
+        return regexParts.join('|');
+    } else {
+        // Режимы 1 и 2: Каждая группа - отдельный паттерн
+        return regexParts.join('|');
+    }
 }
 
 /**
- * Конвертация одной связанной группы
+ * Конвертация одной связанной группы (с подгруппами)
  * 
- * ОБНОВЛЕНО v2.0:
- * - Применяем оптимизации (type1, 2, 4, 5) к каждому триггеру
- * - Используем optimizeType3() для ВСЕЙ группы (расстояние)
- * - Генерируем anyOrder перестановки если включено
+ * ОБНОВЛЕНО v3.0:
+ * - Поддержка подгрупп (2 уровня вложенности)
+ * - Применяем replaceYo() к каждому триггеру
+ * - 3 режима связи
  * 
- * @param {Object} group - {id, triggers, settings}
+ * @param {Object} group - {id, subgroups: [{triggers, connection}], settings}
+ * @param {string} linkMode - Режим связи ('individual', 'common', 'alternation')
  * @returns {string} - Regex для группы
  */
-function convertLinkedGroup(group) {
-    if (!group || !group.triggers || group.triggers.length < 2) {
-        console.warn('[Converter] Группа пропущена: недостаточно триггеров');
+function convertLinkedGroup(group, linkMode) {
+    if (!group || !group.subgroups || group.subgroups.length === 0) {
+        console.warn('[Converter] Группа пропущена: нет подгрупп');
         return '';
     }
     
-    const { triggers, settings } = group;
+    const { subgroups, settings } = group;
     
-    console.log(`[Converter] Конвертация группы: ${triggers.length} триггеров`, settings);
+    console.log(`[Converter] Конвертация группы: ${subgroups.length} подгрупп, режим: ${linkMode}`);
     
-    // 1. Применяем оптимизации (type1, 2, 4, 5) к каждому триггеру
-    const optimizedTriggers = triggers.map(trigger => {
-        return applyOptimizationsToTrigger(trigger, settings);
+    // Обрабатываем каждую подгруппу
+    const processedSubgroups = subgroups.map((subgroup, index) => {
+        // Применяем replaceYo() к каждому триггеру
+        const triggersWithYo = subgroup.triggers.map(t => replaceYo(t));
+        
+        // Применяем оптимизации
+        const optimizedTriggers = triggersWithYo.map(trigger => {
+            return applyOptimizationsToTrigger(trigger, settings);
+        });
+        
+        // Объединяем триггеры подгруппы через |
+        const subgroupPattern = optimizedTriggers.length > 1 
+            ? `(${optimizedTriggers.join('|')})`
+            : optimizedTriggers[0];
+        
+        return {
+            pattern: subgroupPattern,
+            connection: subgroup.connection // null для последней подгруппы
+        };
     });
     
-    console.log('[Converter] Триггеры после оптимизаций:', optimizedTriggers);
+    console.log('[Converter] Обработано подгрупп:', processedSubgroups);
     
-    // 2. НОВОЕ: Применяем Type 3 (расстояние) через optimizeType3()
-    // ВАЖНО: Type 3 применяется к ВСЕЙ группе, а не к отдельным триггерам!
+    // Соединяем подгруппы в зависимости от режима
     let finalPattern;
     
-    if (typeof optimizeType3 === 'function') {
-        console.log('[Converter] Вызываем optimizeType3() для группы');
+    if (linkMode === 'alternation') {
+        // Режим 3: Альтернация (объединить через |, игнорируя связи)
+        const patterns = processedSubgroups.map(sg => sg.pattern);
+        finalPattern = patterns.join('|');
         
-        // Создаем объект для optimizeType3
-        const linkedGroupForType3 = {
-            triggers: optimizedTriggers,
-            settings: settings
-        };
+    } else if (linkMode === 'common') {
+        // Режим 2: Общий параметр (одинаковое расстояние между всеми)
+        const commonDistance = getDistancePattern(settings);
+        const patterns = processedSubgroups.map(sg => sg.pattern);
+        finalPattern = patterns.join(commonDistance);
         
-        finalPattern = optimizeType3(linkedGroupForType3, settings);
-        console.log('[Converter] Результат optimizeType3():', finalPattern);
     } else {
-        console.warn('[Converter] optimizeType3() не найден, используем fallback');
+        // Режим 1: Индивидуальные параметры (каждая связь своя)
+        const parts = [];
         
-        // Fallback: ручное создание паттерна
-        const distance = getDistancePattern(settings);
-        finalPattern = optimizedTriggers.join(distance);
+        for (let i = 0; i < processedSubgroups.length; i++) {
+            const subgroup = processedSubgroups[i];
+            parts.push(subgroup.pattern);
+            
+            // Добавляем связь, если это не последняя подгруппа
+            if (subgroup.connection) {
+                const distance = getDistancePatternFromConnection(subgroup.connection);
+                parts.push(distance);
+            }
+        }
+        
+        finalPattern = parts.join('');
     }
     
-    // 3. Если anyOrder = true → генерируем перестановки
+    // Если anyOrder = true → генерируем перестановки
     if (settings.anyOrder) {
+        const allTriggers = processedSubgroups.map(sg => sg.pattern);
         const distance = getDistancePattern(settings);
-        finalPattern = generateAnyOrderPattern(optimizedTriggers, distance);
+        finalPattern = generateAnyOrderPattern(allTriggers, distance);
         console.log('[Converter] anyOrder включен, результат:', finalPattern);
     }
     
@@ -290,12 +478,22 @@ function convertLinkedGroup(group) {
 }
 
 /**
- * Получить паттерн расстояния из настроек группы
- * 
- * ИСПРАВЛЕНО v2.0: Убрано двойное экранирование
- * 
+ * Получить паттерн расстояния из объекта connection
+ * @param {Object} connection - {distanceType, distanceMin, distanceMax}
+ * @returns {string}
+ */
+function getDistancePatternFromConnection(connection) {
+    if (!connection) {
+        return '.{1,7}'; // default
+    }
+    
+    return getDistancePattern(connection);
+}
+
+/**
+ * Получить паттерн расстояния из настроек
  * @param {Object} settings - Настройки группы
- * @returns {string} - Паттерн расстояния (например: .{1,7})
+ * @returns {string} - Паттерн расстояния
  */
 function getDistancePattern(settings) {
     const distanceType = settings.distanceType || 'fixed';
@@ -314,15 +512,13 @@ function getDistancePattern(settings) {
             return `.{${min},${max}}`;
         
         case 'any':
-            // ИСПРАВЛЕНО: Одинарное экранирование (не \\\\s)
-            return '[\\s\\S]+';
+            return '[\\\\s\\\\S]+';
         
         case 'paragraph':
             return '.+';
         
         case 'line':
-            // ИСПРАВЛЕНО: Одинарное экранирование
-            return '[^\\n]+';
+            return '[^\\\\n]+';
         
         default:
             console.warn(`[Converter] Неизвестный тип расстояния: ${distanceType}, используем fixed`);
@@ -332,16 +528,9 @@ function getDistancePattern(settings) {
 
 /**
  * Генерация паттерна с любой последовательностью (A+B)|(B+A)
- * 
- * РЕАЛИЗОВАНО v2.0: Задача 2.2 (anyOrder)
- * 
  * @param {Array} triggers - Массив оптимизированных триггеров
  * @param {string} distance - Паттерн расстояния
  * @returns {string} - Regex с перестановками
- * 
- * @example
- * // Input: ['военный', 'дрон'], '.{1,7}'
- * // Output: '(военный.{1,7}дрон|дрон.{1,7}военный)'
  */
 function generateAnyOrderPattern(triggers, distance) {
     if (triggers.length < 2) {
@@ -367,13 +556,9 @@ function generateAnyOrderPattern(triggers, distance) {
 }
 
 /**
- * Применить оптимизации к триггеру (используя настройки группы)
- * 
- * ИСПРАВЛЕНО v2.0: CRIT-1 - убран type3 из types
- * Type 3 НЕ применяется к отдельным триггерам!
- * 
+ * Применить оптимизации к триггеру
  * @param {string} trigger - Исходный триггер
- * @param {Object} settings - Настройки группы (type1, type2, type4, type5)
+ * @param {Object} settings - Настройки группы
  * @returns {string} - Оптимизированный триггер
  */
 function applyOptimizationsToTrigger(trigger, settings) {
@@ -381,12 +566,9 @@ function applyOptimizationsToTrigger(trigger, settings) {
     
     let result = cleanTrigger(trigger);
     
-    // ИСПРАВЛЕНО CRIT-1: type3 УДАЛЕН!
-    // Type 3 применяется к ВСЕЙ группе через optimizeType3()
     const types = {
         type1: settings.type1 || false,
         type2: settings.type2 || false,
-        // type3: УДАЛЕН! (применяется к группе)
         type4: settings.type4 || false,
         type5: settings.type5 || false
     };
@@ -395,13 +577,9 @@ function applyOptimizationsToTrigger(trigger, settings) {
     
     // applyOptimizations работает с массивом!
     if (typeof applyOptimizations === 'function') {
-        // Оборачиваем триггер в массив
         const optimizedArray = applyOptimizations([result], types);
-        
-        // Берем первый элемент (или исходный триггер если массив пустой)
         result = (optimizedArray && optimizedArray.length > 0) ? optimizedArray[0] : result;
     } else {
-        // Fallback: если optimizer.js не загружен
         console.warn('[Converter] Функция applyOptimizations не найдена, используем escapeRegex');
         result = escapeRegex(result);
     }
@@ -412,28 +590,69 @@ function applyOptimizationsToTrigger(trigger, settings) {
 }
 
 /* ============================================
-   ОСНОВНАЯ ФУНКЦИЯ КОНВЕРТАЦИИ
+   ОСНОВНАЯ ФУНКЦИЯ КОНВЕРТАЦИИ (ОБНОВЛЕНО v3.0)
    ============================================ */
 
 /**
- * Полная конвертация с валидацией и обработкой ошибок
+ * Полная конвертация с валидацией и confirm
+ * 
+ * ОБНОВЛЕНО v3.0: Добавлен confirm перед заменой
+ * 
  * @param {string} text - Текст из textarea
- * @param {boolean} showWarnings - Показывать ли предупреждения (по умолчанию true)
+ * @param {boolean} showWarnings - Показывать ли предупреждения
+ * @param {boolean} skipConfirm - Пропустить confirm (для программной конвертации)
  * @returns {Object} - { success: boolean, regex: string, info: {} }
  */
-function performConversion(text, showWarnings = true) {
+function performConversion(text, showWarnings = true, skipConfirm = false) {
+    // Проверяем нужен ли confirm (если не skipConfirm)
+    if (!skipConfirm && shouldShowConversionConfirm()) {
+        console.log('[Converter] Показываем confirm перед конвертацией');
+        
+        // Показываем confirm
+        showConversionConfirm(
+            // onConfirm - продолжаем конвертацию
+            () => {
+                const result = performConversionInternal(text, showWarnings);
+                if (result.success) {
+                    writeResultToPanel(result.regex);
+                }
+            },
+            // onCancel - отменяем
+            () => {
+                console.log('[Converter] Конвертация отменена пользователем');
+            }
+        );
+        
+        // Возвращаем "pending" состояние
+        return {
+            success: false,
+            regex: '',
+            info: { pending: true }
+        };
+    }
+    
+    // Confirm не нужен или пропущен - выполняем конвертацию
+    return performConversionInternal(text, showWarnings);
+}
+
+/**
+ * Внутренняя функция конвертации (без confirm)
+ * @param {string} text - Текст из textarea
+ * @param {boolean} showWarnings - Показывать ли предупреждения
+ * @returns {Object} - { success: boolean, regex: string, info: {} }
+ */
+function performConversionInternal(text, showWarnings = true) {
     try {
         // Очистка всех inline ошибок
         clearAllInlineErrors();
         
-        // 1. Парсинг триггеров
+        // 1. Парсинг триггеров (с replaceYo внутри)
         let triggers = parseSimpleTriggers(text);
         
         // 2. Валидация исходных триггеров
         const validation = validateTriggers(triggers);
         
         if (!validation.valid) {
-            // Показываем первую ошибку
             showInlineError('simpleTriggers', validation.errors[0]);
             return {
                 success: false,
@@ -466,12 +685,11 @@ function performConversion(text, showWarnings = true) {
             };
         }
         
-        // Предупреждения о длине
+        // Предупреждения
         if (lengthValidation.warnings.length > 0 && showWarnings) {
             showToast('warning', lengthValidation.warnings[0]);
         }
         
-        // Предупреждения из валидации триггеров
         if (validation.warnings.length > 0 && showWarnings) {
             showToast('warning', validation.warnings[0]);
         }
@@ -497,6 +715,18 @@ function performConversion(text, showWarnings = true) {
             regex: '',
             info: { errors: [error.message] }
         };
+    }
+}
+
+/**
+ * Записать результат в панель 3
+ * @param {string} regex - Regex для записи
+ */
+function writeResultToPanel(regex) {
+    const regexField = document.getElementById('regexResult');
+    if (regexField) {
+        regexField.value = regex;
+        console.log('[Converter] Результат записан в панель 3');
     }
 }
 
@@ -526,7 +756,7 @@ function hasTriggersInText(text) {
 /**
  * Получение статистики по триггерам
  * @param {string} text - Текст из textarea
- * @returns {Object} - { count: number, hasLimit: boolean, hasDuplicates: boolean }
+ * @returns {Object} - { count, uniqueCount, duplicatesCount, hasLimit, nearLimit }
  */
 function getTriggerStats(text) {
     const triggers = parseSimpleTriggers(text);
@@ -541,4 +771,4 @@ function getTriggerStats(text) {
     };
 }
 
-console.log('✓ Модуль converter.js загружен (v2.0 - CRIT-1 исправлен, anyOrder реализован)');
+console.log('✓ Модуль converter.js загружен (v3.0 - автозамена ё + confirm с отложением)');
