@@ -1,7 +1,14 @@
 /* ============================================
    REGEXHELPER - MAIN
    Главный файл приложения
-   Версия: 2.0 (Группа 6 - конвертация связанных групп)
+   
+   ВЕРСИЯ: 2.0 (Группа 6 - связанные триггеры полностью интегрированы)
+   ДАТА: 10.02.2026
+   ИЗМЕНЕНИЯ:
+   - Группа 6: Полная интеграция convertLinkedGroups()
+   - Исправлена обработка пустых строк (\\n → \n)
+   - Добавлена функция performConversionWithOptimizations()
+   - Обновлена версия до 2.0
    ============================================ */
 
 /* ============================================
@@ -13,7 +20,7 @@
  */
 function initApp() {
     console.log('='.repeat(50));
-    console.log('RegexHelper v1.0 - Запуск приложения');
+    console.log('RegexHelper v2.0 - Запуск приложения');
     console.log('='.repeat(50));
     
     // Проверка совместимости браузера
@@ -119,10 +126,10 @@ function setupEventListeners() {
         exportBtn.addEventListener('click', openExportModal);
     }
     
-    // Кнопка "Справка"
-    const helpBtn = document.getElementById('helpBtn');
-    if (helpBtn) {
-        helpBtn.addEventListener('click', () => showModal('helpModal'));
+    // Кнопка "Регламент"
+    const regulationsBtn = document.getElementById('regulationsBtn');
+    if (regulationsBtn) {
+        regulationsBtn.addEventListener('click', () => showModal('regulationsModal'));
     }
 
     // Кнопка тестера
@@ -252,14 +259,88 @@ function updateSimpleTriggerCount() {
 }
 
 /* ============================================
-   ОБРАБОТЧИК КОНВЕРТАЦИИ (ОБНОВЛЕНО - Группа 6)
+   КОНВЕРТАЦИЯ С ОПТИМИЗАЦИЯМИ (НОВОЕ v2.0)
+   ============================================ */
+
+/**
+ * Конвертация с применением оптимизаций
+ * 
+ * @param {string} text - Текст с триггерами
+ * @param {Object} types - Настройки оптимизаций {type1, type2, type4, type5}
+ * @param {boolean} showWarnings - Показывать ли предупреждения
+ * @returns {Object} - {success: boolean, regex: string, info: {}}
+ */
+function performConversionWithOptimizations(text, types, showWarnings = true) {
+    try {
+        // 1. Парсим триггеры
+        let triggers = parseSimpleTriggers(text);
+        
+        // 2. Валидация
+        const validation = validateTriggers(triggers);
+        if (!validation.valid) {
+            return {
+                success: false,
+                regex: '',
+                info: { errors: validation.errors }
+            };
+        }
+        
+        // 3. Удаление дубликатов
+        const deduped = removeDuplicatesFromTriggers(triggers);
+        triggers = deduped.triggers;
+        
+        // 4. Применяем оптимизации
+        if (typeof applyOptimizations === 'function') {
+            triggers = applyOptimizations(triggers, types);
+        } else {
+            console.warn('[Main] applyOptimizations не найдена, применяем базовое экранирование');
+            triggers = triggers.map(t => escapeRegex(t));
+        }
+        
+        // 5. Конвертируем в regex (базовая конвертация уже с оптимизациями)
+        const regex = triggers.join('|');
+        
+        // 6. Валидация длины
+        const lengthValidation = validateRegexLength(regex);
+        if (!lengthValidation.valid) {
+            return {
+                success: false,
+                regex: '',
+                info: { errors: lengthValidation.errors }
+            };
+        }
+        
+        // Успех!
+        return {
+            success: true,
+            regex: regex,
+            info: {
+                originalCount: triggers.length + deduped.duplicatesCount,
+                finalCount: triggers.length,
+                duplicatesRemoved: deduped.duplicatesCount,
+                regexLength: regex.length
+            }
+        };
+        
+    } catch (error) {
+        logError('performConversionWithOptimizations', error);
+        return {
+            success: false,
+            regex: '',
+            info: { errors: [error.message] }
+        };
+    }
+}
+
+/* ============================================
+   ОБРАБОТЧИК КОНВЕРТАЦИИ (ОБНОВЛЕНО v2.0)
    ============================================ */
 
 /**
  * Обработчик кнопки "Конвертировать"
  */
 function handleConvert() {
-    console.log('[Main] Начало конвертации');
+    console.log('[Main] ========== НАЧАЛО КОНВЕРТАЦИИ ==========');
     
     try {
         clearAllInlineErrors();
@@ -273,23 +354,7 @@ function handleConvert() {
             return;
         }
 
-        let text = simpleTextarea.value;
-
-        // Обработка пустых строк
-        if (text && text.includes('\\n')) {
-            const lines = text
-                .split('\\n')
-                .map(line => line.trim())
-                .filter(line => line.length > 0);
-            
-            if (lines.length === 0) {
-                simpleTextarea.value = '';
-                text = '';
-            } else {
-                text = lines.join('\\n');
-                simpleTextarea.value = text;
-            }
-        }
+        let text = simpleTextarea.value.trim();
 
         // Проверяем наличие триггеров
         const hasSimple = hasTriggersInText(text);
@@ -308,6 +373,8 @@ function handleConvert() {
         // КОНВЕРТАЦИЯ ПРОСТЫХ ТРИГГЕРОВ
         // ========================================
         if (hasSimple) {
+            console.log('[Main] --- КОНВЕРТАЦИЯ ПРОСТЫХ ТРИГГЕРОВ ---');
+            
             // Получаем глобальные настройки оптимизаций
             const globalTypes = getGlobalOptimizationStates();
             
@@ -316,10 +383,11 @@ function handleConvert() {
             // Парсим триггеры
             const triggers = parseSimpleTriggers(text);
             
+            console.log(`[Main] Распарсено ${triggers.length} триггеров`);
+            
             // ГРУППА 5: Применяем индивидуальные или глобальные настройки для каждого триггера
             const triggersWithSettings = triggers.map(trigger => {
                 const effectiveSettings = getEffectiveSettings(trigger, globalTypes);
-                console.log(`[Main] Триггер "${trigger}" использует настройки:`, effectiveSettings);
                 return {
                     text: trigger,
                     types: effectiveSettings
@@ -344,7 +412,7 @@ function handleConvert() {
             
             groups.forEach((triggerList, typesKey) => {
                 const types = JSON.parse(typesKey);
-                const groupText = triggerList.join('\\n');
+                const groupText = triggerList.join('\n');
                 
                 console.log(`[Main] Конвертация группы: ${triggerList.length} триггеров с настройками:`, types);
                 
@@ -359,25 +427,43 @@ function handleConvert() {
             
             // Объединяем все части
             regex = regexParts.join('|');
+            
+            console.log(`[Main] ✓ Простые триггеры: обработано ${allTriggersProcessed}, regex длина: ${regex.length}`);
         }
 
         // ========================================
-        // КОНВЕРТАЦИЯ СВЯЗАННЫХ ТРИГГЕРОВ (НОВОЕ - Группа 6)
+        // КОНВЕРТАЦИЯ СВЯЗАННЫХ ТРИГГЕРОВ (ГРУППА 6)
         // ========================================
         if (hasLinked) {
-            console.log('[Main] ========== КОНВЕРТАЦИЯ СВЯЗАННЫХ ГРУПП ==========');
+            console.log('[Main] --- КОНВЕРТАЦИЯ СВЯЗАННЫХ ГРУПП ---');
             
             // Получаем все группы с настройками
             const linkedGroups = getLinkedGroups();
             
             console.log(`[Main] Найдено ${linkedGroups.length} связанных групп`);
             
+            // Валидация связанных групп
+            const validation = validateLinkedGroups();
+            if (!validation.valid) {
+                console.error('[Main] Валидация связанных групп не прошла:', validation.errors);
+                showToast('error', validation.errors[0]);
+                return;
+            }
+            
+            // Предупреждения (например, о большом количестве перестановок)
+            if (validation.warnings.length > 0) {
+                validation.warnings.forEach(warning => {
+                    showToast('warning', warning, 5000);
+                });
+            }
+            
             if (linkedGroups.length > 0) {
-                // Конвертируем все группы (используя НОВУЮ ЛОГИКУ)
+                // Конвертируем все группы
                 const linkedRegex = convertLinkedGroups(linkedGroups);
                 
                 if (linkedRegex) {
-                    console.log('[Main] Связанные группы конвертированы успешно');
+                    console.log('[Main] ✓ Связанные группы конвертированы успешно');
+                    console.log(`[Main] Связанные триггеры regex длина: ${linkedRegex.length}`);
                     
                     // Добавляем к общему regex
                     if (regex) {
@@ -396,15 +482,22 @@ function handleConvert() {
                     console.warn('[Main] Конвертация связанных групп вернула пустой результат');
                 }
             }
-            
-            console.log('[Main] ===================================================');
         }
 
+        // ========================================
+        // ФИНАЛИЗАЦИЯ
+        // ========================================
+        
         // Проверка итогового regex
         if (!regex) {
             showToast('error', 'Не удалось создать regex');
             return;
         }
+        
+        console.log(`[Main] ========== ИТОГОВЫЙ REGEX ==========`);
+        console.log(`[Main] Длина: ${regex.length} символов`);
+        console.log(`[Main] Триггеров обработано: ${allTriggersProcessed}`);
+        console.log(`[Main] ========================================`);
 
         // Установить результат
         resultTextarea.value = regex;
@@ -477,8 +570,8 @@ function handleConvert() {
         }
 
         // Уведомление об успехе
-        showToast('success', 'Regex успешно создан!');
-        console.log('[Main] ✓ Конвертация успешна');
+        showToast('success', '✓ Regex успешно создан!');
+        console.log('[Main] ========== КОНВЕРТАЦИЯ ЗАВЕРШЕНА ==========');
         
     } catch (error) {
         logError('handleConvert', error);
@@ -525,7 +618,10 @@ function handleReset() {
         
         // Очистка связанных триггеров
         if (typeof clearAllLinkedGroups === 'function') {
-            clearAllLinkedGroups();
+            const container = document.getElementById('linkedTriggersContainer');
+            if (container) {
+                container.innerHTML = '';
+            }
         }
         
         // Очистка индивидуальных настроек триггеров
@@ -619,7 +715,7 @@ async function handleCopyRegex() {
 /**
  * Очистить поле простых триггеров
  */
-function clearSimpleTriggers() {
+function confirmClearSimpleTriggers() {
     const textarea = document.getElementById('simpleTriggers');
     
     if (!textarea) return;
@@ -642,13 +738,15 @@ function clearSimpleTriggers() {
             },
             null
         );
+    } else {
+        showToast('info', 'Поле уже пустое');
     }
 }
 
 /**
  * Очистить результат
  */
-function clearResultRegex() {
+function confirmClearResult() {
     const textarea = document.getElementById('resultRegex');
     const statsDiv = document.getElementById('resultStats');
     
@@ -676,6 +774,8 @@ function clearResultRegex() {
             },
             null
         );
+    } else {
+        showToast('info', 'Результат уже пустой');
     }
 }
 
@@ -700,11 +800,14 @@ function focusFirstInput() {
  * Показать версию приложения в консоли
  */
 function showVersionInfo() {
-    console.log('%c RegexHelper v1.0 ', 'background: #4CAF50; color: white; padding: 5px 10px; border-radius: 3px;');
-    console.log('%c Конвертер триггеров в regex ', 'background: #2196F3; color: white; padding: 3px 8px;');
+    console.log('%c RegexHelper v2.0 ', 'background: #4CAF50; color: white; padding: 5px 10px; border-radius: 3px;');
+    console.log('%c Конвертер триггеров в regex с поддержкой связанных групп ', 'background: #2196F3; color: white; padding: 3px 8px;');
     console.log('');
     console.log('Разработчик: bogdanuz');
     console.log('GitHub: https://github.com/bogdanuz/regex-helper');
+    console.log('');
+    console.log('✓ Группа 6: Связанные триггеры с anyOrder реализованы');
+    console.log('✓ CRIT-1: Type 3 корректно реализован');
     console.log('');
 }
 
@@ -719,7 +822,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Делаем функции глобальными
-window.clearSimpleTriggers = clearSimpleTriggers;
-window.clearResultRegex = clearResultRegex;
+window.confirmClearSimpleTriggers = confirmClearSimpleTriggers;
+window.confirmClearResult = confirmClearResult;
 
-console.log('✓ Модуль main.js загружен (v2.0 - конвертация связанных групп)');
+console.log('✓ Модуль main.js загружен (v2.0 - Группа 6 полностью интегрирована)');
