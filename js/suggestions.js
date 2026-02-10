@@ -397,26 +397,6 @@ function openTriggerSettingsModal(trigger) {
         };
     }
 }
-    
-    // Обработчик кнопки "Сбросить настройки" (БЕЗ ПОДТВЕРЖДЕНИЯ)
-    const resetBtn = document.getElementById('resetTriggerSettingsBtn');
-    if (resetBtn) {
-        // Удаляем старые обработчики
-        resetBtn.onclick = null;
-        resetBtn.onclick = () => {
-            // Сразу удаляем настройки без подтверждения
-            removeTriggerSettings(trigger);
-            closeModal('triggerSettingsModal');
-            
-            // Обновляем UI после закрытия модалки
-            setTimeout(() => {
-                updateTriggerSettingsUI();
-            }, 100);
-            
-            showToast('info', `Настройки сброшены для "${trigger}". Используются глобальные.`);
-        };
-    }
-}
 
 /* ============================================
    ИНИЦИАЛИЗАЦИЯ
