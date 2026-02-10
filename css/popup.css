@@ -1,81 +1,108 @@
 /* ============================================
-   REGEXHELPER - POPUP & MODALS
+   REGEXHELPER - POPUP & MODALS v3.0 FINAL
    ============================================ */
 
 /* Modal Overlay (фон затемнения) */
 .modal-overlay {
-    display: none; /* По умолчанию скрыто */
+    display: none;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.6); /* Полупрозрачный черный */
+    background-color: rgba(0, 0, 0, 0.6);
     z-index: 10000;
     
-    /* ЦЕНТРИРОВАНИЕ (НОВОЕ!) */
+    /* Центрирование через Flexbox */
     justify-content: center;
     align-items: center;
-    overflow-y: auto; /* Скролл если окно не помещается */
+    overflow-y: auto;
 }
 
-/* Когда display: block - показываем flex для центрирования */
-.modal-overlay[style*="display: block"] {
+/* Когда отображается - используем flex */
+.modal-overlay[style*="display: block"],
+.modal-overlay.show {
     display: flex !important;
 }
 
 /* Modal Window (само окно) */
 .modal {
     background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     max-width: 600px;
     width: 90%;
-    max-height: 90vh;
+    max-height: 85vh;
     overflow: hidden;
-    
-    /* УБРАТЬ position: absolute! (ВАЖНО!) */
-    position: relative; /* Было absolute - убрать! */
+    position: relative;
+    display: flex;
+    flex-direction: column;
     
     /* Анимация появления */
-    animation: modalFadeIn 0.2s ease-out;
+    animation: modalFadeIn 0.3s ease-out;
 }
 
-/* Большое модальное окно (для регламента) */
+/* АДАПТИВНЫЕ ШИРИНЫ МОДАЛОК (v3.0) */
+.modal-small {
+    max-width: 400px;
+}
+
+.modal-medium {
+    max-width: 600px;
+}
+
 .modal-large {
     max-width: 900px;
 }
 
-/* Маленькое модальное окно (для confirm) */
-.modal-small {
-    max-width: 400px;
+.modal-xl {
+    max-width: 1200px;
 }
 
 /* Анимация появления */
 @keyframes modalFadeIn {
     from {
         opacity: 0;
-        transform: scale(0.9);
+        transform: scale(0.9) translateY(-20px);
     }
     to {
         opacity: 1;
-        transform: scale(1);
+        transform: scale(1) translateY(0);
     }
 }
 
-/* Modal Header */
+/* Анимация исчезновения */
+.modal-overlay.hiding {
+    animation: modalFadeOut 0.2s ease-out;
+}
+
+@keyframes modalFadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+/* ============================================
+   MODAL HEADER
+   ============================================ */
+
 .modal-header {
     padding: 24px 24px 16px;
-    border-bottom: 1px solid var(--gray-light);
+    border-bottom: 2px solid var(--gray-light);
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-shrink: 0;
 }
 
 .modal-title {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 700;
     color: var(--dark-text);
+    margin: 0;
 }
 
 .modal-close {
@@ -85,8 +112,8 @@
     background: none;
     border: none;
     padding: 0;
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -98,13 +125,19 @@
 .modal-close:hover {
     background-color: var(--gray-light);
     color: var(--dark-text);
+    transform: rotate(90deg);
 }
 
-/* Modal Body */
+/* ============================================
+   MODAL BODY
+   ============================================ */
+
 .modal-body {
     padding: 24px;
     color: var(--dark-text);
     line-height: 1.6;
+    flex: 1;
+    overflow-y: auto;
 }
 
 .modal-body p {
@@ -116,7 +149,8 @@
 }
 
 .modal-body h3,
-.modal-body h4 {
+.modal-body h4,
+.modal-body h5 {
     font-weight: 700;
     margin-top: 20px;
     margin-bottom: 12px;
@@ -124,15 +158,20 @@
 }
 
 .modal-body h3 {
-    font-size: 16px;
+    font-size: 18px;
 }
 
 .modal-body h4 {
-    font-size: 15px;
+    font-size: 16px;
+}
+
+.modal-body h5 {
+    font-size: 14px;
 }
 
 .modal-body h3:first-child,
-.modal-body h4:first-child {
+.modal-body h4:first-child,
+.modal-body h5:first-child {
     margin-top: 0;
 }
 
@@ -166,20 +205,26 @@
     overflow-y: auto;
 }
 
-/* Modal Footer */
+/* ============================================
+   MODAL FOOTER
+   ============================================ */
+
 .modal-footer {
     padding: 16px 24px;
-    border-top: 1px solid var(--gray-light);
+    border-top: 2px solid var(--gray-light);
     display: flex;
     justify-content: flex-end;
     gap: 12px;
+    background: var(--white);
+    flex-shrink: 0;
+    border-bottom-left-radius: var(--radius-xl);
+    border-bottom-right-radius: var(--radius-xl);
 }
 
 /* ============================================
-   GROUP SETTINGS MODAL (НОВОЕ - Группа 6)
+   SETTINGS SECTIONS (для модального окна настроек)
    ============================================ */
 
-/* Секции настроек */
 .settings-section {
     margin-bottom: 20px;
 }
@@ -197,7 +242,10 @@
     border-bottom: 1px solid var(--gray-light);
 }
 
-/* Радиокнопки */
+/* ============================================
+   RADIO BUTTONS (в модалках)
+   ============================================ */
+
 .radio-wrapper {
     display: flex;
     align-items: flex-start;
@@ -215,8 +263,8 @@
 .radio {
     margin-top: 2px;
     cursor: pointer;
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     flex-shrink: 0;
 }
 
@@ -237,9 +285,13 @@
     font-size: 12px;
     color: var(--medium-text);
     line-height: 1.4;
+    font-style: italic;
 }
 
-/* Поля min/max для расстояния */
+/* ============================================
+   DISTANCE MIN/MAX INPUTS
+   ============================================ */
+
 .distance-minmax {
     margin-left: 28px;
     margin-top: 8px;
@@ -260,10 +312,9 @@
 }
 
 /* ============================================
-   КНОПКА НАСТРОЕК ГРУППЫ ⚙️ (НОВОЕ!)
+   КНОПКА НАСТРОЕК ГРУППЫ ⚙️ (v3.0)
    ============================================ */
 
-/* Кнопка настроек группы (⚙️) - БЕЛАЯ по умолчанию */
 .btn-settings {
     background: #fff;
     border: 2px solid #ddd;
@@ -301,7 +352,7 @@
     transform: scale(1.05);
 }
 
-/* Пульсирующая анимация для has-settings */
+/* Пульсирующая анимация */
 @keyframes pulse-green {
     0%, 100% {
         box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
@@ -316,6 +367,85 @@
 }
 
 /* ============================================
+   HISTORY DETAILS MODAL (НОВОЕ v3.0)
+   ============================================ */
+
+.details-info {
+    margin-bottom: 20px;
+}
+
+.details-info p {
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.details-triggers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.details-triggers code {
+    background-color: #f0f4ff;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    color: var(--primary-blue);
+    border: 1px solid #d0e3ff;
+}
+
+.details-params {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.details-params li {
+    padding: 8px 12px;
+    background-color: #fafafa;
+    border-radius: var(--radius-sm);
+    margin-bottom: 6px;
+    font-size: 13px;
+}
+
+.details-group {
+    background-color: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: var(--radius-md);
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+.details-group h5 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: var(--dark-text);
+}
+
+.details-subgroup {
+    margin-bottom: 10px;
+    padding-left: 12px;
+    border-left: 3px solid var(--primary-blue);
+}
+
+.details-subgroup strong {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 13px;
+}
+
+.details-subgroup code {
+    margin-right: 6px;
+}
+
+.details-subgroup small {
+    color: var(--medium-text);
+    font-size: 12px;
+}
+
+/* ============================================
    EXPORT OPTIONS
    ============================================ */
 
@@ -326,9 +456,10 @@
     margin-top: 20px;
 }
 
+.export-options .btn-primary,
 .export-options .btn-secondary {
     width: 100%;
-    justify-content: center;
+    justify-content: flex-start;
 }
 
 /* ============================================
@@ -347,7 +478,7 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    z-index: 3000;
+    z-index: 15000;
     animation: toastSlideIn 0.3s ease;
     font-size: 14px;
     font-weight: 400;
@@ -454,6 +585,18 @@
     font-size: 14px;
 }
 
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+    25% {
+        transform: translateX(-6px);
+    }
+    75% {
+        transform: translateX(6px);
+    }
+}
+
 /* ============================================
    TOOLTIPS
    ============================================ */
@@ -530,6 +673,7 @@
     font-size: 14px;
     color: var(--medium-text);
     margin-bottom: 24px;
+    line-height: 1.6;
 }
 
 .confirm-dialog-actions {
@@ -539,7 +683,7 @@
 }
 
 /* ============================================
-   LOADING INDICATOR
+   LOADING INDICATOR (в модалках)
    ============================================ */
 
 .modal-loading {
@@ -569,19 +713,42 @@
 }
 
 /* ============================================
-   RESPONSIVE
+   RESPONSIVE (ОБНОВЛЕНО v3.0)
    ============================================ */
 
+/* Планшеты (до 1024px) */
+@media (max-width: 1024px) {
+    .modal-large {
+        max-width: 90%;
+    }
+    
+    .modal-xl {
+        max-width: 95%;
+    }
+}
+
+/* Планшеты и мобильные (до 768px) */
 @media (max-width: 768px) {
     .modal {
         width: 95%;
         max-height: 90vh;
     }
     
+    .modal-small,
+    .modal-medium,
+    .modal-large,
+    .modal-xl {
+        max-width: 95%;
+    }
+    
     .modal-header,
     .modal-body,
     .modal-footer {
         padding: 16px;
+    }
+    
+    .modal-title {
+        font-size: 18px;
     }
     
     .toast {
@@ -595,9 +762,19 @@
     .export-options {
         gap: 8px;
     }
+    
+    .details-triggers {
+        gap: 6px;
+    }
 }
 
+/* Маленькие мобильные (до 480px) */
 @media (max-width: 480px) {
+    .modal {
+        width: 98%;
+        border-radius: var(--radius-md);
+    }
+    
     .modal-title {
         font-size: 16px;
     }
@@ -606,6 +783,12 @@
         font-size: 24px;
         width: 28px;
         height: 28px;
+    }
+    
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 12px;
     }
     
     .toast {
@@ -620,5 +803,29 @@
     
     .confirm-dialog-actions button {
         width: 100%;
+    }
+    
+    .radio-wrapper {
+        padding: 8px;
+    }
+    
+    .settings-section-title {
+        font-size: 14px;
+    }
+}
+
+/* Очень маленькие экраны (до 360px) */
+@media (max-width: 360px) {
+    .modal {
+        width: 100%;
+        height: 100%;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+    
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 10px;
     }
 }
