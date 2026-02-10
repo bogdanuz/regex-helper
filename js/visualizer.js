@@ -1,7 +1,7 @@
 // ============================================================================
 // ФАЙЛ: js/visualizer.js
 // ОПИСАНИЕ: Визуализатор regex с railroad-diagrams.js (УЛУЧШЕННЫЙ ПАРСЕР)
-// ВЕРСИЯ: 4.1 (проверка готовности библиотеки + объединение литералов)
+// ВЕРСИЯ: 4.2 (постобработка AST для объединения литералов)
 // ДАТА: 10.02.2026
 // ============================================================================
 
@@ -11,12 +11,14 @@
  * Использует railroad-diagrams.js от Tab Atkins (GitHub gh-pages)
  * КЛЮЧЕВЫЕ УЛУЧШЕНИЯ:
  * - Проверка готовности библиотеки (асинхронная загрузка ES6)
- * - Объединение последовательных литералов
- * - Правильный парсинг групп и альтернаций
+ * - Парсинг regex в AST
+ * - ПОСТОБРАБОТКА AST: объединение всех соседних литералов
+ * - Правильный рендеринг через railroad-diagrams
  * 
  * Функции:
  * - visualizeRegex(regex) - главная функция
- * - parseRegex(regex) - парсер с объединением литералов
+ * - parseRegex(regex) - парсер regex
+ * - postprocessAST(ast) - постобработка для объединения литералов
  * - astToRailroad(ast) - конвертация в railroad элементы
  */
 
@@ -54,27 +56,10 @@ const checkRailroad = setInterval(() => {
         railroadReady = true;
         clearInterval(checkRailroad);
         console.log('[Visualizer] ✅ Railroad библиотека готова');
-        console.log('[Visualizer] Доступные функции:', {
-            Diagram: typeof Diagram,
-            Terminal: typeof Terminal,
-            Sequence: typeof Sequence,
-            Choice: typeof Choice,
-            Optional: typeof Optional,
-            OneOrMore: typeof OneOrMore,
-            ZeroOrMore: typeof ZeroOrMore,
-            NonTerminal: typeof NonTerminal,
-            Comment: typeof Comment,
-            Skip: typeof Skip,
-            Stack: typeof Stack
-        });
         
     } else if (railroadCheckAttempts >= MAX_ATTEMPTS) {
         clearInterval(checkRailroad);
         console.error('[Visualizer] ❌ Railroad библиотека не загрузилась за 5 секунд');
-        console.error('[Visualizer] Проверьте:', {
-            Diagram: typeof Diagram,
-            Terminal: typeof Terminal
-        });
     }
 }, 100);
 
@@ -104,10 +89,7 @@ function visualizeRegex(regex) {
         
         // ПРОВЕРКА ГОТОВНОСТИ БИБЛИОТЕКИ
         if (!railroadReady) {
-            console.log('[Visualizer] Библиотека еще загружается, попытка:', railroadCheckAttempts);
             showToast('warning', 'Библиотека загружается, подождите...');
-            
-            // Повторная попытка через 500ms
             setTimeout(() => visualizeRegex(regex), 500);
             return;
         }
@@ -115,20 +97,22 @@ function visualizeRegex(regex) {
         // Проверка наличия функций
         if (typeof Diagram === 'undefined') {
             showToast('error', 'Библиотека railroad-diagrams не загружена');
-            console.error('[Visualizer] Diagram не определен');
             return;
         }
         
         currentRegex = regex;
         
-        // ПАРСИНГ С ОБЪЕДИНЕНИЕМ ЛИТЕРАЛОВ
+        // ПАРСИНГ
         console.log('[Visualizer] Парсинг regex:', regex);
-        const ast = parseRegex(regex);
-        console.log('[Visualizer] AST:', ast);
+        let ast = parseRegex(regex);
+        console.log('[Visualizer] AST (до постобработки):', ast);
+        
+        // ПОСТОБРАБОТКА: Объединение литералов
+        ast = postprocessAST(ast);
+        console.log('[Visualizer] AST (после постобработки):', ast);
         
         // КОНВЕРТАЦИЯ В RAILROAD
         const railroadElements = astToRailroad(ast);
-        console.log('[Visualizer] Railroad elements:', railroadElements);
         
         // СОЗДАНИЕ ДИАГРАММЫ
         const diagram = Diagram(railroadElements);
@@ -160,11 +144,11 @@ function visualizeRegex(regex) {
 }
 
 // ============================================================================
-// УЛУЧШЕННЫЙ ПАРСЕР (ОБЪЕДИНЯЕТ ЛИТЕРАЛЫ!)
+// ПАРСЕР REGEX
 // ============================================================================
 
 /**
- * Парсинг regex с объединением последовательных литералов
+ * Парсинг regex в AST
  */
 function parseRegex(regex) {
     let position = 0;
@@ -173,7 +157,6 @@ function parseRegex(regex) {
     function consume() { return regex[position++]; }
     function isEnd() { return position >= regex.length; }
     
-    // ГЛАВНАЯ ФУНКЦИЯ: Парсинг с объединением
     function parseSequence() {
         const items = [];
         
@@ -182,59 +165,7 @@ function parseRegex(regex) {
             if (item) items.push(item);
         }
         
-        // КЛЮЧЕВОЕ УЛУЧШЕНИЕ: Объединяем последовательные литералы
-        const merged = mergeLiterals(items);
-        
-        return merged.length === 1 ? merged[0] : { type: 'sequence', items: merged };
-    }
-    
-    /**
-     * ОБЪЕДИНЕНИЕ ПОСЛЕДОВАТЕЛЬНЫХ ЛИТЕРАЛОВ
-     * ["д", "р", "о", "н"] → "дрон"
-     */
-    function mergeLiterals(items) {
-        const result = [];
-        let literalBuffer = '';
-        
-        for (let i = 0; i < items.length; i++) {
-            const item = items[i];
-            
-            // Если это простой литерал (проверяем, что следующий элемент не квантификатор)
-            if (item.type === 'literal') {
-                // Проверяем следующий элемент
-                const nextItem = items[i + 1];
-                const isNextQuantifier = nextItem && 
-                    (nextItem.type === 'zero-or-more' || 
-                     nextItem.type === 'one-or-more' || 
-                     nextItem.type === 'optional' ||
-                     nextItem.type === 'repeat');
-                
-                if (!isNextQuantifier) {
-                    literalBuffer += item.value;
-                } else {
-                    // Сбрасываем буфер перед квантификатором
-                    if (literalBuffer) {
-                        result.push({ type: 'literal', value: literalBuffer });
-                        literalBuffer = '';
-                    }
-                    result.push(item);
-                }
-            } else {
-                // Сбрасываем буфер
-                if (literalBuffer) {
-                    result.push({ type: 'literal', value: literalBuffer });
-                    literalBuffer = '';
-                }
-                result.push(item);
-            }
-        }
-        
-        // Добавляем остаток
-        if (literalBuffer) {
-            result.push({ type: 'literal', value: literalBuffer });
-        }
-        
-        return result;
+        return items.length === 1 ? items[0] : { type: 'sequence', items };
     }
     
     function parseItem() {
@@ -311,8 +242,7 @@ function parseRegex(regex) {
             if (peek() === '|') {
                 consume();
                 if (current.length > 0) {
-                    const merged = mergeLiterals(current);
-                    alternatives.push(merged.length === 1 ? merged[0] : { type: 'sequence', items: merged });
+                    alternatives.push(current.length === 1 ? current[0] : { type: 'sequence', items: current });
                     current = [];
                 }
             } else {
@@ -322,8 +252,7 @@ function parseRegex(regex) {
         }
         
         if (current.length > 0) {
-            const merged = mergeLiterals(current);
-            alternatives.push(merged.length === 1 ? merged[0] : { type: 'sequence', items: merged });
+            alternatives.push(current.length === 1 ? current[0] : { type: 'sequence', items: current });
         }
         
         consume(); // )
@@ -379,8 +308,7 @@ function parseRegex(regex) {
         if (peek() === '|') {
             consume();
             if (current.length > 0) {
-                const merged = mergeLiterals(current);
-                alternatives.push(merged.length === 1 ? merged[0] : { type: 'sequence', items: merged });
+                alternatives.push(current.length === 1 ? current[0] : { type: 'sequence', items: current });
                 current = [];
             }
         } else {
@@ -390,8 +318,7 @@ function parseRegex(regex) {
     }
     
     if (current.length > 0) {
-        const merged = mergeLiterals(current);
-        alternatives.push(merged.length === 1 ? merged[0] : { type: 'sequence', items: merged });
+        alternatives.push(current.length === 1 ? current[0] : { type: 'sequence', items: current });
     }
     
     if (alternatives.length > 1) {
@@ -401,6 +328,69 @@ function parseRegex(regex) {
     }
     
     return { type: 'empty' };
+}
+
+// ============================================================================
+// ПОСТОБРАБОТКА AST (КЛЮЧЕВОЕ УЛУЧШЕНИЕ!)
+// ============================================================================
+
+/**
+ * ПОСТОБРАБОТКА AST: Объединение всех соседних литералов
+ * Рекурсивно проходит по дереву и объединяет literal узлы в sequence
+ */
+function postprocessAST(node) {
+    if (!node) return node;
+    
+    // Рекурсивно обрабатываем вложенные узлы
+    if (node.type === 'group') {
+        node.content = postprocessAST(node.content);
+        
+    } else if (node.type === 'choice') {
+        node.alternatives = node.alternatives.map(postprocessAST);
+        
+    } else if (node.type === 'sequence') {
+        // Обрабатываем все items рекурсивно
+        node.items = node.items.map(postprocessAST);
+        
+        // КЛЮЧЕВОЕ: Объединяем соседние литералы
+        const merged = [];
+        let literalBuffer = '';
+        
+        for (let i = 0; i < node.items.length; i++) {
+            const item = node.items[i];
+            
+            if (item.type === 'literal') {
+                literalBuffer += item.value;
+            } else {
+                // Сбрасываем буфер перед non-literal элементом
+                if (literalBuffer) {
+                    merged.push({ type: 'literal', value: literalBuffer });
+                    literalBuffer = '';
+                }
+                merged.push(item);
+            }
+        }
+        
+        // Добавляем остаток
+        if (literalBuffer) {
+            merged.push({ type: 'literal', value: literalBuffer });
+        }
+        
+        node.items = merged;
+        
+        // Если после объединения остался только 1 элемент - возвращаем его
+        if (merged.length === 1) {
+            return merged[0];
+        }
+        
+    } else if (node.type === 'optional' || node.type === 'one-or-more' || node.type === 'zero-or-more') {
+        node.item = postprocessAST(node.item);
+        
+    } else if (node.type === 'repeat') {
+        node.item = postprocessAST(node.item);
+    }
+    
+    return node;
 }
 
 // ============================================================================
@@ -415,7 +405,6 @@ function astToRailroad(node) {
     
     switch (node.type) {
         case 'literal':
-            // Теперь value - это целая строка, не одна буква!
             return Terminal(node.value);
         
         case 'escape':
