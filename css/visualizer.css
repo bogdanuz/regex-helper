@@ -1,0 +1,564 @@
+/* ============================================================================
+   ФАЙЛ: css/visualizer.css
+   ОПИСАНИЕ: Стили для визуализатора regex
+   ВЕРСИЯ: 1.0
+   ДАТА: 10.02.2026
+   ============================================================================ */
+
+/* ============================================================================
+   ОБЩИЕ СТИЛИ СЕКЦИИ ВИЗУАЛИЗАТОРА
+   ============================================================================ */
+
+#visualizerSection {
+    margin-bottom: 30px;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+#visualizerSection .section-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#visualizerSection .section-header h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+#visualizerSection .section-content {
+    padding: 25px;
+}
+
+/* ============================================================================
+   ПОЛЕ ВВОДА REGEX
+   ============================================================================ */
+
+.visualizer-input-group {
+    margin-bottom: 20px;
+}
+
+.visualizer-input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+}
+
+#visualizerRegex {
+    width: 100%;
+    min-height: 80px;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    resize: vertical;
+    transition: border-color 0.3s ease;
+}
+
+#visualizerRegex:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+#visualizerRegex.syntax-highlighted {
+    background-color: #f8f9fa;
+}
+
+/* ============================================================================
+   КНОПКИ УПРАВЛЕНИЯ
+   ============================================================================ */
+
+.visualizer-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+#visualizeBtn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
+}
+
+#visualizeBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+}
+
+#visualizeBtn:active {
+    transform: translateY(0);
+}
+
+/* ============================================================================
+   КОНТЕЙНЕР ДИАГРАММЫ
+   ============================================================================ */
+
+#diagramContainer {
+    background: #f8f9fa;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 30px;
+    margin-bottom: 20px;
+    min-height: 200px;
+    overflow: auto;
+    position: relative;
+}
+
+#diagramContainer:empty::before {
+    content: 'Диаграмма появится здесь после визуализации';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #999;
+    font-size: 16px;
+    text-align: center;
+}
+
+/* Стили для SVG диаграммы */
+#diagramContainer svg {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+    height: auto;
+    transition: transform 0.3s ease;
+}
+
+#diagramContainer svg.railroad-diagram {
+    background-color: #ffffff;
+    border-radius: 6px;
+    padding: 20px;
+}
+
+/* Темная тема для диаграммы */
+#diagramContainer[data-theme="dark"] {
+    background: #1a1a1a;
+    border-color: #333;
+}
+
+#diagramContainer[data-theme="dark"] svg.railroad-diagram {
+    background-color: #2a2a2a;
+}
+
+#diagramContainer[data-theme="dark"] svg path {
+    stroke: #e0e0e0;
+}
+
+#diagramContainer[data-theme="dark"] svg text {
+    fill: #e0e0e0;
+}
+
+#diagramContainer[data-theme="dark"] svg rect {
+    stroke: #e0e0e0;
+    fill: #3a3a3a;
+}
+
+/* ============================================================================
+   КОНТЕЙНЕР ОБЪЯСНЕНИЯ
+   ============================================================================ */
+
+#explanationContainer {
+    background: #ffffff;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    min-height: 100px;
+}
+
+#explanationContainer:empty {
+    display: none;
+}
+
+#explanationContainer h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.explanation-content {
+    font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.8;
+    color: #555;
+}
+
+.explanation-content div {
+    padding: 4px 0;
+    border-left: 3px solid transparent;
+    padding-left: 10px;
+    transition: all 0.2s ease;
+}
+
+.explanation-content div:hover {
+    border-left-color: #667eea;
+    background-color: #f0f4ff;
+    padding-left: 15px;
+}
+
+/* Темная тема для объяснения */
+#explanationContainer[data-theme="dark"] {
+    background: #2a2a2a;
+    border-color: #444;
+}
+
+#explanationContainer[data-theme="dark"] h3 {
+    color: #e0e0e0;
+}
+
+#explanationContainer[data-theme="dark"] .explanation-content {
+    color: #ccc;
+}
+
+#explanationContainer[data-theme="dark"] .explanation-content div:hover {
+    background-color: #3a3a3a;
+}
+
+/* ============================================================================
+   ПАНЕЛЬ УПРАВЛЕНИЯ ДИАГРАММОЙ
+   ============================================================================ */
+
+.visualizer-controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.visualizer-controls button {
+    padding: 10px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.visualizer-controls button:hover {
+    border-color: #667eea;
+    background: #f0f4ff;
+    color: #667eea;
+    transform: translateY(-1px);
+}
+
+.visualizer-controls button:active {
+    transform: translateY(0);
+}
+
+#exportSvgBtn,
+#exportPngBtn {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+    border: none;
+    box-shadow: 0 3px 6px rgba(17, 153, 142, 0.3);
+}
+
+#exportSvgBtn:hover,
+#exportPngBtn:hover {
+    box-shadow: 0 5px 10px rgba(17, 153, 142, 0.4);
+    transform: translateY(-2px);
+}
+
+#zoomInBtn,
+#zoomOutBtn,
+#themeToggleBtn {
+    background: #f8f9fa;
+    border: 2px solid #e0e0e0;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+#zoomInBtn:hover,
+#zoomOutBtn:hover,
+#themeToggleBtn:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+/* ============================================================================
+   ПРИМЕРЫ REGEX
+   ============================================================================ */
+
+.examples-container {
+    margin-top: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.examples-container label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 500;
+    color: #333;
+}
+
+.examples-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.example-btn {
+    padding: 8px 14px;
+    background: #ffffff;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    color: #555;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.example-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+    background: #f0f4ff;
+}
+
+.example-btn:active {
+    transform: scale(0.98);
+}
+
+/* ============================================================================
+   RAILROAD DIAGRAM СТИЛИ (ПЕРЕОПРЕДЕЛЕНИЕ)
+   ============================================================================ */
+
+svg.railroad-diagram {
+    font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+}
+
+svg.railroad-diagram path {
+    stroke-width: 3;
+    stroke: #333;
+    fill: none;
+}
+
+svg.railroad-diagram text {
+    font-size: 14px;
+    fill: #333;
+    font-weight: 500;
+}
+
+svg.railroad-diagram rect {
+    stroke-width: 3;
+    stroke: #333;
+    fill: #e3f2fd;
+}
+
+svg.railroad-diagram rect.group-box {
+    stroke: #999;
+    stroke-dasharray: 5 5;
+    fill: none;
+}
+
+svg.railroad-diagram g.terminal rect {
+    fill: #c5e1a5;
+}
+
+svg.railroad-diagram g.non-terminal rect {
+    fill: #ffecb3;
+}
+
+svg.railroad-diagram g.comment text {
+    font-size: 12px;
+    font-style: italic;
+    fill: #666;
+}
+
+/* ============================================================================
+   АДАПТИВНОСТЬ (RESPONSIVE)
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    #visualizerSection .section-content {
+        padding: 15px;
+    }
+    
+    .visualizer-buttons {
+        flex-direction: column;
+    }
+    
+    .visualizer-buttons button {
+        width: 100%;
+    }
+    
+    .visualizer-controls {
+        justify-content: center;
+    }
+    
+    #diagramContainer {
+        padding: 15px;
+        overflow-x: auto;
+    }
+    
+    #explanationContainer {
+        padding: 15px;
+    }
+    
+    .explanation-content {
+        font-size: 12px;
+    }
+    
+    .examples-buttons {
+        flex-direction: column;
+    }
+    
+    .example-btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    #visualizerSection .section-header h2 {
+        font-size: 18px;
+    }
+    
+    #visualizerRegex {
+        font-size: 12px;
+        min-height: 60px;
+    }
+    
+    #visualizeBtn {
+        font-size: 14px;
+        padding: 10px 18px;
+    }
+    
+    .visualizer-controls button {
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+    
+    #zoomInBtn,
+    #zoomOutBtn,
+    #themeToggleBtn {
+        width: 38px;
+        height: 38px;
+    }
+}
+
+/* ============================================================================
+   АНИМАЦИИ
+   ============================================================================ */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#diagramContainer svg {
+    animation: fadeIn 0.5s ease;
+}
+
+#explanationContainer {
+    animation: fadeIn 0.5s ease 0.2s both;
+}
+
+/* ============================================================================
+   УТИЛИТЫ
+   ============================================================================ */
+
+.visualizer-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+}
+
+.visualizer-loading::after {
+    content: '';
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e0e0e0;
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.visualizer-error {
+    background: #ffebee;
+    color: #c62828;
+    padding: 15px;
+    border-radius: 6px;
+    border-left: 4px solid #c62828;
+    margin: 10px 0;
+}
+
+.visualizer-warning {
+    background: #fff3e0;
+    color: #ef6c00;
+    padding: 15px;
+    border-radius: 6px;
+    border-left: 4px solid #ef6c00;
+    margin: 10px 0;
+}
+
+/* ============================================================================
+   СКРОЛЛБАР (КАСТОМНЫЙ)
+   ============================================================================ */
+
+#diagramContainer::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+#diagramContainer::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 5px;
+}
+
+#diagramContainer::-webkit-scrollbar-thumb {
+    background: #667eea;
+    border-radius: 5px;
+}
+
+#diagramContainer::-webkit-scrollbar-thumb:hover {
+    background: #5568d3;
+}
+
+/* ============================================================================
+   КОНЕЦ ФАЙЛА
+   ============================================================================ */
