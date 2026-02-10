@@ -1,5 +1,5 @@
 /* ============================================
-   REGEXHELPER - MAIN STYLES
+   REGEXHELPER - MAIN STYLES v3.0 FINAL
    ============================================ */
 
 /* CSS Variables */
@@ -210,11 +210,9 @@ code {
    PANELS
    ============================================ */
 
-/* Scroll offset for navigation links */
 #converterSection,
-#visualizerPanel,
+#visualizerSection,
 #testerPanel,
-#reversePanel,
 #historySection {
     scroll-margin-top: 100px;
 }
@@ -258,7 +256,6 @@ code {
 .panel-body {
 }
 
-/* ДОБАВЛЕНО: Подсказки в панелях */
 .panel-hint {
     background-color: #e3f2fd;
     border-left: 4px solid var(--info);
@@ -394,6 +391,32 @@ button {
     color: var(--dark-text);
 }
 
+.btn-icon-sm {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 14px !important;
+}
+
+.btn-icon-warning {
+    background-color: #ff9800;
+    color: white;
+}
+
+.btn-icon-warning:hover {
+    background-color: #f57c00;
+}
+
+.btn-icon-danger {
+    background-color: #f44336;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.btn-icon-danger:hover {
+    background-color: #d32f2f;
+}
+
 /* Button Group */
 .button-group {
     display: flex;
@@ -459,8 +482,9 @@ button {
     font-size: 13px;
 }
 
-/* ДОБАВЛЕНО: Small Input (для min/max) */
-.input-small {
+/* Small Input (для min/max) */
+.input-small,
+.input-sm {
     width: 80px;
     padding: 8px 12px;
     font-size: 13px;
@@ -469,7 +493,8 @@ button {
     text-align: center;
 }
 
-.input-small:focus {
+.input-small:focus,
+.input-sm:focus {
     outline: none;
     border-color: var(--primary-blue);
     box-shadow: 0 0 0 2px rgba(36, 167, 239, 0.1);
@@ -493,7 +518,6 @@ button {
     color: var(--medium-text);
 }
 
-/* Input with Button */
 .input-with-button {
     display: flex;
     gap: 12px;
@@ -598,7 +622,8 @@ button {
     padding: 10px 0;
 }
 
-.radio-wrapper input[type="radio"] {
+.radio-wrapper input[type="radio"],
+.radio {
     appearance: none;
     -webkit-appearance: none;
     -moz-appearance: none;
@@ -613,12 +638,14 @@ button {
     margin-top: 2px;
 }
 
-.radio-wrapper input[type="radio"]:checked {
+.radio-wrapper input[type="radio"]:checked,
+.radio:checked {
     border-color: var(--primary-blue);
     background-color: var(--white);
 }
 
-.radio-wrapper input[type="radio"]:checked::after {
+.radio-wrapper input[type="radio"]:checked::after,
+.radio:checked::after {
     content: '';
     position: absolute;
     top: 50%;
@@ -630,7 +657,8 @@ button {
     background-color: var(--primary-blue);
 }
 
-.radio-wrapper input[type="radio"]:hover {
+.radio-wrapper input[type="radio"]:hover,
+.radio:hover {
     border-color: var(--primary-blue);
 }
 
@@ -647,7 +675,63 @@ button {
     line-height: 1.4;
 }
 
-/* ДОБАВЛЕНО: Distance Inputs */
+.radio-hint {
+    font-size: 11px;
+    color: var(--medium-text);
+    font-style: italic;
+}
+
+/* ============================================
+   РАДИОКНОПКИ РЕЖИМОВ СВЯЗИ (НОВОЕ v3.0)
+   ============================================ */
+
+.link-mode-selector {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    background-color: #f0f4ff;
+    border-radius: var(--radius-md);
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.radio-inline {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    transition: all 0.15s ease;
+    background-color: var(--white);
+    border: 2px solid var(--gray-border);
+}
+
+.radio-inline:hover {
+    border-color: var(--primary-blue);
+    background-color: #f9fcff;
+}
+
+.radio-inline input[type="radio"] {
+    margin: 0;
+    margin-top: 0;
+}
+
+.radio-inline .radio-label {
+    font-size: 13px;
+    font-weight: 500;
+    margin: 0;
+}
+
+.radio-inline input[type="radio"]:checked + .radio-label {
+    color: var(--primary-blue);
+    font-weight: 600;
+}
+
+/* ============================================
+   DISTANCE INPUTS
+   ============================================ */
+
 .distance-inputs {
     display: flex;
     gap: 16px;
@@ -661,6 +745,11 @@ button {
     gap: 8px;
     font-size: 13px;
     color: var(--medium-text);
+}
+
+.distance-minmax {
+    margin-left: 28px;
+    margin-top: 8px;
 }
 
 /* ============================================
@@ -688,6 +777,22 @@ button {
     color: var(--medium-text);
 }
 
+.duplicate-note {
+    font-size: 0.85rem;
+    color: #ff9800;
+    font-style: italic;
+}
+
+.counter-warning {
+    color: #ff9800 !important;
+    font-weight: bold;
+}
+
+.counter-error {
+    color: #f44336 !important;
+    font-weight: bold;
+}
+
 /* ============================================
    RESULT INFO & STATS
    ============================================ */
@@ -710,6 +815,283 @@ button {
 
 .result-stats.visible {
     display: block !important;
+}
+
+/* ============================================
+   LINKED TRIGGERS (ОБНОВЛЕНО v3.0)
+   ============================================ */
+
+.linked-group {
+    border: 2px solid #e0e0e0;
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    margin-bottom: 16px;
+    background-color: #fafafa;
+    transition: all 0.2s ease;
+}
+
+.linked-group:hover {
+    border-color: var(--primary-blue);
+    box-shadow: var(--shadow-sm);
+}
+
+.linked-group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.linked-group-title {
+    font-weight: 600;
+    font-size: 15px;
+    color: #333;
+}
+
+.group-actions {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.linked-group-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+/* НОВОЕ v3.0: Стили для подгрупп */
+.linked-subgroup {
+    background-color: var(--white);
+    border: 2px solid #d0d0d0;
+    border-radius: var(--radius-md);
+    padding: 12px;
+    margin-bottom: 12px;
+    transition: all 0.2s ease;
+}
+
+.linked-subgroup:hover {
+    border-color: var(--light-blue);
+}
+
+.linked-subgroup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e8e8e8;
+}
+
+.linked-subgroup-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--medium-text);
+}
+
+.subgroup-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.linked-subgroup-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* НОВОЕ v3.0: Связь между подгруппами (аккордеон) */
+.subgroup-connection {
+    margin-top: 12px;
+    padding: 12px;
+    background-color: #f0f9ff;
+    border: 2px dashed var(--primary-blue);
+    border-radius: var(--radius-sm);
+}
+
+.subgroup-connection-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.subgroup-connection-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary-blue);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.connection-toggle {
+    font-size: 18px;
+    color: var(--primary-blue);
+    transition: transform 0.2s ease;
+}
+
+.connection-toggle.expanded {
+    transform: rotate(180deg);
+}
+
+.subgroup-connection-body {
+    margin-top: 12px;
+    display: none;
+}
+
+.subgroup-connection-body.visible {
+    display: block;
+}
+
+/* Стили для полей триггеров */
+.linked-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.linked-input {
+    flex: 1;
+}
+
+.linked-group .btn-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.linked-field .btn-icon {
+    margin-left: auto;
+}
+
+/* ============================================
+   ИСТОРИЯ (ОБНОВЛЕНО v3.0)
+   ============================================ */
+
+/* НОВОЕ v3.0: Счетчик истории */
+.history-counter {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--medium-text);
+    margin-left: 8px;
+}
+
+.history-container {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.history-item {
+    background: #FAFAFA;
+    border: 2px solid #E0E0E0;
+    border-radius: 8px;
+    padding: 16px;
+    transition: all 0.2s ease;
+}
+
+.history-item:hover {
+    border-color: #2196F3;
+    background: white;
+    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.15);
+}
+
+.history-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.history-item-date {
+    font-size: 13px;
+    color: #607D8B;
+    font-weight: 500;
+}
+
+.history-item-type {
+    font-size: 12px;
+    padding: 4px 8px;
+    background-color: #E3F2FD;
+    color: #1976D2;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+}
+
+.history-item-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.history-item-regex {
+    background: white;
+    border: 1px solid #BDBDBD;
+    border-radius: 4px;
+    padding: 10px 12px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: #424242;
+    margin-bottom: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.history-item-meta {
+    display: flex;
+    gap: 16px;
+    font-size: 12px;
+    color: #757575;
+}
+
+.history-item-meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.history-empty {
+    text-align: center;
+    padding: 60px 24px;
+    color: #9E9E9E;
+}
+
+.history-empty p:first-child {
+    font-size: 64px;
+    margin-bottom: 16px;
+    line-height: 1;
+}
+
+.history-empty .text-muted {
+    font-size: 15px;
+    color: #757575;
+    margin-top: 8px;
+}
+
+.history-item .btn-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+    border: 1px solid #BDBDBD;
+    background: white;
+}
+
+.history-item .btn-icon:hover {
+    background: #F5F5F5;
+    border-color: #757575;
 }
 
 /* ============================================
@@ -809,7 +1191,7 @@ button {
     border-bottom-right-radius: var(--radius-xl);
 }
 
-/* ДОБАВЛЕНО: Стили для регламента */
+/* Стили для регламента */
 .regulation-section {
     margin-bottom: 24px;
 }
@@ -837,12 +1219,14 @@ button {
     margin-bottom: 12px;
 }
 
-.regulation-section ol {
+.regulation-section ol,
+.regulation-section ul {
     padding-left: 24px;
     margin: 12px 0;
 }
 
-.regulation-section ol li {
+.regulation-section ol li,
+.regulation-section ul li {
     font-size: 14px;
     color: var(--medium-text);
     margin-bottom: 8px;
@@ -894,12 +1278,12 @@ button {
     font-weight: 600;
 }
 
-/* ДОБАВЛЕНО: Settings Sections */
 .settings-section {
     margin-bottom: 20px;
 }
 
-.settings-section h4 {
+.settings-section h4,
+.settings-section-title {
     font-size: 14px;
     font-weight: 600;
     color: var(--dark-text);
@@ -909,68 +1293,8 @@ button {
 }
 
 /* ============================================
-   VISUALIZER
-   ============================================ */
-
-.visualizer-container {
-    min-height: 200px;
-    padding: 20px;
-    background-color: var(--gray-bg);
-    border-radius: var(--radius-sm);
-    overflow-x: auto;
-}
-
-.placeholder-text {
-    text-align: center;
-    color: var(--light-text);
-    font-size: 14px;
-    padding: 40px 20px;
-}
-
-/* ============================================
    TESTER
    ============================================ */
-
-.test-result {
-    border-top: 1px solid var(--gray-light);
-    padding-top: 16px;
-}
-
-.result-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-}
-
-.match-count {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--primary-blue);
-}
-
-.test-output {
-    background-color: var(--gray-bg);
-    border: 1px solid var(--gray-border);
-    border-radius: var(--radius-sm);
-    padding: 16px;
-    font-family: var(--font-main);
-    font-size: 14px;
-    line-height: 1.8;
-    max-height: 400px;
-    overflow-y: auto;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-}
-
-/* Highlight matches */
-.highlight {
-    background-color: rgba(36, 167, 239, 0.3);
-    border-radius: 2px;
-    padding: 2px 4px;
-    color: var(--primary-hover);
-    font-weight: 700;
-}
 
 #testerPanel {
     background: #F0F4FF;
@@ -1103,121 +1427,6 @@ button {
 }
 
 /* ============================================
-   REVERSE CONVERTER
-   ============================================ */
-
-.reverse-result {
-    border-top: 1px solid var(--gray-light);
-    padding-top: 16px;
-}
-
-/* ============================================
-   HISTORY
-   ============================================ */
-
-.history-container {
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-.history-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.history-item {
-    background: #FAFAFA;
-    border: 2px solid #E0E0E0;
-    border-radius: 8px;
-    padding: 16px;
-    transition: all 0.2s ease;
-}
-
-.history-item:hover {
-    border-color: #2196F3;
-    background: white;
-    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.15);
-}
-
-.history-item-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 12px;
-}
-
-.history-item-date {
-    font-size: 13px;
-    color: #607D8B;
-    font-weight: 500;
-}
-
-.history-item-actions {
-    display: flex;
-    gap: 8px;
-}
-
-.history-item-regex {
-    background: white;
-    border: 1px solid #BDBDBD;
-    border-radius: 4px;
-    padding: 10px 12px;
-    font-family: 'Courier New', monospace;
-    font-size: 13px;
-    color: #424242;
-    margin-bottom: 12px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
-}
-
-.history-item-meta {
-    display: flex;
-    gap: 16px;
-    font-size: 12px;
-    color: #757575;
-}
-
-.history-item-meta span {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.history-empty {
-    text-align: center;
-    padding: 60px 24px;
-    color: #9E9E9E;
-}
-
-.history-empty p:first-child {
-    font-size: 64px;
-    margin-bottom: 16px;
-    line-height: 1;
-}
-
-.history-empty .text-muted {
-    font-size: 15px;
-    color: #757575;
-    margin-top: 8px;
-}
-
-.history-item .btn-icon {
-    width: 32px;
-    height: 32px;
-    font-size: 16px;
-    border: 1px solid #BDBDBD;
-    background: white;
-}
-
-.history-item .btn-icon:hover {
-    background: #F5F5F5;
-    border-color: #757575;
-}
-
-/* ============================================
    FOOTER
    ============================================ */
 
@@ -1277,7 +1486,6 @@ button {
    UTILITY CLASSES
    ============================================ */
 
-/* Spacing */
 .m-0 { margin: 0; }
 .mt-1 { margin-top: var(--spacing-sm); }
 .mt-2 { margin-top: var(--spacing-md); }
@@ -1286,7 +1494,6 @@ button {
 .p-1 { padding: var(--spacing-sm); }
 .p-2 { padding: var(--spacing-md); }
 
-/* Text */
 .text-xs { font-size: 11px; }
 .text-sm { font-size: 12px; }
 .text-base { font-size: 14px; }
@@ -1299,19 +1506,130 @@ button {
 
 .text-muted { color: var(--medium-text); }
 
-/* Display */
 .hidden { display: none !important; }
 
-/* Transitions */
 .transition-all { transition: all 0.2s ease; }
 .transition-fast { transition: all 0.15s ease; }
 .transition-slow { transition: all 0.3s ease; }
 
 /* ============================================
+   TEXT SELECTION
+   ============================================ */
+
+input,
+textarea,
+input::placeholder,
+textarea::placeholder,
+.result-stats,
+.info-text,
+p,
+li,
+code,
+pre,
+span,
+div {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    -moz-user-select: text !important;
+    -ms-user-select: text !important;
+    cursor: text;
+}
+
+textarea,
+.textarea {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+}
+
+button,
+.btn,
+.btn-primary,
+.btn-secondary,
+.btn-danger,
+.btn-icon,
+.modal-header,
+.linked-group-header,
+.counter,
+.label {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* ============================================
+   TRIGGER SETTINGS
+   ============================================ */
+
+.trigger-settings-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    background: #f9f9f9;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    user-select: none;
+}
+
+.trigger-settings-item:hover {
+    border-color: #2196F3;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.trigger-settings-item.has-settings {
+    border-color: #4CAF50;
+    background: #E8F5E9;
+}
+
+.trigger-settings-item.has-settings:hover {
+    border-color: #45a049;
+}
+
+.trigger-settings-item span {
+    font-size: 13px;
+    color: #333;
+}
+
+.trigger-settings-item.has-settings span {
+    color: #2E7D32;
+    font-weight: 600;
+}
+
+/* ============================================
+   EXPORT
+   ============================================ */
+
+.export-options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.btn-block {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 15px 20px;
+    text-align: left;
+}
+
+.btn-description {
+    font-size: 12px;
+    opacity: 0.8;
+    margin-top: 5px;
+    font-weight: normal;
+}
+
+/* ============================================
    RESPONSIVE DESIGN
    ============================================ */
 
-/* Tablets (1024px and below) */
 @media (max-width: 1024px) {
     .three-columns {
         grid-template-columns: repeat(2, 1fr);
@@ -1326,7 +1644,6 @@ button {
     }
 }
 
-/* Mobile (768px and below) */
 @media (max-width: 768px) {
     .three-columns {
         grid-template-columns: 1fr;
@@ -1375,9 +1692,12 @@ button {
         width: 95%;
         max-height: 90vh;
     }
+    
+    .link-mode-selector {
+        flex-direction: column;
+    }
 }
 
-/* Small Mobile (480px and below) */
 @media (max-width: 480px) {
     body {
         font-size: 13px;
@@ -1481,309 +1801,7 @@ button {
     background: var(--medium-text);
 }
 
-/* Firefox scrollbar */
 * {
     scrollbar-width: thin;
     scrollbar-color: var(--gray-border) var(--gray-light);
 }
-
-/* ============================================
-   HEADER CONTROLS
-   ============================================ */
-
-.header-controls {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.panel-header-actions {
-    display: flex;
-    gap: 5px;
-    align-items: center;
-}
-
-.duplicate-note {
-    font-size: 0.85rem;
-    color: #ff9800;
-    font-style: italic;
-}
-
-.counter-warning {
-    color: #ff9800 !important;
-    font-weight: bold;
-}
-
-.counter-error {
-    color: #f44336 !important;
-    font-weight: bold;
-}
-
-.result-actions {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-/* ============================================
-   TEXT SELECTION
-   ============================================ */
-
-input,
-textarea,
-input::placeholder,
-textarea::placeholder,
-.result-stats,
-.info-text,
-p,
-li,
-code,
-pre,
-span,
-div {
-    user-select: text !important;
-    -webkit-user-select: text !important;
-    -moz-user-select: text !important;
-    -ms-user-select: text !important;
-    cursor: text;
-}
-
-textarea,
-.textarea {
-    user-select: text !important;
-    -webkit-user-select: text !important;
-}
-
-button,
-.btn,
-.btn-primary,
-.btn-secondary,
-.btn-danger,
-.btn-icon,
-.modal-header,
-.linked-group-header,
-.counter,
-.label {
-    user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-}
-
-/* ============================================
-   LINKED TRIGGERS
-   ============================================ */
-
-.linked-group {
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 15px;
-    background-color: #fafafa;
-}
-
-.linked-group-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #e0e0e0;
-}
-
-.linked-group-title {
-    font-weight: 600;
-    font-size: 1rem;
-    color: #333;
-}
-
-.group-actions {
-    display: flex;
-    gap: 8px;
-    margin-left: auto;
-}
-
-.linked-group-body {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 12px;
-}
-
-.linked-field {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.linked-input {
-    flex: 1;
-}
-
-.linked-group .btn-icon {
-    width: 28px;
-    height: 28px;
-    font-size: 16px;
-    padding: 0;
-    flex-shrink: 0;
-}
-
-.btn-icon-sm {
-    width: 24px !important;
-    height: 24px !important;
-    font-size: 14px !important;
-}
-
-.btn-icon-warning {
-    background-color: #ff9800;
-    color: white;
-}
-
-.btn-icon-warning:hover {
-    background-color: #f57c00;
-}
-
-.btn-icon-danger {
-    background-color: #f44336;
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
-}
-
-.btn-icon-danger:hover {
-    background-color: #d32f2f;
-}
-
-.linked-field .btn-icon {
-    margin-left: auto;
-}
-
-/* ============================================
-   TOOLTIPS
-   ============================================ */
-
-button[title],
-.btn[title],
-.btn-icon[title],
-[title] {
-    position: relative;
-}
-
-* {
-    -moz-tooltip-delay: 0ms !important;
-}
-
-button[title]:hover::after,
-.btn[title]:hover::after {
-    transition-delay: 0s !important;
-}
-
-/* ============================================
-   SAFE SPACING
-   ============================================ */
-
-.input-section {
-    margin-bottom: 20px;
-}
-
-.panel-body > * + * {
-    margin-top: 16px;
-}
-
-.linked-group + .linked-group {
-    margin-top: 15px;
-}
-
-.input-footer {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: 8px;
-    padding-top: 8px;
-}
-
-.button-group {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.action-buttons {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-top: 20px;
-}
-
-.result-info {
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid #e0e0e0;
-}
-
-/* ============================================
-   TRIGGER SETTINGS BUTTONS
-   ============================================ */
-
-.trigger-settings-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 10px;
-    border: 2px solid #ddd;
-    border-radius: 6px;
-    background: #f9f9f9;
-    transition: all 0.2s ease;
-    cursor: pointer;
-    user-select: none;
-}
-
-.trigger-settings-item:hover {
-    border-color: #2196F3;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.trigger-settings-item.has-settings {
-    border-color: #4CAF50;
-    background: #E8F5E9;
-}
-
-.trigger-settings-item.has-settings:hover {
-    border-color: #45a049;
-}
-
-.trigger-settings-item span {
-    font-size: 13px;
-    color: #333;
-}
-
-.trigger-settings-item.has-settings span {
-    color: #2E7D32;
-    font-weight: 600;
-}
-
-/* Стили для кнопок экспорта */
-.export-options {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-top: 20px;
-}
-
-.btn-block {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 15px 20px;
-    text-align: left;
-}
-
-.btn-description {
-    font-size: 12px;
-    opacity: 0.8;
-    margin-top: 5px;
-    font-weight: normal;
-}
-
