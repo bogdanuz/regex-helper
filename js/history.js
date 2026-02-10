@@ -3,6 +3,13 @@
  * ИСТОРИЯ КОНВЕРТАЦИЙ
  * ============================================
  * 
+ * ВЕРСИЯ: 2.1
+ * ДАТА: 10.02.2026
+ * ИЗМЕНЕНИЯ:
+ * - ИСПРАВЛЕНО: Переносы строк (\n вместо \\n)
+ * - ИСПРАВЛЕНО: renderHistory() теперь работает на странице
+ * - ИСПРАВЛЕНО: loadFromHistory() исправлен
+ * 
  * Управление историей конвертаций:
  * - Сохранение в localStorage (последние 10)
  * - Отображение списка
@@ -38,39 +45,19 @@ function initHistory() {
         }
 
         // Event listeners
-        const historyBtn = document.getElementById('historyBtn');
+        const refreshHistoryBtn = document.getElementById('refreshHistoryBtn');
         const clearHistoryBtn = document.getElementById('clearHistoryBtn');
-        const modal = document.getElementById('historyModal');
-        const closeBtn = modal ? modal.querySelector('.modal-close') : null;
 
-        if (historyBtn) {
-            historyBtn.addEventListener('click', showHistoryModal);
+        if (refreshHistoryBtn) {
+            refreshHistoryBtn.addEventListener('click', renderHistory);
         }
 
         if (clearHistoryBtn) {
             clearHistoryBtn.addEventListener('click', handleClearHistory);
         }
 
-        // Закрытие по крестику
-        if (closeBtn) {
-            closeBtn.addEventListener('click', closeHistoryModal);
-        }
-
-        // Закрытие по клику на overlay
-        if (modal) {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    closeHistoryModal();
-                }
-            });
-        }
-
-        // Закрытие по Escape
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && modal && modal.style.display === 'flex') {
-                closeHistoryModal();
-            }
-        });
+        // НОВОЕ: Рендерим историю при загрузке
+        renderHistory();
 
         console.log('✓ История инициализирована');
     } catch (error) {
@@ -146,6 +133,9 @@ function saveToHistory(regex, triggers, settings, info) {
         // Сохранение
         saveHistoryToStorage(history);
 
+        // НОВОЕ: Автоматически обновляем UI
+        renderHistory();
+
         console.log('✓ Конвертация сохранена в историю');
     } catch (error) {
         console.error('Ошибка saveToHistory:', error);
@@ -191,36 +181,22 @@ function clearHistory() {
 // ============================================
 
 /**
- * Показать модальное окно истории
- */
-function showHistoryModal() {
-    const modal = document.getElementById('historyModal');
-    if (modal) {
-        renderHistory();
-        modal.style.display = 'flex';
-    }
-}
-
-/**
- * Закрыть модальное окно истории
- */
-function closeHistoryModal() {
-    const modal = document.getElementById('historyModal');
-    if (modal) {
-        modal.style.display = 'none';
-    }
-}
-
-/**
  * Отрисовка списка истории
+ * 
+ * ИСПРАВЛЕНО v2.1: Теперь рендерит в секции на странице, а не в модалке
  */
 function renderHistory() {
     const historyList = document.getElementById('historyList');
     const historyEmpty = document.getElementById('historyEmpty');
     
-    if (!historyList || !historyEmpty) return;
+    if (!historyList || !historyEmpty) {
+        console.error('[History] Элементы истории не найдены');
+        return;
+    }
 
     const history = loadHistory();
+
+    console.log('[History] Рендеринг истории:', history.length, 'записей');
 
     // Если история пуста
     if (history.length === 0) {
@@ -237,7 +213,7 @@ function renderHistory() {
     historyList.innerHTML = history.map(item => `
         <div class="history-item" data-id="${item.id}">
             <div class="history-item-header">
-                <span class="history-item-date">🕒 ${item.date}</span>
+                <span class="history-item-date">🕒 ${escapeHTML(item.date)}</span>
                 <div class="history-item-actions">
                     <button 
                         class="btn-icon" 
@@ -270,32 +246,30 @@ function renderHistory() {
             </div>
         </div>
     `).join('');
+    
+    console.log('[History] ✓ История отрисована:', history.length, 'записей');
 }
 
 /**
  * Загрузить запись из истории
- * @param {number} id - ID записи (не индекс!)
+ * @param {number} id - ID записи
  */
 function loadFromHistory(id) {
     try {
         const history = loadHistory();
         
-        // ИСПРАВЛЕНО: ищем по ID, а не по индексу
+        // Ищем по ID
         const entry = history.find(item => item.id === id);
         
         if (!entry) {
-            showToast('error', ERROR_MESSAGES.HISTORY_NOT_FOUND || 'Запись не найдена');
+            showToast('error', 'Запись не найдена');
             return;
         }
 
-        // Закрытие модалки
-        closeHistoryModal();
-
-        // ИСПРАВЛЕНО: одно объявление resultTextarea
         const resultTextarea = document.getElementById('resultRegex');
         const simpleTextarea = document.getElementById('simpleTriggers');
 
-        // Загрузка триггеров в textarea
+        // ИСПРАВЛЕНО: '\n' вместо '\\n'
         if (simpleTextarea) {
             simpleTextarea.value = entry.triggers.join('\n');
             
@@ -318,20 +292,24 @@ function loadFromHistory(id) {
         // Загрузка результата
         if (resultTextarea) {
             resultTextarea.value = entry.regex;
+            
+            // Обновляем счетчик длины
+            const regexLengthSpan = document.getElementById('regexLength');
+            if (regexLengthSpan) {
+                const length = entry.regex.length;
+                regexLengthSpan.textContent = `Длина: ${length} ${pluralize(length, ['символ', 'символа', 'символов'])}`;
+            }
         }
 
-        // Обновление статистики
-        if (typeof updateResultStats === 'function') {
-            updateResultStats({
-                triggerCount: entry.triggerCount,
-                regexLength: entry.regexLength
-            });
-        }
+        // Скроллим к началу страницы
+        window.scrollTo({ top: 0, behavior: 'smooth' });
 
-        showToast('success', SUCCESS_MESSAGES.HISTORY_LOADED || 'Конвертация загружена');
+        showToast('success', '✓ Конвертация загружена из истории');
+        
+        console.log('[History] ✓ Запись загружена:', id);
     } catch (error) {
         console.error('Ошибка loadFromHistory:', error);
-        showToast('error', ERROR_MESSAGES.UNKNOWN_ERROR || 'Ошибка загрузки');
+        showToast('error', 'Ошибка загрузки');
     }
 }
 
@@ -342,14 +320,13 @@ function handleClearHistory() {
     const history = loadHistory();
     
     if (history.length === 0) {
-        showToast('info', INFO_MESSAGES.HISTORY_EMPTY || 'История уже пуста');
+        showToast('info', 'История уже пуста');
         return;
     }
 
-    // ИСПРАВЛЕНО: confirmAction с 4 параметрами
     confirmAction(
         'Подтверждение',
-        'Очистить всю историю? Это действие нельзя отменить.',
+        `Очистить всю историю (${history.length} записей)? Это действие нельзя отменить.`,
         () => clearHistory(),
         null
     );
@@ -393,8 +370,10 @@ function truncateRegex(regex, maxLength = 80) {
 
 window.initHistory = initHistory;
 window.saveToHistory = saveToHistory;
+window.loadHistory = loadHistory;
+window.renderHistory = renderHistory;
 window.loadFromHistory = loadFromHistory;
 window.deleteFromHistory = deleteFromHistory;
 window.clearHistory = clearHistory;
 
-console.log('✓ Модуль history.js загружен');
+console.log('✓ Модуль history.js загружен (v2.1 - исправлено отображение)');
