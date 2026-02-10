@@ -1,7 +1,7 @@
 /* ============================================================================
    ФАЙЛ: css/visualizer.css
-   ОПИСАНИЕ: Стили для визуализатора regex
-   ВЕРСИЯ: 1.0
+   ОПИСАНИЕ: Стили для визуализатора regex (улучшенная версия)
+   ВЕРСИЯ: 2.0
    ДАТА: 10.02.2026
    ============================================================================ */
 
@@ -70,10 +70,6 @@
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-#visualizerRegex.syntax-highlighted {
-    background-color: #f8f9fa;
-}
-
 /* ============================================================================
    КНОПКИ УПРАВЛЕНИЯ
    ============================================================================ */
@@ -108,7 +104,7 @@
 }
 
 /* ============================================================================
-   КОНТЕЙНЕР ДИАГРАММЫ
+   КОНТЕЙНЕР ДИАГРАММЫ (УЛУЧШЕННЫЙ)
    ============================================================================ */
 
 #diagramContainer {
@@ -117,13 +113,13 @@
     border-radius: 8px;
     padding: 30px;
     margin-bottom: 20px;
-    min-height: 200px;
+    min-height: 300px;
     overflow: auto;
     position: relative;
 }
 
 #diagramContainer:empty::before {
-    content: 'Диаграмма появится здесь после визуализации';
+    content: '📊 Диаграмма появится здесь после визуализации';
     position: absolute;
     top: 50%;
     left: 50%;
@@ -131,107 +127,63 @@
     color: #999;
     font-size: 16px;
     text-align: center;
+    width: 80%;
 }
 
-/* Стили для SVG диаграммы */
+/* Стили для SVG диаграммы (улучшенные) */
 #diagramContainer svg {
     display: block;
     margin: 0 auto;
     max-width: 100%;
     height: auto;
     transition: transform 0.3s ease;
-}
-
-#diagramContainer svg.railroad-diagram {
-    background-color: #ffffff;
-    border-radius: 6px;
-    padding: 20px;
-}
-
-/* Темная тема для диаграммы */
-#diagramContainer[data-theme="dark"] {
-    background: #1a1a1a;
-    border-color: #333;
-}
-
-#diagramContainer[data-theme="dark"] svg.railroad-diagram {
-    background-color: #2a2a2a;
-}
-
-#diagramContainer[data-theme="dark"] svg path {
-    stroke: #e0e0e0;
-}
-
-#diagramContainer[data-theme="dark"] svg text {
-    fill: #e0e0e0;
-}
-
-#diagramContainer[data-theme="dark"] svg rect {
-    stroke: #e0e0e0;
-    fill: #3a3a3a;
-}
-
-/* ============================================================================
-   КОНТЕЙНЕР ОБЪЯСНЕНИЯ
-   ============================================================================ */
-
-#explanationContainer {
-    background: #ffffff;
-    border: 2px solid #e0e0e0;
+    background: #fff;
     border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
-    min-height: 100px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-#explanationContainer:empty {
-    display: none;
+/* Стили railroad элементов (как на regexper.com) */
+#diagramContainer svg.railroad-diagram path {
+    stroke: #000;
+    stroke-width: 2;
+    fill: none;
 }
 
-#explanationContainer h3 {
-    margin-top: 0;
-    margin-bottom: 15px;
-    color: #333;
-    font-size: 18px;
-    font-weight: 600;
-}
-
-.explanation-content {
+#diagramContainer svg.railroad-diagram text {
     font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
     font-size: 14px;
-    line-height: 1.8;
-    color: #555;
+    fill: #000;
+    font-weight: 500;
 }
 
-.explanation-content div {
-    padding: 4px 0;
-    border-left: 3px solid transparent;
-    padding-left: 10px;
-    transition: all 0.2s ease;
+/* Терминалы (литералы) - зеленый фон */
+#diagramContainer svg.railroad-diagram g.terminal rect {
+    fill: #dae9e5;
+    stroke: #6b9080;
+    stroke-width: 2;
+    rx: 4;
 }
 
-.explanation-content div:hover {
-    border-left-color: #667eea;
-    background-color: #f0f4ff;
-    padding-left: 15px;
+/* NonTerminal (escape, классы) - синий фон */
+#diagramContainer svg.railroad-diagram g.non-terminal rect {
+    fill: #cbdadb;
+    stroke: #88a5b0;
+    stroke-width: 2;
+    rx: 4;
 }
 
-/* Темная тема для объяснения */
-#explanationContainer[data-theme="dark"] {
-    background: #2a2a2a;
-    border-color: #444;
+/* Hover эффект */
+#diagramContainer svg.railroad-diagram g.terminal:hover rect,
+#diagramContainer svg.railroad-diagram g.non-terminal:hover rect {
+    fill-opacity: 0.8;
+    cursor: pointer;
 }
 
-#explanationContainer[data-theme="dark"] h3 {
-    color: #e0e0e0;
-}
-
-#explanationContainer[data-theme="dark"] .explanation-content {
-    color: #ccc;
-}
-
-#explanationContainer[data-theme="dark"] .explanation-content div:hover {
-    background-color: #3a3a3a;
+/* Комментарии */
+#diagramContainer svg.railroad-diagram g.comment text {
+    font-size: 12px;
+    font-style: italic;
+    fill: #666;
 }
 
 /* ============================================================================
@@ -286,8 +238,7 @@
 }
 
 #zoomInBtn,
-#zoomOutBtn,
-#themeToggleBtn {
+#zoomOutBtn {
     background: #f8f9fa;
     border: 2px solid #e0e0e0;
     width: 44px;
@@ -298,8 +249,7 @@
 }
 
 #zoomInBtn:hover,
-#zoomOutBtn:hover,
-#themeToggleBtn:hover {
+#zoomOutBtn:hover {
     background: #667eea;
     color: white;
     border-color: #667eea;
@@ -351,52 +301,6 @@
 }
 
 /* ============================================================================
-   RAILROAD DIAGRAM СТИЛИ (ПЕРЕОПРЕДЕЛЕНИЕ)
-   ============================================================================ */
-
-svg.railroad-diagram {
-    font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
-}
-
-svg.railroad-diagram path {
-    stroke-width: 3;
-    stroke: #333;
-    fill: none;
-}
-
-svg.railroad-diagram text {
-    font-size: 14px;
-    fill: #333;
-    font-weight: 500;
-}
-
-svg.railroad-diagram rect {
-    stroke-width: 3;
-    stroke: #333;
-    fill: #e3f2fd;
-}
-
-svg.railroad-diagram rect.group-box {
-    stroke: #999;
-    stroke-dasharray: 5 5;
-    fill: none;
-}
-
-svg.railroad-diagram g.terminal rect {
-    fill: #c5e1a5;
-}
-
-svg.railroad-diagram g.non-terminal rect {
-    fill: #ffecb3;
-}
-
-svg.railroad-diagram g.comment text {
-    font-size: 12px;
-    font-style: italic;
-    fill: #666;
-}
-
-/* ============================================================================
    АДАПТИВНОСТЬ (RESPONSIVE)
    ============================================================================ */
 
@@ -420,14 +324,6 @@ svg.railroad-diagram g.comment text {
     #diagramContainer {
         padding: 15px;
         overflow-x: auto;
-    }
-    
-    #explanationContainer {
-        padding: 15px;
-    }
-    
-    .explanation-content {
-        font-size: 12px;
     }
     
     .examples-buttons {
@@ -461,8 +357,7 @@ svg.railroad-diagram g.comment text {
     }
     
     #zoomInBtn,
-    #zoomOutBtn,
-    #themeToggleBtn {
+    #zoomOutBtn {
         width: 38px;
         height: 38px;
     }
@@ -485,55 +380,6 @@ svg.railroad-diagram g.comment text {
 
 #diagramContainer svg {
     animation: fadeIn 0.5s ease;
-}
-
-#explanationContainer {
-    animation: fadeIn 0.5s ease 0.2s both;
-}
-
-/* ============================================================================
-   УТИЛИТЫ
-   ============================================================================ */
-
-.visualizer-loading {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 200px;
-}
-
-.visualizer-loading::after {
-    content: '';
-    width: 40px;
-    height: 40px;
-    border: 4px solid #e0e0e0;
-    border-top-color: #667eea;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-.visualizer-error {
-    background: #ffebee;
-    color: #c62828;
-    padding: 15px;
-    border-radius: 6px;
-    border-left: 4px solid #c62828;
-    margin: 10px 0;
-}
-
-.visualizer-warning {
-    background: #fff3e0;
-    color: #ef6c00;
-    padding: 15px;
-    border-radius: 6px;
-    border-left: 4px solid #ef6c00;
-    margin: 10px 0;
 }
 
 /* ============================================================================
