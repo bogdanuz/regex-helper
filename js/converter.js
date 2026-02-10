@@ -321,8 +321,9 @@ function generateAnyOrderPattern(triggers, distance) {
 
 /**
  * Применить оптимизации к триггеру (используя настройки группы)
+ * ИСПРАВЛЕНО: applyOptimizations работает с массивом!
  * @param {string} trigger - Исходный триггер
- * @param {Object} settings - Настройки группы (type1, type2, type4, type5)
+ * @param {Object} settings - Настройки группы (type1, type2, type3, type4, type5)
  * @returns {string} - Оптимизированный триггер
  */
 function applyOptimizationsToTrigger(trigger, settings) {
@@ -334,28 +335,36 @@ function applyOptimizationsToTrigger(trigger, settings) {
     const types = {
         type1: settings.type1 || false,
         type2: settings.type2 || false,
-        type3: settings.type3 || false, // Вариации букв (всегда применяем если включен)
+        type3: settings.type3 || false,
         type4: settings.type4 || false,
         type5: settings.type5 || false
     };
     
     console.log(`[Converter] Применяем оптимизации к "${trigger}":`, types);
     
-    // Используем функцию из optimizer.js (если доступна)
+    // ИСПРАВЛЕНО: applyOptimizations работает с массивом!
     if (typeof applyOptimizations === 'function') {
-        result = applyOptimizations(result, types);
+        // Оборачиваем триггер в массив
+        const optimizedArray = applyOptimizations([result], types);
+        
+        // Берем первый элемент (или исходный триггер если массив пустой)
+        result = (optimizedArray && optimizedArray.length > 0) ? optimizedArray[0] : result;
     } else {
-        // Fallback: базовая обработка
+        // Fallback: базовая обработка (если optimizer.js не загружен)
         console.warn('[Converter] Функция applyOptimizations не найдена, используем базовую обработку');
         
         // Type 3: Вариации букв (латиница/кириллица)
         if (types.type3) {
-            result = applyType3Optimization(result);
+            if (typeof applyType3Optimization === 'function') {
+                result = applyType3Optimization(result);
+            }
         }
         
         // Type 4: Склонения
         if (types.type4) {
-            result = applyType4Optimization(result);
+            if (typeof applyType4Optimization === 'function') {
+                result = applyType4Optimization(result);
+            }
         }
     }
     
