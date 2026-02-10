@@ -1,7 +1,15 @@
 /* ============================================
    REGEXHELPER - LINKED TRIGGERS
    Управление связанными триггерами (перестановки)
-   Версия: 2.1 (Группа 6 - ИСПРАВЛЕНО: добавлен type3)
+   
+   ВЕРСИЯ: 2.0 (CRIT-1 исправлен + anyOrder реализован)
+   ДАТА: 10.02.2026
+   ИЗМЕНЕНИЯ:
+   - CRIT-1: Удален type3 из настроек групп
+   - Type 3 реализован через distanceType (fixed/any/paragraph/line)
+   - Задача 2.4: UI настроек группы (модалка + кнопка ⚙️)
+   - localStorage для групп
+   - Показ/скрытие полей min/max для distanceType='fixed'
    ============================================ */
 
 /* ============================================
@@ -70,7 +78,7 @@ function addLinkedGroup() {
     
     const groupId = `linkedGroup_${++linkedGroupCounter}`;
     
-    // Создаём HTML группы (ОБНОВЛЕНО: добавлена кнопка ⚙️)
+    // Создаём HTML группы (с кнопкой ⚙️)
     const groupDiv = document.createElement('div');
     groupDiv.className = 'linked-group';
     groupDiv.id = groupId;
@@ -273,7 +281,7 @@ function updateAddButtonState(groupId) {
 }
 
 /* ============================================
-   НАСТРОЙКИ ГРУПП (ИСПРАВЛЕНО - Группа 6)
+   НАСТРОЙКИ ГРУПП (ИСПРАВЛЕНО v2.0)
    ============================================ */
 
 /**
@@ -322,7 +330,10 @@ function hasGroupSettings(groupId) {
 
 /**
  * Получить эффективные настройки группы (индивидуальные или глобальные)
- * ИСПРАВЛЕНО: добавлен type3!
+ * 
+ * ИСПРАВЛЕНО v2.0: type3 УДАЛЕН!
+ * Type 3 реализован через distanceType (fixed/any/paragraph/line)
+ * 
  * @param {string} groupId - ID группы
  * @param {Object} globalSettings - Глобальные настройки
  * @returns {Object} - Финальные настройки
@@ -338,13 +349,16 @@ function getEffectiveGroupSettings(groupId, globalSettings) {
     
     // Нет индивидуальных настроек → используем ГЛОБАЛЬНЫЕ + дефолт для расстояния
     const effectiveSettings = {
+        // Настройки расстояния (Type 3 реализован ЗДЕСЬ!)
         distanceType: 'fixed',
         distanceMin: 1,
         distanceMax: 7,
         anyOrder: false,
+        
+        // Оптимизации триггеров (БЕЗ type3!)
         type1: globalSettings.type1 || false,
         type2: globalSettings.type2 || false,
-        type3: globalSettings.type3 || false,  // ИСПРАВЛЕНО: добавлен type3!
+        // type3: УДАЛЕН! (реализован через distanceType)
         type4: globalSettings.type4 || false,
         type5: globalSettings.type5 || false
     };
@@ -355,7 +369,9 @@ function getEffectiveGroupSettings(groupId, globalSettings) {
 
 /**
  * Открыть модальное окно настроек группы
- * ИСПРАВЛЕНО: добавлен type3!
+ * 
+ * ИСПРАВЛЕНО v2.0: type3 УДАЛЕН!
+ * 
  * @param {string} groupId - ID группы
  */
 function openGroupSettingsModal(groupId) {
@@ -386,7 +402,7 @@ function openGroupSettingsModal(groupId) {
         anyOrder: false,
         type1: globalSettings.type1,
         type2: globalSettings.type2,
-        type3: globalSettings.type3,  // ИСПРАВЛЕНО: добавлен type3!
+        // type3: УДАЛЕН!
         type4: globalSettings.type4,
         type5: globalSettings.type5
     };
@@ -410,16 +426,16 @@ function openGroupSettingsModal(groupId) {
     const anyOrderCheckbox = modal.querySelector('#groupAnyOrder');
     if (anyOrderCheckbox) anyOrderCheckbox.checked = currentSettings.anyOrder;
     
-    // Чекбоксы оптимизаций (ИСПРАВЛЕНО: добавлен type3!)
+    // Чекбоксы оптимизаций (ИСПРАВЛЕНО: БЕЗ type3!)
     const type1Checkbox = modal.querySelector('#groupType1');
     const type2Checkbox = modal.querySelector('#groupType2');
-    const type3Checkbox = modal.querySelector('#groupType3');  // ИСПРАВЛЕНО!
+    // const type3Checkbox = modal.querySelector('#groupType3');  // ← УДАЛЕНО!
     const type4Checkbox = modal.querySelector('#groupType4');
     const type5Checkbox = modal.querySelector('#groupType5');
     
     if (type1Checkbox) type1Checkbox.checked = currentSettings.type1;
     if (type2Checkbox) type2Checkbox.checked = currentSettings.type2;
-    if (type3Checkbox) type3Checkbox.checked = currentSettings.type3;  // ИСПРАВЛЕНО!
+    // if (type3Checkbox) type3Checkbox.checked = currentSettings.type3;  // ← УДАЛЕНО!
     if (type4Checkbox) type4Checkbox.checked = currentSettings.type4;
     if (type5Checkbox) type5Checkbox.checked = currentSettings.type5;
     
@@ -459,7 +475,8 @@ function toggleDistanceFields(distanceType) {
 
 /**
  * Применить настройки группы (кнопка "Применить" в модальном окне)
- * ИСПРАВЛЕНО: добавлен type3!
+ * 
+ * ИСПРАВЛЕНО v2.0: type3 УДАЛЕН!
  */
 function applyGroupSettings() {
     const modal = document.getElementById('groupSettingsModal');
@@ -483,10 +500,10 @@ function applyGroupSettings() {
     const anyOrderCheckbox = modal.querySelector('#groupAnyOrder');
     const anyOrder = anyOrderCheckbox ? anyOrderCheckbox.checked : false;
     
-    // ИСПРАВЛЕНО: добавлен type3!
+    // ИСПРАВЛЕНО v2.0: БЕЗ type3!
     const type1Checkbox = modal.querySelector('#groupType1');
     const type2Checkbox = modal.querySelector('#groupType2');
-    const type3Checkbox = modal.querySelector('#groupType3');  // ИСПРАВЛЕНО!
+    // const type3Checkbox = modal.querySelector('#groupType3');  // ← УДАЛЕНО!
     const type4Checkbox = modal.querySelector('#groupType4');
     const type5Checkbox = modal.querySelector('#groupType5');
     
@@ -497,7 +514,7 @@ function applyGroupSettings() {
         anyOrder: anyOrder,
         type1: type1Checkbox ? type1Checkbox.checked : false,
         type2: type2Checkbox ? type2Checkbox.checked : false,
-        type3: type3Checkbox ? type3Checkbox.checked : false,  // ИСПРАВЛЕНО!
+        // type3: УДАЛЕН! (реализован через distanceType)
         type4: type4Checkbox ? type4Checkbox.checked : false,
         type5: type5Checkbox ? type5Checkbox.checked : false
     };
@@ -585,7 +602,7 @@ function updateGroupSettingsUI() {
    ============================================ */
 
 /**
- * Получить все группы связанных триггеров (ОБНОВЛЕНО: с настройками)
+ * Получить все группы связанных триггеров (с настройками)
  * @returns {Array} - Массив групп [{id: string, triggers: [string], settings: Object}]
  */
 function getLinkedGroups() {
@@ -618,7 +635,7 @@ function getLinkedGroups() {
             groups.push({
                 id: groupId,
                 triggers: triggers,
-                settings: settings  // НОВОЕ!
+                settings: settings
             });
         }
     });
@@ -869,4 +886,4 @@ window.applyGroupSettings = applyGroupSettings;
 window.resetGroupSettings = resetGroupSettings;
 window.closeGroupSettingsModal = closeGroupSettingsModal;
 
-console.log('✓ Модуль linked-triggers.js загружен (v2.1 - ИСПРАВЛЕНО: добавлен type3)');
+console.log('✓ Модуль linked-triggers.js загружен (v2.0 - CRIT-1 исправлен, Type 3 реализован через distanceType)');
