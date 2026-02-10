@@ -127,82 +127,72 @@ function setupEventListeners() {
     }
 
     // ============================================================
-    // НОВОЕ (ЧАТ 2): EVENT LISTENERS ДЛЯ ВИЗУАЛИЗАТОРА
-    // ============================================================
-    
-    // Кнопка "Визуализировать"
-    const visualizeBtn = document.getElementById('visualizeBtn');
-    if (visualizeBtn) {
-        visualizeBtn.addEventListener('click', () => {
-            const regex = document.getElementById('visualizerRegex')?.value || '';
-            if (typeof visualizeRegex === 'function') {
-                visualizeRegex(regex);
-            } else {
-                console.error('[Main] Функция visualizeRegex не найдена');
-                showToast('error', 'Визуализатор не загружен');
-            }
-        });
-    }
-    
-    // Кнопка "Экспорт SVG"
-    const exportSvgBtn = document.getElementById('exportSvgBtn');
-    if (exportSvgBtn) {
-        exportSvgBtn.addEventListener('click', () => {
-            if (typeof exportSVG === 'function') {
-                exportSVG();
-            } else {
-                console.error('[Main] Функция exportSVG не найдена');
-            }
-        });
-    }
-    
-    // Кнопка "Экспорт PNG"
-    const exportPngBtn = document.getElementById('exportPngBtn');
-    if (exportPngBtn) {
-        exportPngBtn.addEventListener('click', () => {
-            if (typeof exportPNG === 'function') {
-                exportPNG();
-            } else {
-                console.error('[Main] Функция exportPNG не найдена');
-            }
-        });
-    }
-    
-    // Кнопка "Zoom In"
-    const zoomInBtn = document.getElementById('zoomInBtn');
-    if (zoomInBtn) {
-        zoomInBtn.addEventListener('click', () => {
-            if (typeof zoomDiagram === 'function') {
-                zoomDiagram(1.2);
-            } else {
-                console.error('[Main] Функция zoomDiagram не найдена');
-            }
-        });
-    }
-    
-    // Кнопка "Zoom Out"
-    const zoomOutBtn = document.getElementById('zoomOutBtn');
-    if (zoomOutBtn) {
-        zoomOutBtn.addEventListener('click', () => {
-            if (typeof zoomDiagram === 'function') {
-                zoomDiagram(0.8);
-            } else {
-                console.error('[Main] Функция zoomDiagram не найдена');
-            }
-        });
-    }
-    
-    // Кнопка "Переключение темы"
-    const themeToggleBtn = document.getElementById('themeToggleBtn');
-    if (themeToggleBtn) {
-        themeToggleBtn.addEventListener('click', () => {
-            if (typeof toggleTheme === 'function') {
-                toggleTheme();
-            } else {
-                console.error('[Main] Функция toggleTheme не найдена');
-            }
-        });
-    }
+// НОВОЕ (ЧАТ 2): EVENT LISTENERS ДЛЯ ВИЗУАЛИЗАТОРА
+// ============================================================
+
+// Кнопка "Визуализировать"
+const visualizeBtn = document.getElementById('visualizeBtn');
+if (visualizeBtn) {
+    visualizeBtn.addEventListener('click', () => {
+        const regex = document.getElementById('visualizerRegex')?.value || '';
+        if (typeof visualizeRegex === 'function') {
+            visualizeRegex(regex);
+        } else {
+            console.error('[Main] Функция visualizeRegex не найдена');
+            showToast('error', 'Визуализатор не загружен');
+        }
+    });
+}
+
+// Кнопка "Экспорт SVG"
+const exportSvgBtn = document.getElementById('exportSvgBtn');
+if (exportSvgBtn) {
+    exportSvgBtn.addEventListener('click', () => {
+        if (typeof exportSVG === 'function') {
+            exportSVG();
+        } else {
+            console.error('[Main] Функция exportSVG не найдена');
+        }
+    });
+}
+
+// Кнопка "Экспорт PNG"
+const exportPngBtn = document.getElementById('exportPngBtn');
+if (exportPngBtn) {
+    exportPngBtn.addEventListener('click', () => {
+        if (typeof exportPNG === 'function') {
+            exportPNG();
+        } else {
+            console.error('[Main] Функция exportPNG не найдена');
+        }
+    });
+}
+
+// Кнопка "Zoom In"
+const zoomInBtn = document.getElementById('zoomInBtn');
+if (zoomInBtn) {
+    zoomInBtn.addEventListener('click', () => {
+        if (typeof zoomDiagram === 'function') {
+            zoomDiagram(1.2);
+        } else {
+            console.error('[Main] Функция zoomDiagram не найдена');
+        }
+    });
+}
+
+// Кнопка "Zoom Out"
+const zoomOutBtn = document.getElementById('zoomOutBtn');
+if (zoomOutBtn) {
+    zoomOutBtn.addEventListener('click', () => {
+        if (typeof zoomDiagram === 'function') {
+            zoomDiagram(0.8);
+        } else {
+            console.error('[Main] Функция zoomDiagram не найдена');
+        }
+    });
+}
+
+// УДАЛЕНО: Кнопка переключения темы
     
     // ============================================================
     // КОНЕЦ НОВЫХ EVENT LISTENERS
