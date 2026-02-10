@@ -1,20 +1,18 @@
 /* ============================================
    REGEXHELPER - OPTIMIZER
-   5 типов оптимизации regex
+   6 типов оптимизации regex
    
-   ВЕРСИЯ: 2.0 (Исправлено CRIT-1)
-   ДАТА: 10.02.2026
+   ВЕРСИЯ: 3.0 (Добавлен Type 6: Префикс)
+   ДАТА: 11.02.2026
    ИЗМЕНЕНИЯ:
-   - CRIT-1: Type 3 теперь ТОЛЬКО для связанных групп
-   - Старый optimizeType3 переименован в optimizeType1
-   - Создан НОВЫЙ optimizeType3 с 4 типами расстояния
+   - Добавлен Type 6A: Wildcard (дет\w+)
+   - Добавлен Type 6B: Точный префикс (дет(и|ьми|...)?)
+   - Type 6 интегрирован в applyOptimizations
    ============================================ */
 
 /* ============================================
    ТИП 1: ВАРИАЦИИ БУКВ (ЛАТИНИЦА ↔ КИРИЛЛИЦА)
    дрон → д[dд][pр][oо]н
-   
-   ВАЖНО: Это бывший Type 3!
    ============================================ */
 
 /**
@@ -54,16 +52,8 @@ function hasReplaceableChars(str) {
 
 /**
  * Оптимизация Type 1: Вариации букв (латиница ↔ кириллица)
- * 
- * ВАЖНО: Это бывший optimizeType3!
- * Переименовано для соответствия спецификации.
- * 
  * @param {Array} triggers - Массив триггеров
  * @returns {Array} - Оптимизированный массив
- * 
- * @example
- * // Input: ["дрон"]
- * // Output: ["д[dд][pр][oо]н"]
  */
 function optimizeType1(triggers) {
     if (!Array.isArray(triggers) || triggers.length === 0) {
@@ -181,11 +171,12 @@ function optimizeType2(triggers) {
    ⚠️ КРИТИЧНО: Type 3 - ТОЛЬКО для СВЯЗАННЫХ ГРУПП!
    НЕ вызывать для простых триггеров!
    
-   4 ТИПА РАССТОЯНИЯ:
+   5 ТИПОВ РАССТОЯНИЯ (обновлено v3.0):
    1. fixed: .{min,max} (default: 1-7)
    2. any: [\\s\\S]+ (любое расстояние)
    3. paragraph: .+ (в пределах абзаца)
-   4. line: [^\\n]+ (в пределах строки)
+   4. line: [^\n]+ (в пределах строки)
+   5. alternation: | (альтернация - НОВОЕ!) ← для режима 3
    ============================================ */
 
 /**
@@ -194,27 +185,11 @@ function optimizeType2(triggers) {
  * @param {Object} linkedGroup - Объект связанной группы
  * @param {Array} linkedGroup.triggers - Массив триггеров группы
  * @param {Object} linkedGroup.settings - Настройки группы
- * @param {string} linkedGroup.settings.distanceType - Тип расстояния ('fixed', 'any', 'paragraph', 'line')
+ * @param {string} linkedGroup.settings.distanceType - Тип расстояния
  * @param {number} linkedGroup.settings.distanceMin - Минимальное расстояние (для 'fixed')
  * @param {number} linkedGroup.settings.distanceMax - Максимальное расстояние (для 'fixed')
  * 
  * @returns {string} - Regex паттерн с расстоянием между триггерами
- * 
- * @example
- * // fixed (default)
- * optimizeType3({
- *   triggers: ['выкуп', 'дорого'],
- *   settings: {distanceType: 'fixed', distanceMin: 1, distanceMax: 7}
- * })
- * // => "выкуп.{1,7}дорого"
- * 
- * @example
- * // any
- * optimizeType3({
- *   triggers: ['военный', 'дрон'],
- *   settings: {distanceType: 'any'}
- * })
- * // => "военный[\\s\\S]+дрон"
  */
 function optimizeType3(linkedGroup, settings) {
     // Валидация входных данных
@@ -255,7 +230,7 @@ function optimizeType3(linkedGroup, settings) {
             
         case 'any':
             // Любое расстояние (включая переносы строк)
-            separator = '[\\s\\S]+';
+            separator = '[\\\\s\\\\S]+';
             break;
             
         case 'paragraph':
@@ -265,7 +240,12 @@ function optimizeType3(linkedGroup, settings) {
             
         case 'line':
             // В пределах строки (не через перенос строк)
-            separator = '[^\\n]+';
+            separator = '[^\\\\n]+';
+            break;
+            
+        case 'alternation':
+            // НОВОЕ v3.0: Альтернация (для режима связи 3)
+            separator = '|';
             break;
             
         default:
@@ -630,20 +610,6 @@ function findOptionalCharPosition(str1, str2) {
 
 /**
  * Оптимизация Type 5: Опциональный символ ?
- * 
- * НОВАЯ ЛОГИКА (v2.0):
- * 1. Автоматически находит удвоенные буквы в словах (сс, мм, нн и т.д.)
- * 2. Делает одну из букв опциональной: пассивный → пасс?ивный
- * 3. Также находит пары слов, отличающиеся на одну букву (старая логика)
- * 
- * @example
- * // Input: ["пассивный"]
- * // Output: ["пасс?ивный"]
- * 
- * @example
- * // Input: ["алкоголь", "алкголь"]
- * // Output: ["алко?голь"]
- * 
  * @param {Array} triggers - Массив триггеров
  * @returns {Array} - Оптимизированный массив
  */
@@ -731,6 +697,142 @@ function optimizeType5(triggers) {
 }
 
 /* ============================================
+   ТИП 6: ПРЕФИКС (НОВОЕ v3.0)
+   
+   Type 6A: Wildcard (дет\w+)
+   Type 6B: Точный префикс (дет(и|ьми|...)?)
+   ============================================ */
+
+/**
+ * Оптимизация Type 6A: Wildcard
+ * 
+ * Ловит ВСЁ, что начинается с префикса
+ * 
+ * @param {string} trigger - Триггер (префикс)
+ * @returns {string} - Паттерн с \w+
+ * 
+ * @example
+ * optimizeType6A('дет') // => 'дет\\w+'
+ * // Ловит: дети, детьми, детками, детский, детство, детектив (!!!)
+ */
+function optimizeType6A(trigger) {
+    if (!trigger || typeof trigger !== 'string') {
+        console.warn('[Optimizer Type 6A] Некорректный триггер:', trigger);
+        return escapeRegex(trigger || '');
+    }
+    
+    const pattern = escapeRegex(trigger) + '\\\\w+';
+    console.log(`[Optimizer Type 6A] Wildcard: "${trigger}" → "${pattern}"`);
+    
+    return pattern;
+}
+
+/**
+ * Оптимизация Type 6B: Точный префикс
+ * 
+ * Ловит только указанные окончания
+ * 
+ * @param {string} trigger - Триггер (префикс)
+ * @param {Array} endings - Массив окончаний ['и', 'ьми', 'ками', 'ей']
+ * @returns {string} - Паттерн с (окончание1|окончание2|...)?
+ * 
+ * @example
+ * optimizeType6B('дет', ['и', 'ьми', 'ками', 'ей'])
+ * // => 'дет(и|ьми|ками|ей)?'
+ * // Ловит: дет, дети, детьми, детками, детей
+ * // НЕ ловит: детский, детство, детектив
+ */
+function optimizeType6B(trigger, endings) {
+    if (!trigger || typeof trigger !== 'string') {
+        console.warn('[Optimizer Type 6B] Некорректный триггер:', trigger);
+        return escapeRegex(trigger || '');
+    }
+    
+    // Если окончаний нет, возвращаем просто префикс
+    if (!endings || !Array.isArray(endings) || endings.length === 0) {
+        console.log(`[Optimizer Type 6B] Нет окончаний для "${trigger}", возвращаем префикс`);
+        return escapeRegex(trigger);
+    }
+    
+    // Фильтруем пустые окончания
+    const validEndings = endings.filter(e => e && typeof e === 'string' && e.trim().length > 0);
+    
+    if (validEndings.length === 0) {
+        console.log(`[Optimizer Type 6B] Все окончания пустые для "${trigger}", возвращаем префикс`);
+        return escapeRegex(trigger);
+    }
+    
+    // Удаляем дубликаты и сортируем по длине (длинные первыми)
+    const uniqueEndings = Array.from(new Set(validEndings))
+        .sort((a, b) => b.length - a.length);
+    
+    // Создаем паттерн: префикс(окончание1|окончание2|...)?
+    const escapedEndings = uniqueEndings.map(e => escapeRegex(e));
+    const pattern = escapeRegex(trigger) + '(' + escapedEndings.join('|') + ')?';
+    
+    console.log(`[Optimizer Type 6B] Точный префикс: "${trigger}" + [${uniqueEndings.join(', ')}] → "${pattern}"`);
+    
+    return pattern;
+}
+
+/**
+ * Оптимизация Type 6: Префикс (обёртка для 6A и 6B)
+ * 
+ * @param {Array} triggers - Массив триггеров
+ * @param {Object} settings - Настройки Type 6
+ * @param {string} settings.mode - Режим ('wildcard' или 'exact')
+ * @param {Object} settings.exactSettings - Настройки для режима 'exact'
+ * @param {string} settings.exactSettings.prefix - Префикс
+ * @param {Array} settings.exactSettings.endings - Окончания
+ * 
+ * @returns {Array} - Оптимизированный массив
+ */
+function optimizeType6(triggers, settings) {
+    if (!Array.isArray(triggers) || triggers.length === 0) {
+        return triggers;
+    }
+    
+    if (!settings || !settings.mode) {
+        console.warn('[Optimizer Type 6] Настройки не указаны, Type 6 пропущен');
+        return triggers.map(t => escapeRegex(t));
+    }
+    
+    const mode = settings.mode; // 'wildcard' или 'exact'
+    
+    if (mode === 'wildcard') {
+        // Type 6A: Wildcard для всех триггеров
+        console.log('[Optimizer Type 6] Режим: Wildcard (6A)');
+        return triggers.map(t => optimizeType6A(t));
+        
+    } else if (mode === 'exact') {
+        // Type 6B: Точный префикс
+        console.log('[Optimizer Type 6] Режим: Точный префикс (6B)');
+        
+        const exactSettings = settings.exactSettings || {};
+        const prefix = exactSettings.prefix || '';
+        const endings = exactSettings.endings || [];
+        
+        if (!prefix) {
+            console.warn('[Optimizer Type 6B] Префикс не указан, Type 6 пропущен');
+            return triggers.map(t => escapeRegex(t));
+        }
+        
+        // Применяем Type 6B только к префиксу (игнорируем другие триггеры)
+        return triggers.map(t => {
+            if (t === prefix) {
+                return optimizeType6B(prefix, endings);
+            } else {
+                return escapeRegex(t);
+            }
+        });
+        
+    } else {
+        console.warn(`[Optimizer Type 6] Неизвестный режим: ${mode}, Type 6 пропущен`);
+        return triggers.map(t => escapeRegex(t));
+    }
+}
+
+/* ============================================
    ПРИМЕНЕНИЕ ОПТИМИЗАЦИЙ
    ============================================ */
 
@@ -741,7 +843,7 @@ function optimizeType5(triggers) {
  * Type 3 используется ТОЛЬКО для связанных групп в converter.js
  * 
  * @param {Array} triggers - Массив триггеров
- * @param {Object} types - Объект с флагами { type1: bool, type2: bool, type4: bool, type5: bool }
+ * @param {Object} types - Объект с флагами { type1: bool, type2: bool, type4: bool, type5: bool, type6: object }
  * @returns {Array} - Оптимизированный массив
  */
 function applyOptimizations(triggers, types) {
@@ -766,7 +868,6 @@ function applyOptimizations(triggers, types) {
     }
     
     // ⚠️ Type 3 ПРОПУЩЕН! Используется только для связанных групп!
-    // if (types.type3) { ... } ← УДАЛЕНО!
     
     // ШАГ 3: Type 4 - Склонения (создает сложные паттерны)
     if (types.type4) {
@@ -778,6 +879,12 @@ function applyOptimizations(triggers, types) {
     if (types.type5) {
         result = optimizeType5(result);
         console.log('[Optimizer] После Type 5 (опциональный ?):', result.length);
+    }
+    
+    // ШАГ 5: Type 6 - Префикс (НОВОЕ v3.0)
+    if (types.type6) {
+        result = optimizeType6(result, types.type6);
+        console.log('[Optimizer] После Type 6 (префикс):', result.length);
     }
     
     console.log('[Optimizer] Финальный результат:', result.length, 'паттернов');
@@ -825,8 +932,7 @@ function performConversionWithOptimizations(text, types, showWarnings = true) {
         clearAllInlineErrors();
         
         // Проверка: выбрана ли хотя бы одна оптимизация
-        const hasOptimizations = types.type1 || types.type2 || types.type4 || types.type5;
-        // ⚠️ type3 убран из проверки!
+        const hasOptimizations = types.type1 || types.type2 || types.type4 || types.type5 || types.type6;
         
         if (!hasOptimizations && showWarnings) {
             showToast('warning', WARNING_MESSAGES.NO_OPTIMIZATIONS);
@@ -909,4 +1015,4 @@ function performConversionWithOptimizations(text, types, showWarnings = true) {
    ЭКСПОРТ
    ============================================ */
 
-console.log('✓ Модуль optimizer.js загружен (v2.0 - CRIT-1 исправлен, Type 3 для связанных групп)');
+console.log('✓ Модуль optimizer.js загружен (v3.0 - добавлен Type 6: Префикс)');
