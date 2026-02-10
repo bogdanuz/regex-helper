@@ -35,7 +35,7 @@ function initApp() {
         initLinkedTriggers();
         initExport();
         initHistory();
-        initTester();
+        // initTester(); // Отключено: тестер будет отдельным инструментом
         
         // ДОБАВЛЕНО: Инициализация визуализатора (если есть)
         if (typeof initVisualizer === 'function') {
