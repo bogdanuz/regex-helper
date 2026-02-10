@@ -1,6 +1,12 @@
 /* ============================================
    REGEXHELPER - EXPORT
    Экспорт результатов в файлы (TXT, JSON, CSV)
+   
+   ВЕРСИЯ: 2.1
+   ДАТА: 10.02.2026
+   ИЗМЕНЕНИЯ:
+   - ИСПРАВЛЕНО: Переносы строк (\n вместо \\n)
+   - ИСПРАВЛЕНО: Проверка существования функций
    ============================================ */
 
 /* ============================================
@@ -19,7 +25,7 @@ function exportTXT(regex, triggers = null) {
         return false;
     }
     
-    // ИСПРАВЛЕНО: Формируем содержимое файла (\\n → \n)
+    // ИСПРАВЛЕНО: '\n' вместо '\\n'
     let content = '# RegexHelper Export\n';
     content += `# Дата: ${formatDate(new Date())}\n`;
     content += '\n';
@@ -39,7 +45,7 @@ function exportTXT(regex, triggers = null) {
     const success = downloadFile(content, filename, 'text/plain');
     
     if (success) {
-        showMessage('success', 'EXPORTED_TXT');
+        showToast('success', '✓ Файл TXT успешно скачан');
         return true;
     } else {
         showToast('error', 'Ошибка при скачивании файла');
@@ -65,13 +71,13 @@ function exportJSON(regex, triggers = [], settings = {}, info = {}) {
         return false;
     }
     
-    // ИСПРАВЛЕНО: Добавлена валидация settings
+    // Валидация settings
     if (!settings || typeof settings !== 'object') {
         settings = {
             type1: false,
             type2: false,
-            type3: false,
-            type4: false
+            type4: false,
+            type5: false
         };
     }
     
@@ -79,11 +85,11 @@ function exportJSON(regex, triggers = [], settings = {}, info = {}) {
         regex: regex,
         triggers: triggers,
         triggerCount: triggers.length,
-        regexLength: countChars(regex),
+        regexLength: regex.length,
         timestamp: getCurrentTimestamp(),
         settings: settings,
         info: info,
-        version: '1.0'
+        version: '2.0'
     };
     
     const json = JSON.stringify(data, null, 2);
@@ -91,7 +97,7 @@ function exportJSON(regex, triggers = [], settings = {}, info = {}) {
     const success = downloadFile(json, filename, 'application/json');
     
     if (success) {
-        showMessage('success', 'EXPORTED_JSON');
+        showToast('success', '✓ Файл JSON успешно скачан');
         return true;
     } else {
         showToast('error', 'Ошибка при скачивании файла');
@@ -115,10 +121,10 @@ function exportCSV(regex, triggers = []) {
         return false;
     }
     
-    // ИСПРАВЛЕНО: Формируем CSV структуру (\\n → \n)
+    // ИСПРАВЛЕНО: '\n' вместо '\\n'
     let csv = 'Тип,Значение\n';
     csv += `"Regex","${escapeCSV(regex)}"\n`;
-    csv += `"Длина regex","${countChars(regex)}"\n`;
+    csv += `"Длина regex","${regex.length}"\n`;
     csv += `"Количество триггеров","${triggers.length}"\n`;
     csv += `"Дата экспорта","${formatDate(new Date())}"\n`;
     csv += '\n';
@@ -135,7 +141,7 @@ function exportCSV(regex, triggers = []) {
     const success = downloadFile(csv, filename, 'text/csv');
     
     if (success) {
-        showMessage('success', 'EXPORTED_CSV');
+        showToast('success', '✓ Файл CSV успешно скачан');
         return true;
     } else {
         showToast('error', 'Ошибка при скачивании файла');
@@ -247,13 +253,12 @@ function handleExportTxt() {
 function handleExportJson() {
     const regex = getResultRegex();
     const triggers = getOriginalTriggers();
-    const settings = getSelectedOptimizations();
+    const settings = getGlobalOptimizationStates();
     
     const info = {
         triggerCount: triggers.length,
-        regexLength: countChars(regex),
-        hasLinkedTriggers: hasLinkedTriggers(),
-        linkedPermutations: countLinkedPermutations()
+        regexLength: regex.length,
+        hasLinkedTriggers: typeof hasLinkedTriggers === 'function' ? hasLinkedTriggers() : false
     };
     
     if (exportJSON(regex, triggers, settings, info)) {
@@ -293,16 +298,18 @@ function getResultRegex() {
 function getOriginalTriggers() {
     const simpleTextarea = document.getElementById('simpleTriggers');
     
-    if (!simpleTextarea) {
+    if (!simpleTextarea || !simpleTextarea.value.trim()) {
         return [];
     }
     
     const triggers = parseSimpleTriggers(simpleTextarea.value);
     
-    // Добавляем перестановки связанных триггеров если есть
-    if (hasLinkedTriggers()) {
-        const linkedPermutations = generateLinkedPermutations();
-        return [...triggers, ...linkedPermutations];
+    // Добавляем триггеры из связанных групп если есть
+    if (typeof getLinkedGroups === 'function') {
+        const linkedGroups = getLinkedGroups();
+        linkedGroups.forEach(group => {
+            triggers.push(...group.triggers);
+        });
     }
     
     return triggers;
@@ -321,13 +328,12 @@ function quickExport(format) {
     }
     
     const triggers = getOriginalTriggers();
-    const settings = getSelectedOptimizations();
+    const settings = typeof getGlobalOptimizationStates === 'function' ? getGlobalOptimizationStates() : {};
     
     const info = {
         triggerCount: triggers.length,
-        regexLength: countChars(regex),
-        hasLinkedTriggers: hasLinkedTriggers ? hasLinkedTriggers() : false,
-        linkedPermutations: countLinkedPermutations ? countLinkedPermutations() : 0
+        regexLength: regex.length,
+        hasLinkedTriggers: typeof hasLinkedTriggers === 'function' ? hasLinkedTriggers() : false
     };
     
     switch (format.toLowerCase()) {
@@ -349,5 +355,6 @@ function quickExport(format) {
 window.openExportModal = openExportModal;
 window.closeExportModal = closeExportModal;
 window.quickExport = quickExport;
+window.initExport = initExport;
 
-console.log('✓ Модуль export.js загружен');
+console.log('✓ Модуль export.js загружен (v2.1 - исправлен экспорт)');
