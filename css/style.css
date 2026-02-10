@@ -1763,3 +1763,27 @@ button[title]:hover::after,
     font-weight: 600;
 }
 
+/* Стили для кнопок экспорта */
+.export-options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.btn-block {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 15px 20px;
+    text-align: left;
+}
+
+.btn-description {
+    font-size: 12px;
+    opacity: 0.8;
+    margin-top: 5px;
+    font-weight: normal;
+}
+
