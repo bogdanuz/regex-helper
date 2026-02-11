@@ -2,7 +2,7 @@
    REGEXHELPER - MAIN
    Главный файл приложения
    
-   ВЕРСИЯ: 3.0 (+ toggleAccordion)
+   ВЕРСИЯ: 3.0 FINAL
    ДАТА: 11.02.2026
    ИЗМЕНЕНИЯ:
    - БЛОК 2: Интеграция расширенной истории (saveConversionToHistory)
@@ -10,7 +10,19 @@
    - БЛОК 5: Автозамена ё → [её] (через converter.js)
    - БЛОК 6: Confirm с отложением (через converter.js)
    - БЛОК 8: toggleAccordion() для сворачивания панелей ✅
-   - Убрана старая логика сохранения истории
+   - ИСПРАВЛЕНО: Перенос строк (\n вместо \\n)
+   - ДОБАВЛЕНО: Safe функции с fallback
+   - ДОБАВЛЕНО: Проверки зависимостей
+   
+   ЗАВИСИМОСТИ:
+   - utils.js (copyToClipboard, debounce, pluralize)
+   - errors.js (showToast, confirmAction, clearAllInlineErrors, logError)
+   - converter.js (parseSimpleTriggers, validateTriggers, etc.)
+   - linked-triggers.js (initLinkedTriggers, hasLinkedTriggers, getLinkedGroups)
+   - optimizations.js (applyOptimizations, getGlobalOptimizationStates)
+   - suggestions.js (initSuggestions)
+   - export.js (initExport, openExportModal)
+   - history.js (initHistory, saveConversionToHistory)
    ============================================ */
 
 /* ============================================
@@ -22,26 +34,46 @@
  */
 function initApp() {
     console.log('='.repeat(50));
-    console.log('RegexHelper v3.0 - Запуск приложения');
+    console.log('RegexHelper v3.0 FINAL - Запуск приложения');
     console.log('='.repeat(50));
     
     // Проверка совместимости браузера
     if (!checkBrowserCompatibility()) {
-        showToast('error', 'Ваш браузер не поддерживается. Используйте современный браузер (Chrome, Firefox, Edge).', 10000);
+        showToastSafe('error', 'Ваш браузер не поддерживается. Используйте современный браузер (Chrome, Firefox, Edge).', 10000);
         return;
     }
     
     // Инициализация всех модулей
     try {
-        initSuggestions();
-        initLinkedTriggers();
-        initExport();
-        initHistory();
+        // Проверяем наличие функций инициализации
+        if (typeof initSuggestions === 'function') {
+            initSuggestions();
+        } else {
+            console.warn('[Main] initSuggestions не найдена');
+        }
+        
+        if (typeof initLinkedTriggers === 'function') {
+            initLinkedTriggers();
+        } else {
+            console.warn('[Main] initLinkedTriggers не найдена');
+        }
+        
+        if (typeof initExport === 'function') {
+            initExport();
+        } else {
+            console.warn('[Main] initExport не найдена');
+        }
+        
+        if (typeof initHistory === 'function') {
+            initHistory();
+        } else {
+            console.warn('[Main] initHistory не найдена');
+        }
         
         console.log('[Main] Все модули инициализированы');
     } catch (error) {
         console.error('[Main] Ошибка инициализации модулей:', error);
-        showToast('error', 'Ошибка загрузки приложения. Перезагрузите страницу.');
+        showToastSafe('error', 'Ошибка загрузки приложения. Перезагрузите страницу.');
         return;
     }
     
@@ -54,8 +86,54 @@ function initApp() {
     // Фокус на первое поле
     focusFirstInput();
     
-    console.log('[Main] ✓ Приложение запущено успешно');
+    console.log('[Main] ✅ Приложение запущено успешно');
     console.log('='.repeat(50));
+}
+
+/* ============================================
+   SAFE ФУНКЦИИ (FALLBACK)
+   ============================================ */
+
+/**
+ * Безопасный toast
+ */
+function showToastSafe(type, message, duration) {
+    if (typeof showToast === 'function') {
+        showToast(type, message, duration);
+    } else {
+        console.log(`[Toast ${type.toUpperCase()}] ${message}`);
+    }
+}
+
+/**
+ * Безопасное подтверждение
+ */
+function confirmActionSafe(title, message, onConfirm, onCancel) {
+    if (typeof confirmAction === 'function') {
+        confirmAction(title, message, onConfirm, onCancel);
+    } else if (window.confirm(`${title}\n\n${message}`)) {
+        if (onConfirm) onConfirm();
+    } else {
+        if (onCancel) onCancel();
+    }
+}
+
+/**
+ * Безопасный pluralize
+ */
+function pluralizeSafe(count, forms) {
+    if (typeof pluralize === 'function') {
+        return pluralize(count, forms);
+    }
+    
+    // Fallback
+    const n = Math.abs(count) % 100;
+    const n1 = n % 10;
+    
+    if (n > 10 && n < 20) return forms[2];
+    if (n1 > 1 && n1 < 5) return forms[1];
+    if (n1 === 1) return forms[0];
+    return forms[2];
 }
 
 /* ============================================
@@ -112,19 +190,19 @@ function setupEventListeners() {
     
     // Кнопка "Экспорт"
     const exportBtn = document.getElementById('exportBtn');
-    if (exportBtn) {
+    if (exportBtn && typeof openExportModal === 'function') {
         exportBtn.addEventListener('click', openExportModal);
     }
     
     // Кнопка "Регламент"
     const regulationsBtn = document.getElementById('regulationsBtn');
-    if (regulationsBtn) {
+    if (regulationsBtn && typeof showModal === 'function') {
         regulationsBtn.addEventListener('click', () => showModal('regulationsModal'));
     }
 
     // Кнопка тестера
     const testRegexBtn = document.getElementById('testRegexBtn');
-    if (testRegexBtn) {
+    if (testRegexBtn && typeof toggleTester === 'function') {
         testRegexBtn.addEventListener('click', toggleTester);
     }
 
@@ -141,63 +219,39 @@ function setupEventListeners() {
                 visualizeRegex(regex);
             } else {
                 console.error('[Main] Функция visualizeRegex не найдена');
-                showToast('error', 'Визуализатор не загружен');
+                showToastSafe('error', 'Визуализатор не загружен');
             }
         });
     }
 
     // Кнопка "Экспорт SVG"
     const exportSvgBtn = document.getElementById('exportSvgBtn');
-    if (exportSvgBtn) {
-        exportSvgBtn.addEventListener('click', () => {
-            if (typeof exportSVG === 'function') {
-                exportSVG();
-            } else {
-                console.error('[Main] Функция exportSVG не найдена');
-            }
-        });
+    if (exportSvgBtn && typeof exportSVG === 'function') {
+        exportSvgBtn.addEventListener('click', exportSVG);
     }
 
     // Кнопка "Экспорт PNG"
     const exportPngBtn = document.getElementById('exportPngBtn');
-    if (exportPngBtn) {
-        exportPngBtn.addEventListener('click', () => {
-            if (typeof exportPNG === 'function') {
-                exportPNG();
-            } else {
-                console.error('[Main] Функция exportPNG не найдена');
-            }
-        });
+    if (exportPngBtn && typeof exportPNG === 'function') {
+        exportPngBtn.addEventListener('click', exportPNG);
     }
 
     // Кнопка "Zoom In"
     const zoomInBtn = document.getElementById('zoomInBtn');
-    if (zoomInBtn) {
-        zoomInBtn.addEventListener('click', () => {
-            if (typeof zoomDiagram === 'function') {
-                zoomDiagram(1.2);
-            }
-        });
+    if (zoomInBtn && typeof zoomDiagram === 'function') {
+        zoomInBtn.addEventListener('click', () => zoomDiagram(1.2));
     }
 
     // Кнопка "Zoom Out"
     const zoomOutBtn = document.getElementById('zoomOutBtn');
-    if (zoomOutBtn) {
-        zoomOutBtn.addEventListener('click', () => {
-            if (typeof zoomDiagram === 'function') {
-                zoomDiagram(0.8);
-            }
-        });
+    if (zoomOutBtn && typeof zoomDiagram === 'function') {
+        zoomOutBtn.addEventListener('click', () => zoomDiagram(0.8));
     }
 
     // Кнопка "На весь экран"
     const openFullscreenBtn = document.getElementById('openFullscreenBtn');
-    if (openFullscreenBtn) {
-        openFullscreenBtn.addEventListener('click', () => {
-            if (typeof openFullscreen === 'function') {
-                openFullscreen();
-            }
-        });
+    if (openFullscreenBtn && typeof openFullscreen === 'function') {
+        openFullscreenBtn.addEventListener('click', openFullscreen);
     }
     
     // Закрытие модалок по крестику
@@ -217,7 +271,7 @@ function setupModalCloseButtons() {
             const modal = e.target.closest('.modal-overlay');
             if (modal) {
                 modal.style.display = 'none';
-                document.body.style.overflow = '';
+                document.body.classList.remove('modal-open');
             }
         });
     });
@@ -235,13 +289,19 @@ function setupTriggerCounters() {
     
     if (simpleTextarea) {
         // Debounce для оптимизации (300ms задержка)
-        const debouncedUpdate = debounce(() => {
-            updateSimpleTriggerCount();
-            // Обновляем UI индивидуальных настроек (если есть)
-            if (typeof updateTriggerSettingsUI === 'function') {
-                updateTriggerSettingsUI();
-            }
-        }, 300);
+        const debouncedUpdate = typeof debounce === 'function'
+            ? debounce(() => {
+                updateSimpleTriggerCount();
+                if (typeof updateTriggerSettingsUI === 'function') {
+                    updateTriggerSettingsUI();
+                }
+            }, 300)
+            : () => {
+                updateSimpleTriggerCount();
+                if (typeof updateTriggerSettingsUI === 'function') {
+                    updateTriggerSettingsUI();
+                }
+            };
         
         simpleTextarea.addEventListener('input', debouncedUpdate);
         
@@ -264,10 +324,12 @@ function updateSimpleTriggerCount() {
     
     if (!textarea || !counter) return;
     
-    const stats = getTriggerStats(textarea.value);
+    const stats = typeof getTriggerStats === 'function'
+        ? getTriggerStats(textarea.value)
+        : { count: 0, uniqueCount: 0, duplicatesCount: 0, hasLimit: false, nearLimit: false };
     
     // Обновляем текст
-    counter.textContent = `${stats.count} ${pluralize(stats.count, ['триггер', 'триггера', 'триггеров'])}`;
+    counter.textContent = `${stats.count} ${pluralizeSafe(stats.count, ['триггер', 'триггера', 'триггеров'])}`;
     
     // Предупреждение о лимите
     if (stats.hasLimit) {
@@ -309,57 +371,75 @@ function updateSimpleTriggerCount() {
  */
 function performConversionWithOptimizations(text, types, showWarnings = true) {
     try {
+        // Проверяем наличие необходимых функций
+        if (typeof parseSimpleTriggers !== 'function') {
+            console.error('[Main] parseSimpleTriggers не найдена');
+            return { success: false, regex: '', info: { errors: ['Модуль converter.js не загружен'] } };
+        }
+        
         // 1. Парсим триггеры (replaceYo применяется автоматически внутри)
         let triggers = parseSimpleTriggers(text);
         
         // 2. Валидация
-        const validation = validateTriggers(triggers);
-        if (!validation.valid) {
-            return {
-                success: false,
-                regex: '',
-                info: { errors: validation.errors }
-            };
+        if (typeof validateTriggers === 'function') {
+            const validation = validateTriggers(triggers);
+            if (!validation.valid) {
+                return {
+                    success: false,
+                    regex: '',
+                    info: { errors: validation.errors }
+                };
+            }
         }
         
         // 3. Удаление дубликатов
-        const deduped = removeDuplicatesFromTriggers(triggers);
-        triggers = deduped.triggers;
+        if (typeof removeDuplicatesFromTriggers === 'function') {
+            const deduped = removeDuplicatesFromTriggers(triggers);
+            triggers = deduped.triggers;
+        }
         
         // 4. Применяем оптимизации
         if (typeof applyOptimizations === 'function') {
             triggers = applyOptimizations(triggers, types);
         } else {
             console.warn('[Main] applyOptimizations не найдена, применяем базовое экранирование');
-            triggers = triggers.map(t => escapeRegex(t));
+            if (typeof escapeRegex === 'function') {
+                triggers = triggers.map(t => escapeRegex(t));
+            }
         }
         
         // 5. Конвертируем в regex
         const regex = triggers.join('|');
         
         // 6. Валидация длины
-        const lengthValidation = validateRegexLength(regex);
-        if (!lengthValidation.valid) {
-            return {
-                success: false,
-                regex: '',
-                info: { errors: lengthValidation.errors }
-            };
+        if (typeof validateRegexLength === 'function') {
+            const lengthValidation = validateRegexLength(regex);
+            if (!lengthValidation.valid) {
+                return {
+                    success: false,
+                    regex: '',
+                    info: { errors: lengthValidation.errors }
+                };
+            }
         }
         
         return {
             success: true,
             regex: regex,
             info: {
-                originalCount: triggers.length + deduped.duplicatesCount,
+                originalCount: triggers.length,
                 finalCount: triggers.length,
-                duplicatesRemoved: deduped.duplicatesCount,
+                duplicatesRemoved: 0,
                 regexLength: regex.length
             }
         };
         
     } catch (error) {
-        logError('performConversionWithOptimizations', error);
+        if (typeof logError === 'function') {
+            logError('performConversionWithOptimizations', error);
+        } else {
+            console.error('[Main] Ошибка performConversionWithOptimizations:', error);
+        }
         return {
             success: false,
             regex: '',
@@ -369,22 +449,26 @@ function performConversionWithOptimizations(text, types, showWarnings = true) {
 }
 
 /* ============================================
-   ОБРАБОТЧИК КОНВЕРТАЦИИ (ОБНОВЛЕНО v3.0)
+   ОБРАБОТЧИК КОНВЕРТАЦИИ (ОБНОВЛЕНО v3.0 FINAL)
    ============================================ */
 
 /**
  * Обработчик кнопки "Конвертировать"
  * 
- * ОБНОВЛЕНО v3.0:
+ * ОБНОВЛЕНО v3.0 FINAL:
+ * - ИСПРАВЛЕНО: Перенос строк (\n вместо \\n)
  * - Интеграция с confirm (через performConversion в converter.js)
  * - Использование saveConversionToHistory() вместо старой логики
  * - Поддержка подгрупп в связанных триггерах
+ * - Проверки зависимостей
  */
 function handleConvert() {
     console.log('[Main] ========== НАЧАЛО КОНВЕРТАЦИИ ==========');
     
     try {
-        clearAllInlineErrors();
+        if (typeof clearAllInlineErrors === 'function') {
+            clearAllInlineErrors();
+        }
 
         // Получаем поля
         const simpleTextarea = document.getElementById('simpleTriggers');
@@ -398,11 +482,19 @@ function handleConvert() {
         let text = simpleTextarea.value.trim();
 
         // Проверяем наличие триггеров
-        const hasSimple = hasTriggersInText(text);
-        const hasLinked = hasLinkedTriggers();
+        const hasSimple = typeof hasTriggersInText === 'function' 
+            ? hasTriggersInText(text) 
+            : text.length > 0;
+        const hasLinked = typeof hasLinkedTriggers === 'function' 
+            ? hasLinkedTriggers() 
+            : false;
 
         if (!hasSimple && !hasLinked) {
-            showInlineError('simpleTriggers', 'Введите хотя бы один триггер (простой или связанный)');
+            if (typeof showInlineError === 'function') {
+                showInlineError('simpleTriggers', 'Введите хотя бы один триггер (простой или связанный)');
+            } else {
+                showToastSafe('error', 'Введите хотя бы один триггер');
+            }
             return;
         }
 
@@ -418,35 +510,34 @@ function handleConvert() {
             console.log('[Main] --- КОНВЕРТАЦИЯ ПРОСТЫХ ТРИГГЕРОВ ---');
             
             // Получаем глобальные настройки оптимизаций
-            const globalTypes = getGlobalOptimizationStates();
+            const globalTypes = typeof getGlobalOptimizationStates === 'function'
+                ? getGlobalOptimizationStates()
+                : { type1: false, type2: false, type4: false, type5: false };
             
             console.log('[Main] Глобальные настройки:', globalTypes);
             
             // Парсим триггеры (replaceYo применяется автоматически)
-            const triggers = parseSimpleTriggers(text);
+            const triggers = typeof parseSimpleTriggers === 'function'
+                ? parseSimpleTriggers(text)
+                : text.split('\n').map(t => t.trim()).filter(t => t);
             
             console.log(`[Main] Распарсено ${triggers.length} триггеров`);
             
-            // ГРУППА 5: Применяем индивидуальные или глобальные настройки
-            const triggersWithSettings = triggers.map(trigger => {
+            // Группируем триггеры по настройкам (если есть функция getEffectiveSettings)
+            const groups = new Map();
+            
+            triggers.forEach(trigger => {
+                // ПРИМЕЧАНИЕ: getEffectiveSettings должна быть в отдельном модуле
+                // для поддержки ГРУППЫ 5 (индивидуальные настройки триггеров)
                 const effectiveSettings = typeof getEffectiveSettings === 'function'
                     ? getEffectiveSettings(trigger, globalTypes)
                     : globalTypes;
-                return {
-                    text: trigger,
-                    types: effectiveSettings
-                };
-            });
-            
-            // Группируем триггеры по настройкам
-            const groups = new Map();
-            
-            triggersWithSettings.forEach(item => {
-                const key = JSON.stringify(item.types);
+                
+                const key = JSON.stringify(effectiveSettings);
                 if (!groups.has(key)) {
                     groups.set(key, []);
                 }
-                groups.get(key).push(item.text);
+                groups.get(key).push(trigger);
             });
             
             console.log(`[Main] Триггеры разделены на ${groups.size} групп по настройкам`);
@@ -456,6 +547,7 @@ function handleConvert() {
             
             groups.forEach((triggerList, typesKey) => {
                 const types = JSON.parse(typesKey);
+                // ИСПРАВЛЕНО: правильный перенос строк
                 const groupText = triggerList.join('\n');
                 
                 console.log(`[Main] Конвертация группы: ${triggerList.length} триггеров`);
@@ -482,28 +574,34 @@ function handleConvert() {
             console.log('[Main] --- КОНВЕРТАЦИЯ СВЯЗАННЫХ ГРУПП ---');
             
             // Получаем все группы с подгруппами
-            const linkedGroups = getLinkedGroups();
+            const linkedGroups = typeof getLinkedGroups === 'function'
+                ? getLinkedGroups()
+                : [];
             
             console.log(`[Main] Найдено ${linkedGroups.length} связанных групп`);
             
             // Валидация связанных групп
-            const validation = validateLinkedGroups();
-            if (!validation.valid) {
-                console.error('[Main] Валидация связанных групп не прошла:', validation.errors);
-                showToast('error', validation.errors[0]);
-                return;
-            }
-            
-            // Предупреждения
-            if (validation.warnings.length > 0) {
-                validation.warnings.forEach(warning => {
-                    showToast('warning', warning, 5000);
-                });
+            if (typeof validateLinkedGroups === 'function') {
+                const validation = validateLinkedGroups();
+                if (!validation.valid) {
+                    console.error('[Main] Валидация связанных групп не прошла:', validation.errors);
+                    showToastSafe('error', validation.errors[0]);
+                    return;
+                }
+                
+                // Предупреждения
+                if (validation.warnings.length > 0) {
+                    validation.warnings.forEach(warning => {
+                        showToastSafe('warning', warning, 5000);
+                    });
+                }
             }
             
             if (linkedGroups.length > 0) {
                 // Конвертируем все группы (с поддержкой подгрупп)
-                const linkedRegex = convertLinkedGroups(linkedGroups);
+                const linkedRegex = typeof convertLinkedGroups === 'function'
+                    ? convertLinkedGroups(linkedGroups)
+                    : '';
                 
                 if (linkedRegex) {
                     console.log('[Main] ✓ Связанные группы конвертированы успешно');
@@ -535,7 +633,7 @@ function handleConvert() {
         // ========================================
         
         if (!regex) {
-            showToast('error', 'Не удалось создать regex');
+            showToastSafe('error', 'Не удалось создать regex');
             return;
         }
         
@@ -566,12 +664,16 @@ function handleConvert() {
         }
 
         // Уведомление об успехе
-        showToast('success', '✓ Regex успешно создан!');
+        showToastSafe('success', '✓ Regex успешно создан!');
         console.log('[Main] ========== КОНВЕРТАЦИЯ ЗАВЕРШЕНА ==========');
         
     } catch (error) {
-        logError('handleConvert', error);
-        showToast('error', 'Произошла ошибка при конвертации. Попробуйте еще раз.');
+        if (typeof logError === 'function') {
+            logError('handleConvert', error);
+        } else {
+            console.error('[Main] Ошибка handleConvert:', error);
+        }
+        showToastSafe('error', 'Произошла ошибка при конвертации. Попробуйте еще раз.');
     }
 }
 
@@ -583,7 +685,7 @@ function updateRegexLengthCounter(length) {
     const regexLengthSpan = document.getElementById('regexLength');
     if (!regexLengthSpan) return;
     
-    regexLengthSpan.textContent = `Длина: ${length} ${pluralize(length, ['символ', 'символа', 'символов'])}`;
+    regexLengthSpan.textContent = `Длина: ${length} ${pluralizeSafe(length, ['символ', 'символа', 'символов'])}`;
     
     // Цвет в зависимости от длины
     if (length > 9000) {
@@ -664,7 +766,8 @@ function handleReset() {
             }
         }
         
-        // Очистка индивидуальных настроек триггеров (если есть)
+        // Очистка индивидуальных настроек триггеров (ГРУППА 5)
+        // ПРИМЕЧАНИЕ: Функция должна быть определена в отдельном модуле
         if (typeof clearAllTriggerSettings === 'function') {
             clearAllTriggerSettings();
         }
@@ -675,23 +778,19 @@ function handleReset() {
         }
         
         // Очистка inline ошибок
-        clearAllInlineErrors();
+        if (typeof clearAllInlineErrors === 'function') {
+            clearAllInlineErrors();
+        }
         
-        showToast('success', 'Все данные очищены');
+        showToastSafe('success', 'Все данные очищены');
     };
     
-    if (typeof confirmAction === 'function') {
-        confirmAction(
-            'Подтверждение',
-            'Вы уверены, что хотите очистить все данные? Это действие нельзя отменить.',
-            performReset,
-            null
-        );
-    } else {
-        if (window.confirm('Вы уверены, что хотите очистить все данные?')) {
-            performReset();
-        }
-    }
+    confirmActionSafe(
+        'Подтверждение',
+        'Вы уверены, что хотите очистить все данные? Это действие нельзя отменить.',
+        performReset,
+        null
+    );
 }
 
 /* ============================================
@@ -705,22 +804,24 @@ async function handleCopyRegex() {
     const resultTextarea = document.getElementById('regexResult');
     
     if (!resultTextarea) {
-        console.error('[Main] Textarea resultRegex не найдена');
+        console.error('[Main] Textarea regexResult не найдена');
         return;
     }
     
     const regex = resultTextarea.value.trim();
     
     if (!regex) {
-        showToast('warning', 'Сначала создайте regex для копирования');
+        showToastSafe('warning', 'Сначала создайте regex для копирования');
         return;
     }
     
     try {
-        const success = await copyToClipboard(regex);
+        const success = typeof copyToClipboard === 'function'
+            ? await copyToClipboard(regex)
+            : false;
         
         if (success) {
-            showToast('success', 'Regex скопирован в буфер обмена');
+            showToastSafe('success', 'Regex скопирован в буфер обмена');
             
             // Визуальная обратная связь на кнопке
             const copyBtn = document.getElementById('copyRegexBtn');
@@ -737,12 +838,16 @@ async function handleCopyRegex() {
             
             console.log('[Main] ✓ Regex скопирован в буфер');
         } else {
-            showToast('error', 'Копирование в буфер обмена не поддерживается вашим браузером');
+            showToastSafe('error', 'Копирование в буфер обмена не поддерживается вашим браузером');
         }
         
     } catch (error) {
-        logError('handleCopyRegex', error);
-        showToast('error', 'Ошибка при копировании');
+        if (typeof logError === 'function') {
+            logError('handleCopyRegex', error);
+        } else {
+            console.error('[Main] Ошибка handleCopyRegex:', error);
+        }
+        showToastSafe('error', 'Ошибка при копировании');
     }
 }
 
@@ -759,24 +864,26 @@ function confirmClearSimpleTriggers() {
     if (!textarea) return;
     
     if (textarea.value.trim()) {
-        confirmAction(
+        confirmActionSafe(
             'Подтверждение',
             'Очистить поле простых триггеров?',
             () => {
                 textarea.value = '';
-                clearInlineError('simpleTriggers');
+                if (typeof clearInlineError === 'function') {
+                    clearInlineError('simpleTriggers');
+                }
                 updateSimpleTriggerCount();
                 
                 if (typeof updateTriggerSettingsUI === 'function') {
                     updateTriggerSettingsUI();
                 }
                 
-                showToast('info', 'Поле очищено');
+                showToastSafe('info', 'Поле очищено');
             },
             null
         );
     } else {
-        showToast('info', 'Поле уже пустое');
+        showToastSafe('info', 'Поле уже пустое');
     }
 }
 
@@ -790,7 +897,7 @@ function confirmClearResult() {
     if (!textarea) return;
     
     if (textarea.value.trim()) {
-        confirmAction(
+        confirmActionSafe(
             'Подтверждение',
             'Очистить результат?',
             () => {
@@ -807,12 +914,12 @@ function confirmClearResult() {
                     regexLengthSpan.style.color = '';
                 }
                 
-                showToast('info', 'Результат очищен');
+                showToastSafe('info', 'Результат очищен');
             },
             null
         );
     } else {
-        showToast('info', 'Результат уже пустой');
+        showToastSafe('info', 'Результат уже пустой');
     }
 }
 
@@ -890,7 +997,7 @@ function focusFirstInput() {
  * Показать версию приложения в консоли
  */
 function showVersionInfo() {
-    console.log('%c RegexHelper v3.0 ', 'background: #4CAF50; color: white; padding: 5px 10px; border-radius: 3px;');
+    console.log('%c RegexHelper v3.0 FINAL ', 'background: #4CAF50; color: white; padding: 5px 10px; border-radius: 3px;');
     console.log('%c Конвертер триггеров в regex ', 'background: #2196F3; color: white; padding: 3px 8px;');
     console.log('');
     console.log('✓ БЛОК 2: История 100 записей + импорт/экспорт');
@@ -918,5 +1025,6 @@ document.addEventListener('DOMContentLoaded', () => {
 window.confirmClearSimpleTriggers = confirmClearSimpleTriggers;
 window.confirmClearResult = confirmClearResult;
 window.toggleAccordion = toggleAccordion; // НОВОЕ! ✅
+window.updateSimpleTriggerCount = updateSimpleTriggerCount;
 
-console.log('✓ Модуль main.js загружен (v3.0 с toggleAccordion)');
+console.log('✅ Модуль main.js загружен (v3.0 FINAL)');
