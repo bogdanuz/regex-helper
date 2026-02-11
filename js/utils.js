@@ -2,12 +2,20 @@
    REGEXHELPER - UTILITY FUNCTIONS
    Вспомогательные функции для всего приложения
    
-   ВЕРСИЯ: 2.0
-   ДАТА: 10.02.2026
+   ВЕРСИЯ: 2.0 FINAL
+   ДАТА: 11.02.2026
    ИЗМЕНЕНИЯ:
-   - КРИТИЧНО: Исправлена функция escapeRegex()
-   - КРИТИЧНО: Исправлена функция splitLines()
-   - Добавлены JSDoc комментарии
+   - ИСПРАВЛЕНО: escapeRegex() - правильный regex с экранированием ]
+   - ИСПРАВЛЕНО: splitLines() - разбиение по \n вместо \\n
+   - ДОБАВЛЕНО: Экспорт всех функций в window
+   - ДОБАВЛЕНО: JSDoc комментарии
+   
+   ЗАВИСИМОСТИ:
+   - Нет (базовый модуль, не зависит от других)
+   ============================================ */
+
+/* ============================================
+   HTML И REGEX ЭКРАНИРОВАНИЕ
    ============================================ */
 
 /**
@@ -33,7 +41,7 @@ function escapeHTML(str) {
 /**
  * Экранирование специальных символов regex
  * 
- * ИСПРАВЛЕНО v2.0: Правильная реализация!
+ * ИСПРАВЛЕНО v2.0 FINAL: Правильная реализация!
  * Экранирует: . * + ? ^ $ { } ( ) | [ ] \
  * 
  * @param {string} str - Строка для экранирования
@@ -44,9 +52,13 @@ function escapeHTML(str) {
  * escapeRegex('price: $100') → 'price: \\$100'
  */
 function escapeRegex(str) {
-    // ИСПРАВЛЕНО: правильный паттерн и правильная замена
+    // ИСПРАВЛЕНО: правильное экранирование ] в character class
     return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
+
+/* ============================================
+   МАТЕМАТИЧЕСКИЕ ФУНКЦИИ
+   ============================================ */
 
 /**
  * Вычисление факториала числа
@@ -64,6 +76,46 @@ function factorial(n) {
     }
     return result;
 }
+
+/**
+ * Генерация всех перестановок массива
+ * 
+ * Используется для связанных триггеров с anyOrder=true
+ * 
+ * @param {Array} array - Исходный массив
+ * @returns {Array} - Массив всех перестановок
+ * 
+ * @example
+ * getPermutations(['a', 'b', 'c'])
+ * // → [['a','b','c'], ['a','c','b'], ['b','a','c'], ...]
+ */
+function getPermutations(array) {
+    if (!Array.isArray(array) || array.length === 0) {
+        return [];
+    }
+    
+    if (array.length === 1) {
+        return [array];
+    }
+    
+    const result = [];
+    
+    for (let i = 0; i < array.length; i++) {
+        const current = array[i];
+        const remaining = array.slice(0, i).concat(array.slice(i + 1));
+        const remainingPermutations = getPermutations(remaining);
+        
+        for (let perm of remainingPermutations) {
+            result.push([current].concat(perm));
+        }
+    }
+    
+    return result;
+}
+
+/* ============================================
+   РАБОТА С БРАУЗЕРОМ
+   ============================================ */
 
 /**
  * Задержка выполнения функции (debounce)
@@ -106,7 +158,7 @@ async function copyToClipboard(text) {
         
         return success;
     } catch (error) {
-        console.error('Ошибка копирования:', error);
+        console.error('[Utils] Ошибка копирования:', error);
         return false;
     }
 }
@@ -138,10 +190,14 @@ function downloadFile(content, filename, type = 'text/plain') {
         
         return true;
     } catch (error) {
-        console.error('Ошибка скачивания файла:', error);
+        console.error('[Utils] Ошибка скачивания файла:', error);
         return false;
     }
 }
+
+/* ============================================
+   РАБОТА С ДАТАМИ
+   ============================================ */
 
 /**
  * Форматирование даты
@@ -170,6 +226,32 @@ function formatDate(date, withTime = true) {
 }
 
 /**
+ * Получение текущей даты и времени в формате ISO
+ * @returns {string} - ISO строка
+ */
+function getCurrentTimestamp() {
+    return new Date().toISOString();
+}
+
+/**
+ * Парсинг ISO даты в объект Date
+ * @param {string} isoString - ISO строка
+ * @returns {Date|null} - Date объект или null
+ */
+function parseISODate(isoString) {
+    try {
+        const date = new Date(isoString);
+        return isNaN(date) ? null : date;
+    } catch (error) {
+        return null;
+    }
+}
+
+/* ============================================
+   ГЕНЕРАТОРЫ И ВАЛИДАЦИЯ
+   ============================================ */
+
+/**
  * Генерация уникального ID
  * @returns {string} - Уникальный ID на основе timestamp + random
  */
@@ -195,41 +277,9 @@ function isValidRegex(pattern) {
     }
 }
 
-/**
- * Генерация всех перестановок массива
- * 
- * Используется для связанных триггеров с anyOrder=true
- * 
- * @param {Array} array - Исходный массив
- * @returns {Array} - Массив всех перестановок
- * 
- * @example
- * getPermutations(['a', 'b', 'c'])
- * // → [['a','b','c'], ['a','c','b'], ['b','a','c'], ...]
- */
-function getPermutations(array) {
-    if (!Array.isArray(array) || array.length === 0) {
-        return [];
-    }
-    
-    if (array.length === 1) {
-        return [array];
-    }
-    
-    const result = [];
-    
-    for (let i = 0; i < array.length; i++) {
-        const current = array[i];
-        const remaining = array.slice(0, i).concat(array.slice(i + 1));
-        const remainingPermutations = getPermutations(remaining);
-        
-        for (let perm of remainingPermutations) {
-            result.push([current].concat(perm));
-        }
-    }
-    
-    return result;
-}
+/* ============================================
+   РАБОТА С МАССИВАМИ
+   ============================================ */
 
 /**
  * Удаление дубликатов из массива
@@ -247,6 +297,26 @@ function removeDuplicates(array) {
     
     return { cleaned, duplicates };
 }
+
+/**
+ * Проверка лимита массива
+ * @param {Array} array - Массив
+ * @param {number} limit - Лимит
+ * @returns {Object} - { valid: boolean, count: number, limit: number }
+ */
+function checkArrayLimit(array, limit) {
+    const count = Array.isArray(array) ? array.length : 0;
+    return {
+        valid: count <= limit,
+        count: count,
+        limit: limit,
+        exceeded: count - limit
+    };
+}
+
+/* ============================================
+   РАБОТА СО СТРОКАМИ
+   ============================================ */
 
 /**
  * Подсчет символов в строке (для проверки лимитов)
@@ -279,7 +349,7 @@ function cleanString(str) {
 /**
  * Разбиение текста по строкам и очистка
  * 
- * ИСПРАВЛЕНО v2.0: Правильное разбиение по переносам строк
+ * ИСПРАВЛЕНО v2.0 FINAL: Правильное разбиение по переносам строк
  * 
  * @param {string} text - Текст
  * @returns {Array} - Массив строк (без пустых)
@@ -291,27 +361,11 @@ function cleanString(str) {
 function splitLines(text) {
     if (!text) return [];
     
-    // ИСПРАВЛЕНО: '\n' вместо '\\n'
+    // ИСПРАВЛЕНО: '\n' вместо '\\n' (разбиваем по символу перевода строки)
     return String(text)
         .split('\n')
         .map(line => line.trim())
         .filter(line => line.length > 0);
-}
-
-/**
- * Проверка лимита массива
- * @param {Array} array - Массив
- * @param {number} limit - Лимит
- * @returns {Object} - { valid: boolean, count: number, limit: number }
- */
-function checkArrayLimit(array, limit) {
-    const count = Array.isArray(array) ? array.length : 0;
-    return {
-        valid: count <= limit,
-        count: count,
-        limit: limit,
-        exceeded: count - limit
-    };
 }
 
 /**
@@ -387,26 +441,43 @@ function truncate(str, maxLength) {
     return text.substring(0, maxLength - 3) + '...';
 }
 
-/**
- * Получение текущей даты и времени в формате ISO
- * @returns {string} - ISO строка
- */
-function getCurrentTimestamp() {
-    return new Date().toISOString();
-}
+/* ============================================
+   ЭКСПОРТ (v2.0 FINAL)
+   ============================================ */
 
-/**
- * Парсинг ISO даты в объект Date
- * @param {string} isoString - ISO строка
- * @returns {Date|null} - Date объект или null
- */
-function parseISODate(isoString) {
-    try {
-        const date = new Date(isoString);
-        return isNaN(date) ? null : date;
-    } catch (error) {
-        return null;
-    }
-}
+// HTML и Regex
+window.escapeHTML = escapeHTML;
+window.escapeRegex = escapeRegex;
 
-console.log('✓ Модуль utils.js загружен (v2.0 - критичные исправления)');
+// Математика
+window.factorial = factorial;
+window.getPermutations = getPermutations;
+
+// Браузер
+window.debounce = debounce;
+window.copyToClipboard = copyToClipboard;
+window.downloadFile = downloadFile;
+
+// Даты
+window.formatDate = formatDate;
+window.getCurrentTimestamp = getCurrentTimestamp;
+window.parseISODate = parseISODate;
+
+// Генераторы
+window.generateID = generateID;
+window.isValidRegex = isValidRegex;
+
+// Массивы
+window.removeDuplicates = removeDuplicates;
+window.checkArrayLimit = checkArrayLimit;
+
+// Строки
+window.countChars = countChars;
+window.isEmpty = isEmpty;
+window.cleanString = cleanString;
+window.splitLines = splitLines;
+window.checkLengthLimit = checkLengthLimit;
+window.pluralize = pluralize;
+window.truncate = truncate;
+
+console.log('✅ Модуль utils.js загружен (v2.0 FINAL - критичные ошибки исправлены)');
