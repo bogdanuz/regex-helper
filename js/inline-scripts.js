@@ -1,7 +1,12 @@
 /* ============================================
    INLINE SCRIPTS
    Скрипты для навигации и UI эффектов
-   Версия: 2.0 (обновлены подсказки - Группа 6)
+   
+   ВЕРСИЯ: 2.1 FINAL
+   ДАТА: 11.02.2026
+   ИЗМЕНЕНИЯ:
+   - ИСПРАВЛЕНО: ID элемента resultRegex → regexResult
+   - Обновлены подсказки (Группа 6)
    ============================================ */
 
 // Smooth scroll для навигации
@@ -23,20 +28,22 @@ document.querySelectorAll('.nav-link').forEach(link => {
 // Кнопка "Наверх"
 const scrollTopBtn = document.getElementById('scrollTopBtn');
 
-window.addEventListener('scroll', function() {
-    if (window.pageYOffset > 300) {
-        scrollTopBtn.classList.add('visible');
-    } else {
-        scrollTopBtn.classList.remove('visible');
-    }
-});
-
-scrollTopBtn.addEventListener('click', function() {
-    window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
+if (scrollTopBtn) {
+    window.addEventListener('scroll', function() {
+        if (window.pageYOffset > 300) {
+            scrollTopBtn.classList.add('visible');
+        } else {
+            scrollTopBtn.classList.remove('visible');
+        }
     });
-});
+
+    scrollTopBtn.addEventListener('click', function() {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+}
 
 // Header Hide/Show
 const header = document.querySelector('.header');
@@ -57,51 +64,53 @@ function updateHeaderVisibility() {
     }
 }
 
-window.addEventListener('scroll', updateHeaderVisibility);
+if (header) {
+    window.addEventListener('scroll', updateHeaderVisibility);
 
-document.addEventListener('mousemove', function(e) {
-    let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    
-    if (scrollTop > threshold && e.clientY < 80 && e.clientY < lastMouseY) {
-        clearTimeout(hideTimeout);
-        header.classList.add('visible');
-        header.classList.remove('hidden');
-    } else if (scrollTop > threshold && e.clientY > 80) {
-        clearTimeout(hideTimeout);
-        hideTimeout = setTimeout(function() {
-            if (window.pageYOffset > threshold) {
-                header.classList.add('hidden');
-                header.classList.remove('visible');
-            }
-        }, 1000);
-    }
-    
-    lastMouseY = e.clientY;
-});
+    document.addEventListener('mousemove', function(e) {
+        let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        if (scrollTop > threshold && e.clientY < 80 && e.clientY < lastMouseY) {
+            clearTimeout(hideTimeout);
+            header.classList.add('visible');
+            header.classList.remove('hidden');
+        } else if (scrollTop > threshold && e.clientY > 80) {
+            clearTimeout(hideTimeout);
+            hideTimeout = setTimeout(function() {
+                if (window.pageYOffset > threshold) {
+                    header.classList.add('hidden');
+                    header.classList.remove('visible');
+                }
+            }, 1000);
+        }
+        
+        lastMouseY = e.clientY;
+    });
 
-header.addEventListener('mouseenter', function() {
-    let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    if (scrollTop > threshold) {
-        clearTimeout(hideTimeout);
-        header.classList.add('visible');
-        header.classList.remove('hidden');
-    }
-});
+    header.addEventListener('mouseenter', function() {
+        let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        if (scrollTop > threshold) {
+            clearTimeout(hideTimeout);
+            header.classList.add('visible');
+            header.classList.remove('hidden');
+        }
+    });
 
-header.addEventListener('mouseleave', function() {
-    let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    if (scrollTop > threshold) {
-        clearTimeout(hideTimeout);
-        hideTimeout = setTimeout(function() {
-            if (window.pageYOffset > threshold) {
-                header.classList.add('hidden');
-                header.classList.remove('visible');
-            }
-        }, 1000);
-    }
-});
+    header.addEventListener('mouseleave', function() {
+        let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        if (scrollTop > threshold) {
+            clearTimeout(hideTimeout);
+            hideTimeout = setTimeout(function() {
+                if (window.pageYOffset > threshold) {
+                    header.classList.add('hidden');
+                    header.classList.remove('visible');
+                }
+            }, 1000);
+        }
+    });
 
-updateHeaderVisibility();
+    updateHeaderVisibility();
+}
 
 /* ============================================
    ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ МОДАЛОК
@@ -114,7 +123,7 @@ function openModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.style.display = 'flex';
-        document.body.style.overflow = 'hidden';
+        document.body.classList.add('modal-open');
     }
 }
 
@@ -125,7 +134,7 @@ function closeModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.style.display = 'none';
-        document.body.style.overflow = '';
+        document.body.classList.remove('modal-open');
     }
 }
 
@@ -160,8 +169,12 @@ let confirmCallback = null;
  * Показать модалку подтверждения
  */
 function showConfirm(title, text, onYes) {
-    document.getElementById('confirmModalTitle').textContent = title;
-    document.getElementById('confirmModalText').textContent = text;
+    const titleEl = document.getElementById('confirmModalTitle');
+    const textEl = document.getElementById('confirmModalText');
+    
+    if (titleEl) titleEl.textContent = title;
+    if (textEl) textEl.textContent = text;
+    
     confirmCallback = onYes;
     openModal('confirmModal');
 }
@@ -174,7 +187,11 @@ function confirmClearSimpleTriggers() {
         'Очистить триггеры?',
         'Все введенные триггеры будут удалены. Продолжить?',
         () => {
-            document.getElementById('simpleTriggers').value = '';
+            const textarea = document.getElementById('simpleTriggers');
+            if (textarea) {
+                textarea.value = '';
+            }
+            
             if (typeof updateSimpleTriggerCount === 'function') {
                 updateSimpleTriggerCount();
             }
@@ -194,9 +211,21 @@ function confirmClearResult() {
         'Очистить результат?',
         'Сгенерированное regex будет удалено. Продолжить?',
         () => {
-            document.getElementById('resultRegex').value = '';
-            document.getElementById('regexLength').textContent = 'Длина: 0 символов';
-            document.getElementById('resultStats').style.display = 'none';
+            // ИСПРАВЛЕНО: правильный ID элемента
+            const resultTextarea = document.getElementById('regexResult');
+            const lengthEl = document.getElementById('regexLength');
+            const statsEl = document.getElementById('resultStats');
+            
+            if (resultTextarea) {
+                resultTextarea.value = '';
+            }
+            if (lengthEl) {
+                lengthEl.textContent = 'Длина: 0 символов';
+            }
+            if (statsEl) {
+                statsEl.style.display = 'none';
+            }
+            
             closeModal('confirmModal');
         }
     );
@@ -215,24 +244,41 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Кнопки помощи по панелям
-    document.getElementById('inputHelpBtn')?.addEventListener('click', () => showPanelHelp('input'));
-    document.getElementById('optimizationHelpBtn')?.addEventListener('click', () => showPanelHelp('optimization'));
-    document.getElementById('resultHelpBtn')?.addEventListener('click', () => showPanelHelp('result'));
+    const inputHelpBtn = document.getElementById('inputHelpBtn');
+    const optimizationHelpBtn = document.getElementById('optimizationHelpBtn');
+    const resultHelpBtn = document.getElementById('resultHelpBtn');
+    
+    if (inputHelpBtn) {
+        inputHelpBtn.addEventListener('click', () => showPanelHelp('input'));
+    }
+    if (optimizationHelpBtn) {
+        optimizationHelpBtn.addEventListener('click', () => showPanelHelp('optimization'));
+    }
+    if (resultHelpBtn) {
+        resultHelpBtn.addEventListener('click', () => showPanelHelp('result'));
+    }
     
     // Подтверждение
-    document.getElementById('confirmModalYes')?.addEventListener('click', () => {
-        if (confirmCallback) confirmCallback();
-    });
-    document.getElementById('confirmModalNo')?.addEventListener('click', () => {
-        closeModal('confirmModal');
-    });
+    const confirmYesBtn = document.getElementById('confirmModalYes');
+    const confirmNoBtn = document.getElementById('confirmModalNo');
+    
+    if (confirmYesBtn) {
+        confirmYesBtn.addEventListener('click', () => {
+            if (confirmCallback) confirmCallback();
+        });
+    }
+    if (confirmNoBtn) {
+        confirmNoBtn.addEventListener('click', () => {
+            closeModal('confirmModal');
+        });
+    }
     
     // Закрытие модалок по клику на overlay
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
         overlay.addEventListener('click', (e) => {
             if (e.target === overlay) {
                 overlay.style.display = 'none';
-                document.body.style.overflow = '';
+                document.body.classList.remove('modal-open');
             }
         });
     });
@@ -243,9 +289,20 @@ document.addEventListener('DOMContentLoaded', function() {
             const modal = e.target.closest('.modal-overlay');
             if (modal) {
                 modal.style.display = 'none';
-                document.body.style.overflow = '';
+                document.body.classList.remove('modal-open');
             }
         });
+    });
+    
+    // ESC для закрытия модальных окон
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const openModals = document.querySelectorAll('.modal-overlay[style*="display: flex"]');
+            openModals.forEach(modal => {
+                modal.style.display = 'none';
+                document.body.classList.remove('modal-open');
+            });
+        }
     });
 });
 
@@ -255,8 +312,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function showPanelHelp(panelType) {
     const content = getPanelHelpContent(panelType);
-    document.getElementById('panelHelpTitle').textContent = content.title;
-    document.getElementById('panelHelpContent').innerHTML = content.html;
+    const titleEl = document.getElementById('panelHelpTitle');
+    const contentEl = document.getElementById('panelHelpContent');
+    
+    if (titleEl) titleEl.textContent = content.title;
+    if (contentEl) contentEl.innerHTML = content.html;
+    
     openModal('panelHelpModal');
 }
 
@@ -414,9 +475,9 @@ function getPanelHelpContent(panelType) {
                 
                 <div class="info-box">
                     💡 <strong>Цвет индикатора длины:</strong><br>
-                    • <strong style="color: #4CAF50;">Зеленый</strong> (< 5000 символов) = норма<br>
+                    • <strong style="color: #4CAF50;">Зеленый</strong> (&lt; 5000 символов) = норма<br>
                     • <strong style="color: #FF9800;">Оранжевый</strong> (5000-9000 символов) = предупреждение<br>
-                    • <strong style="color: #F44336;">Красный</strong> (> 9000 символов) = критично
+                    • <strong style="color: #F44336;">Красный</strong> (&gt; 9000 символов) = критично
                 </div>
                 
                 <h4>🛠️ Действия с результатом</h4>
@@ -451,9 +512,6 @@ function getPanelHelpContent(panelType) {
                         <li><strong>JSON</strong> — regex + триггеры + настройки (структурированные данные)</li>
                         <li><strong>CSV</strong> — таблица с триггерами и regex (для Excel)</li>
                     </ul>
-                    <div class="warning-box">
-                        ⚠️ <strong>Внимание:</strong> Функция экспорта находится в разработке. Кнопка может быть временно недоступна.
-                    </div>
                 </div>
                 
                 <h4>📏 Лимиты</h4>
@@ -477,4 +535,15 @@ function getPanelHelpContent(panelType) {
     return helpContent[panelType] || { title: 'Помощь', html: '<p>Информация не найдена</p>' };
 }
 
-console.log('✓ Inline scripts loaded (v2.0 - обновлены подсказки)');
+// Экспорт для глобального доступа
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.showConfirm = showConfirm;
+window.confirmClearSimpleTriggers = confirmClearSimpleTriggers;
+window.confirmClearResult = confirmClearResult;
+window.showPanelHelp = showPanelHelp;
+window.closeRegulationsModal = closeRegulationsModal;
+window.closeTriggerSettingsModal = closeTriggerSettingsModal;
+window.closeGroupSettingsModal = closeGroupSettingsModal;
+
+console.log('✅ Inline scripts loaded (v2.1 FINAL)');
