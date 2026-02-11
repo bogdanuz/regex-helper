@@ -12,237 +12,231 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
-            background: #0d1117;
-            color: #c9d1d9;
-            line-height: 1.6;
-            padding: 20px;
+            font-family: 'Courier New', 'Consolas', monospace;
+            background: #000;
+            color: #0f0;
+            font-size: 12px;
+            line-height: 1.4;
+            padding: 8px;
         }
 
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
+            max-width: 100%;
+            height: calc(100vh - 16px);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
 
         .header {
-            background: #161b22;
-            padding: 20px;
-            border-radius: 6px;
-            border: 1px solid #30363d;
-            margin-bottom: 20px;
+            background: #111;
+            padding: 6px 8px;
+            border: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .header h1 {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #58a6ff;
+            font-size: 13px;
+            font-weight: normal;
+            color: #0f0;
         }
 
-        .header p {
-            color: #8b949e;
-            font-size: 14px;
+        .header-stats {
+            color: #888;
+            font-size: 11px;
         }
 
-        .test-selector {
-            background: #161b22;
-            padding: 20px;
-            border-radius: 6px;
-            border: 1px solid #30363d;
-            margin-bottom: 20px;
+        .main {
+            display: flex;
+            gap: 4px;
+            flex: 1;
+            overflow: hidden;
         }
 
-        .test-selector h2 {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 16px;
-            color: #c9d1d9;
+        .left-panel {
+            width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .test-list-container {
+            flex: 1;
+            background: #111;
+            border: 1px solid #333;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .test-list {
+            width: 100%;
         }
 
         .test-item {
-            background: #0d1117;
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px solid #30363d;
-            margin-bottom: 10px;
             display: flex;
             align-items: center;
-            gap: 12px;
-            transition: all 0.2s;
+            padding: 4px 6px;
+            border-bottom: 1px solid #222;
+            cursor: pointer;
+            transition: background 0.1s;
         }
 
         .test-item:hover {
-            border-color: #58a6ff;
-            background: #161b22;
+            background: #1a1a1a;
         }
 
         .test-item input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
+            margin-right: 8px;
             cursor: pointer;
-            accent-color: #58a6ff;
         }
 
         .test-info {
             flex: 1;
+            min-width: 0;
         }
 
         .test-name {
-            font-weight: 600;
-            color: #c9d1d9;
-            margin-bottom: 4px;
-        }
-
-        .test-description {
-            font-size: 13px;
-            color: #8b949e;
+            color: #0f0;
+            font-size: 11px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .test-meta {
-            display: flex;
-            gap: 12px;
-            font-size: 12px;
-            color: #8b949e;
-        }
-
-        .test-badge {
-            background: #21262d;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 12px;
+            color: #666;
+            font-size: 10px;
+            margin-top: 2px;
         }
 
         .controls {
-            background: #161b22;
-            padding: 20px;
-            border-radius: 6px;
-            border: 1px solid #30363d;
-            margin-bottom: 20px;
+            background: #111;
+            border: 1px solid #333;
+            padding: 6px 8px;
             display: flex;
-            gap: 12px;
+            gap: 8px;
             align-items: center;
-            flex-wrap: wrap;
         }
 
         .btn {
-            background: #21262d;
-            color: #c9d1d9;
-            border: 1px solid #30363d;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 500;
+            background: #222;
+            color: #0f0;
+            border: 1px solid #333;
+            padding: 4px 12px;
+            font-size: 11px;
+            font-family: 'Courier New', monospace;
             cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s;
+            transition: all 0.1s;
         }
 
         .btn:hover {
-            background: #30363d;
-            border-color: #8b949e;
+            background: #333;
+            border-color: #0f0;
         }
 
-        .btn-primary {
-            background: #238636;
-            border-color: #2ea043;
-            color: #fff;
-        }
-
-        .btn-primary:hover {
-            background: #2ea043;
+        .btn:active {
+            background: #0f0;
+            color: #000;
         }
 
         .btn:disabled {
-            opacity: 0.5;
+            opacity: 0.3;
             cursor: not-allowed;
         }
 
-        .selected-info {
+        .btn-primary {
+            border-color: #0f0;
+        }
+
+        .info {
             flex: 1;
-            font-size: 14px;
-            color: #8b949e;
+            color: #666;
+            font-size: 11px;
         }
 
-        .results {
-            background: #161b22;
-            padding: 20px;
-            border-radius: 6px;
-            border: 1px solid #30363d;
-            margin-bottom: 20px;
+        .right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
 
-        .results h2 {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 16px;
-            color: #c9d1d9;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 12px;
-            margin-bottom: 20px;
+        .stats-bar {
+            background: #111;
+            border: 1px solid #333;
+            padding: 6px 8px;
+            display: flex;
+            gap: 20px;
         }
 
         .stat {
-            background: #0d1117;
-            padding: 16px;
-            border-radius: 6px;
-            border: 1px solid #30363d;
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 4px;
+            font-size: 11px;
         }
 
         .stat-label {
-            font-size: 12px;
-            color: #8b949e;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            color: #666;
         }
 
-        .stat.total .stat-number { color: #58a6ff; }
-        .stat.passed .stat-number { color: #3fb950; }
-        .stat.failed .stat-number { color: #f85149; }
+        .stat-value {
+            color: #0f0;
+            margin-left: 6px;
+        }
 
-        .logs {
-            background: #0d1117;
-            padding: 16px;
-            border-radius: 6px;
-            border: 1px solid #30363d;
-            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-            font-size: 13px;
-            line-height: 1.6;
-            max-height: 500px;
+        .stat-value.passed { color: #0f0; }
+        .stat-value.failed { color: #f00; }
+
+        .logs-container {
+            flex: 1;
+            background: #000;
+            border: 1px solid #333;
             overflow-y: auto;
+            overflow-x: hidden;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            padding: 6px;
             white-space: pre-wrap;
             word-break: break-word;
         }
 
-        .logs:empty::before {
-            content: 'Логи появятся после запуска тестов...';
-            color: #8b949e;
-            font-style: italic;
+        .logs-container:empty::before {
+            content: '> Waiting for tests...';
+            color: #666;
         }
 
-        .log-success { color: #3fb950; }
-        .log-error { color: #f85149; }
-        .log-info { color: #58a6ff; }
-        .log-muted { color: #8b949e; }
+        .log-line {
+            margin-bottom: 2px;
+        }
+
+        .log-success { color: #0f0; }
+        .log-error { color: #f00; }
+        .log-info { color: #0ff; }
+        .log-muted { color: #666; }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #000;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
 
         .spinner {
             display: inline-block;
-            width: 14px;
-            height: 14px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: #58a6ff;
+            width: 8px;
+            height: 8px;
+            border: 2px solid #333;
+            border-top-color: #0f0;
             border-radius: 50%;
             animation: spin 0.6s linear infinite;
         }
@@ -250,82 +244,62 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-
-        ::-webkit-scrollbar {
-            width: 10px;
-            height: 10px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #0d1117;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #30363d;
-            border-radius: 5px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #484f58;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #8b949e;
-        }
-
-        .empty-state-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>🧪 RegexHelper v4.0 - Test Runner</h1>
-            <p>Динамический запуск тестов • Темная тема • Минимализм</p>
+            <h1>[REGEX HELPER v4.0 - TEST RUNNER]</h1>
+            <div class="header-stats" id="headerStats">READY</div>
         </div>
 
-        <!-- Test Selector -->
-        <div class="test-selector">
-            <h2>📋 Выберите тесты для запуска</h2>
-            <div id="testList"></div>
-        </div>
-
-        <!-- Controls -->
-        <div class="controls">
-            <button class="btn btn-primary" id="runBtn">
-                <span id="runIcon">▶</span>
-                <span id="runText">Запустить тесты</span>
-            </button>
-            <button class="btn" id="copyBtn">📋 Скопировать логи</button>
-            <button class="btn" id="clearBtn">🗑 Очистить</button>
-            <div class="selected-info" id="selectedInfo">
-                Выберите тесты для запуска
-            </div>
-        </div>
-
-        <!-- Results -->
-        <div class="results">
-            <h2>📊 Результаты</h2>
-            <div class="stats">
-                <div class="stat total">
-                    <div class="stat-number" id="totalTests">0</div>
-                    <div class="stat-label">Всего</div>
+        <!-- Main -->
+        <div class="main">
+            <!-- Left Panel -->
+            <div class="left-panel">
+                <!-- Test List -->
+                <div class="test-list-container">
+                    <div class="test-list" id="testList"></div>
                 </div>
-                <div class="stat passed">
-                    <div class="stat-number" id="passedTests">0</div>
-                    <div class="stat-label">Пройдено</div>
-                </div>
-                <div class="stat failed">
-                    <div class="stat-number" id="failedTests">0</div>
-                    <div class="stat-label">Провалено</div>
+
+                <!-- Controls -->
+                <div class="controls">
+                    <button class="btn btn-primary" id="runBtn">
+                        <span id="runText">RUN</span>
+                    </button>
+                    <button class="btn" id="selectAllBtn">SELECT ALL</button>
+                    <button class="btn" id="clearBtn">CLEAR</button>
+                    <button class="btn" id="copyBtn">COPY LOGS</button>
+                    <div class="info" id="selectedInfo">0 selected</div>
                 </div>
             </div>
-            <div class="logs" id="logs"></div>
+
+            <!-- Right Panel -->
+            <div class="right-panel">
+                <!-- Stats -->
+                <div class="stats-bar">
+                    <div class="stat">
+                        <span class="stat-label">TOTAL:</span>
+                        <span class="stat-value" id="totalTests">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">PASSED:</span>
+                        <span class="stat-value passed" id="passedTests">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">FAILED:</span>
+                        <span class="stat-value failed" id="failedTests">0</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">RATE:</span>
+                        <span class="stat-value" id="passRate">0.0%</span>
+                    </div>
+                </div>
+
+                <!-- Logs -->
+                <div class="logs-container" id="logs"></div>
+            </div>
         </div>
     </div>
 
@@ -333,27 +307,48 @@
         import { TEST_SUITES } from './tests/test-config.js';
 
         let selectedTests = new Set();
-        let allTestResults = [];
         let isRunning = false;
+        let consoleLogBuffer = [];
 
-        // Сортировка: новые сверху (по дате убывание)
+        // Сортировка: новые сверху
         const sortedSuites = [...TEST_SUITES].sort((a, b) => {
             return new Date(b.date) - new Date(a.date);
         });
 
-        // Инициализация
+        // Перехват console.log
+        const originalLog = console.log;
+        const originalError = console.error;
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const message = args.map(arg => {
+                if (typeof arg === 'object') {
+                    return JSON.stringify(arg);
+                }
+                return String(arg);
+            }).join(' ');
+            consoleLogBuffer.push(message);
+            appendLog(message);
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            const message = args.map(arg => String(arg)).join(' ');
+            consoleLogBuffer.push('[ERROR] ' + message);
+            appendLog('[ERROR] ' + message, 'error');
+        };
+
         function init() {
             renderTestList();
             setupEventListeners();
             updateSelectedInfo();
         }
 
-        // Отрисовка списка тестов
         function renderTestList() {
             const container = document.getElementById('testList');
             
             if (sortedSuites.length === 0) {
-                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><p>Нет доступных тестов</p></div>';
+                container.innerHTML = '<div style="padding:20px;color:#666;">NO TESTS FOUND</div>';
                 return;
             }
 
@@ -367,17 +362,11 @@
                     >
                     <div class="test-info">
                         <div class="test-name">${suite.name}</div>
-                        <div class="test-description">${suite.description}</div>
-                        <div class="test-meta">
-                            <span class="test-badge">~${suite.estimatedTests} тестов</span>
-                            <span class="test-badge">v${suite.version}</span>
-                            <span class="test-badge">${suite.date}</span>
-                        </div>
+                        <div class="test-meta">${suite.file} | ${suite.estimatedTests} tests | v${suite.version} | ${suite.date}</div>
                     </div>
                 </div>
             `).join('');
 
-            // Добавляем в Set выбранные по умолчанию
             sortedSuites.forEach(suite => {
                 if (suite.enabled) {
                     selectedTests.add(suite.id);
@@ -385,9 +374,7 @@
             });
         }
 
-        // Event listeners
         function setupEventListeners() {
-            // Чекбоксы
             document.getElementById('testList').addEventListener('change', (e) => {
                 if (e.target.type === 'checkbox') {
                     const suiteId = e.target.dataset.suiteId;
@@ -400,147 +387,133 @@
                 }
             });
 
-            // Кнопки
             document.getElementById('runBtn').addEventListener('click', runTests);
-            document.getElementById('copyBtn').addEventListener('click', copyLogs);
+            document.getElementById('selectAllBtn').addEventListener('click', selectAll);
             document.getElementById('clearBtn').addEventListener('click', clearResults);
+            document.getElementById('copyBtn').addEventListener('click', copyLogs);
         }
 
-        // Обновление инфо о выбранных тестах
+        function selectAll() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            
+            checkboxes.forEach(cb => {
+                cb.checked = !allChecked;
+                const suiteId = cb.dataset.suiteId;
+                if (cb.checked) {
+                    selectedTests.add(suiteId);
+                } else {
+                    selectedTests.delete(suiteId);
+                }
+            });
+            
+            updateSelectedInfo();
+        }
+
         function updateSelectedInfo() {
             const count = selectedTests.size;
             const totalTests = sortedSuites
                 .filter(s => selectedTests.has(s.id))
                 .reduce((sum, s) => sum + s.estimatedTests, 0);
 
-            const info = document.getElementById('selectedInfo');
-            if (count === 0) {
-                info.textContent = 'Выберите тесты для запуска';
-            } else {
-                info.textContent = `Выбрано: ${count} файл(а) • ~${totalTests} тестов`;
-            }
+            document.getElementById('selectedInfo').textContent = 
+                count === 0 ? '0 selected' : `${count} file(s) | ~${totalTests} tests`;
         }
 
-        // Запуск тестов
         async function runTests() {
             if (isRunning) return;
             if (selectedTests.size === 0) {
-                log('error', 'Выберите хотя бы один тест');
+                appendLog('[ERROR] No tests selected', 'error');
                 return;
             }
 
             isRunning = true;
             updateRunButton(true);
             clearResults();
+            consoleLogBuffer = [];
 
             const startTime = Date.now();
-            log('info', '═'.repeat(50));
-            log('info', `🚀 Запуск ${selectedTests.size} тестовых файлов...`);
-            log('info', '═'.repeat(50));
-
-            allTestResults = [];
+            document.getElementById('headerStats').textContent = 'RUNNING...';
 
             for (const suiteId of selectedTests) {
                 const suite = sortedSuites.find(s => s.id === suiteId);
                 if (!suite) continue;
 
-                log('info', `\n📦 Загрузка: ${suite.name}`);
-
                 try {
-                    // Динамический импорт теста
-                    const module = await import(`./tests/${suite.file}`);
-                    log('success', `✅ ${suite.file} загружен`);
+                    await import(`./tests/${suite.file}?t=${Date.now()}`);
                 } catch (error) {
-                    log('error', `❌ Ошибка загрузки ${suite.file}: ${error.message}`);
+                    appendLog(`[ERROR] Failed to load ${suite.file}: ${error.message}`, 'error');
                 }
             }
 
             const duration = Date.now() - startTime;
-            
-            log('info', '\n' + '═'.repeat(50));
-            log('info', `✅ Тестирование завершено за ${duration}ms`);
-            log('info', '═'.repeat(50));
+            document.getElementById('headerStats').textContent = `COMPLETED IN ${duration}ms`;
 
             setTimeout(() => {
                 updateRunButton(false);
                 isRunning = false;
-            }, 1000);
+            }, 500);
         }
 
-        // Логирование
-        function log(type, message) {
+        function appendLog(message, type = 'info') {
             const logsEl = document.getElementById('logs');
             const line = document.createElement('div');
-            
-            const timestamp = new Date().toLocaleTimeString('ru-RU');
-            const prefix = {
-                'success': '✅',
-                'error': '❌',
-                'info': 'ℹ️',
-                'muted': '•'
-            }[type] || '';
-
-            line.className = `log-${type}`;
+            line.className = `log-line log-${type}`;
             line.textContent = message;
-            
             logsEl.appendChild(line);
             logsEl.scrollTop = logsEl.scrollHeight;
         }
 
-        // Копирование логов
         async function copyLogs() {
-            const logsEl = document.getElementById('logs');
-            const text = logsEl.textContent;
-
-            if (!text.trim()) {
-                log('error', 'Нет логов для копирования');
+            if (consoleLogBuffer.length === 0) {
+                appendLog('[ERROR] No logs to copy', 'error');
                 return;
             }
 
             try {
-                await navigator.clipboard.writeText(text);
-                log('success', '📋 Логи скопированы в буфер обмена');
+                await navigator.clipboard.writeText(consoleLogBuffer.join('\n'));
+                appendLog('[OK] Logs copied to clipboard', 'success');
             } catch (error) {
-                log('error', '❌ Не удалось скопировать логи');
+                appendLog('[ERROR] Failed to copy logs', 'error');
             }
         }
 
-        // Очистка результатов
         function clearResults() {
             document.getElementById('logs').innerHTML = '';
             document.getElementById('totalTests').textContent = '0';
             document.getElementById('passedTests').textContent = '0';
             document.getElementById('failedTests').textContent = '0';
-            allTestResults = [];
+            document.getElementById('passRate').textContent = '0.0%';
+            document.getElementById('headerStats').textContent = 'READY';
+            consoleLogBuffer = [];
         }
 
-        // Обновление кнопки запуска
         function updateRunButton(running) {
             const btn = document.getElementById('runBtn');
-            const icon = document.getElementById('runIcon');
             const text = document.getElementById('runText');
 
             if (running) {
                 btn.disabled = true;
-                icon.innerHTML = '<span class="spinner"></span>';
-                text.textContent = 'Тестирование...';
+                text.innerHTML = '<span class="spinner"></span> RUNNING';
             } else {
                 btn.disabled = false;
-                icon.textContent = '▶';
-                text.textContent = 'Запустить тесты';
+                text.textContent = 'RUN';
             }
         }
 
-        // Обновление статистики из консоли
+        // Слушаем события из тестов
         window.addEventListener('message', (event) => {
             if (event.data.type === 'test-stats') {
-                document.getElementById('totalTests').textContent = event.data.total || 0;
-                document.getElementById('passedTests').textContent = event.data.passed || 0;
-                document.getElementById('failedTests').textContent = event.data.failed || 0;
+                const { total, passed, failed } = event.data;
+                document.getElementById('totalTests').textContent = total || 0;
+                document.getElementById('passedTests').textContent = passed || 0;
+                document.getElementById('failedTests').textContent = failed || 0;
+                
+                const rate = total > 0 ? ((passed / total) * 100).toFixed(1) : '0.0';
+                document.getElementById('passRate').textContent = rate + '%';
             }
         });
 
-        // Запуск
         init();
     </script>
 </body>
