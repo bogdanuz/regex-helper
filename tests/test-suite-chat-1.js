@@ -346,42 +346,74 @@
         ]
     });
 
-    /**
- * Type 1: Латиница/кириллица (д/d, о/o, а/a, т/t...)
- * @param {string} trigger - Триггер
- * @returns {string} - Триггер с вариациями
- * @example
- * applyType1('дом') // => '[дd][оo][мm]'
- */
-export function applyType1(trigger) {
-    if (!trigger || typeof trigger !== 'string') {
-        return '';
-    }
-
-    const map = {
-        'а': '[аa]', 'a': '[аa]',
-        'в': '[вb]', 'b': '[вb]',
-        'д': '[дd]', 'd': '[дd]',  // ← ДОБАВИЛ!
-        'е': '[еe]', 'e': '[еe]',
-        'к': '[кk]', 'k': '[кk]',
-        'м': '[мm]', 'm': '[мm]',
-        'н': '[нh]', 'h': '[нh]',
-        'о': '[оo]', 'o': '[оo]',
-        'р': '[рp]', 'p': '[рp]',
-        'с': '[сc]', 'c': '[сc]',
-        'т': '[тt]', 't': '[тt]',
-        'у': '[уy]', 'y': '[уy]',
-        'х': '[хx]', 'x': '[хx]'
-    };
-
-    let result = '';
-    for (const char of trigger.toLowerCase()) {
-        result += map[char] || escapeRegex(char);
-    }
-
-    return result;
-}
-
+    // =====================================================================
+    // SUITE 6: CONVERTER/OPTIMIZER.JS (7 тестов)
+    // =====================================================================
+    runner.registerSuite({
+        name: '6. converter/optimizer.js - Оптимизации',
+        tests: [
+            {
+                name: 'applyType1 - латиница д/d',
+    fn: async function() {
+        const { applyType1 } = await import('../js-new/converter/optimizer.js');
+        const result = applyType1('дом');
+        
+        // ← ДОБАВЬ ЭТИ 3 СТРОКИ:
+        console.log('🔍 DEBUG applyType1("дом"):', result);
+        console.log('🔍 Содержит [дd]?', result.includes('[дd]'));
+        console.log('🔍 Содержит [dд]?', result.includes('[dд]'));
+        
+        Assert.contains(result, '[дd]', 'Должно содержать [дd]');
+                }
+            },
+            {
+                name: 'applyType1 - латиница о/o',
+                fn: async function() {
+                    const { applyType1 } = await import('../js-new/converter/optimizer.js');
+                    const result = applyType1('дом');
+                    Assert.contains(result, '[оo]', 'Должно содержать [оo]');
+                }
+            },
+            {
+                name: 'applyType1 - латиница м/m',
+                fn: async function() {
+                    const { applyType1 } = await import('../js-new/converter/optimizer.js');
+                    const result = applyType1('дом');
+                    Assert.contains(result, '[мm]', 'Должно содержать [мm]');
+                }
+            },
+            {
+                name: 'applyType2 - общий корень',
+                fn: async function() {
+                    const { applyType2 } = await import('../js-new/converter/optimizer.js');
+                    const result = applyType2(['тест', 'тестер']);
+                    Assert.contains(result, 'тест', 'Должно содержать корень тест');
+                }
+            },
+            {
+                name: 'applyType5 - удвоенные буквы',
+                fn: async function() {
+                    const { applyType5 } = await import('../js-new/converter/optimizer.js');
+                    const result = applyType5('аллея');
+                    Assert.contains(result, 'л?', 'Должно содержать л?');
+                }
+            },
+            {
+                name: 'applyType6 - точки между буквами',
+                fn: async function() {
+                    const { applyType6 } = await import('../js-new/converter/optimizer.js');
+                    Assert.equals(applyType6('test'), 't.e.s.t', 'Должно быть t.e.s.t');
+                }
+            },
+            {
+                name: 'findCommonPrefix - поиск общего префикса',
+                fn: async function() {
+                    const { findCommonPrefix } = await import('../js-new/converter/optimizer.js');
+                    Assert.equals(findCommonPrefix(['тест', 'тестер', 'тестирование']), 'тест', 'Префикс должен быть тест');
+                }
+            }
+        ]
+    });
 
     // =====================================================================
     // SUITE 7: UI/MODALS.JS (3 теста)
