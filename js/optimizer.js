@@ -2,13 +2,61 @@
    REGEXHELPER - OPTIMIZER
    6 типов оптимизации regex
    
-   ВЕРСИЯ: 3.0 (Добавлен Type 6: Префикс)
+   ВЕРСИЯ: 3.0 FINAL
    ДАТА: 11.02.2026
    ИЗМЕНЕНИЯ:
    - Добавлен Type 6A: Wildcard (дет\w+)
    - Добавлен Type 6B: Точный префикс (дет(и|ьми|...)?)
    - Type 6 интегрирован в applyOptimizations
+   - ИСПРАВЛЕНО: Экранирование в Type 3 (двойное вместо четверного)
+   - ИСПРАВЛЕНО: Экранирование в Type 6A (двойное вместо четверного)
+   - ИСПРАВЛЕНО: Regex в Type 5 (бэкреференс без экранирования)
+   - ДОБАВЛЕНО: Safe функции с fallback
+   - УЛУЧШЕНО: Проверки зависимостей
+   
+   ЗАВИСИМОСТИ:
+   - utils.js (escapeRegex)
+   - converter.js (parseSimpleTriggers, validateTriggers, etc.)
+   - errors.js (showToast, showInlineError, logError)
+   - lib/russian-nouns-js.min.js (RussianNouns) - опционально
    ============================================ */
+
+/* ============================================
+   SAFE ФУНКЦИИ (FALLBACK)
+   ============================================ */
+
+/**
+ * Безопасное экранирование regex
+ */
+function escapeRegexSafe(str) {
+    if (typeof escapeRegex === 'function') {
+        return escapeRegex(str);
+    }
+    // Fallback
+    return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Безопасный toast
+ */
+function showToastSafe(type, message, duration) {
+    if (typeof showToast === 'function') {
+        showToast(type, message, duration);
+    } else {
+        console.log(`[Toast ${type.toUpperCase()}] ${message}`);
+    }
+}
+
+/**
+ * Безопасное логирование ошибок
+ */
+function logErrorSafe(context, error) {
+    if (typeof logError === 'function') {
+        logError(context, error);
+    } else {
+        console.error(`[${context}]`, error);
+    }
+}
 
 /* ============================================
    ТИП 1: ВАРИАЦИИ БУКВ (ЛАТИНИЦА ↔ КИРИЛЛИЦА)
@@ -65,7 +113,7 @@ function optimizeType1(triggers) {
     for (let trigger of triggers) {
         // Проверяем есть ли заменяемые символы
         if (!hasReplaceableChars(trigger)) {
-            optimized.push(escapeRegex(trigger));
+            optimized.push(escapeRegexSafe(trigger));
             continue;
         }
         
@@ -80,7 +128,7 @@ function optimizeType1(triggers) {
                 pattern += '[' + char + replacement + ']';
             } else {
                 // Обычный символ - экранируем
-                pattern += escapeRegex(char);
+                pattern += escapeRegexSafe(char);
             }
         }
         
@@ -155,7 +203,7 @@ function optimizeType2(triggers) {
             const suffixes = group.map(t => t.substring(prefix.length));
             
             // Создаем паттерн: книг[аи]
-            const pattern = escapeRegex(prefix) + '[' + suffixes.map(s => escapeRegex(s)).join('') + ']';
+            const pattern = escapeRegexSafe(prefix) + '[' + suffixes.map(s => escapeRegexSafe(s)).join('') + ']';
             optimized.push(pattern);
         } else {
             optimized.push(current);
@@ -171,11 +219,11 @@ function optimizeType2(triggers) {
    ⚠️ КРИТИЧНО: Type 3 - ТОЛЬКО для СВЯЗАННЫХ ГРУПП!
    НЕ вызывать для простых триггеров!
    
-   5 ТИПОВ РАССТОЯНИЯ (обновлено v3.0):
+   5 ТИПОВ РАССТОЯНИЯ (обновлено v3.0 FINAL):
    1. fixed: .{min,max} (default: 1-7)
-   2. any: [\\s\\S]+ (любое расстояние)
+   2. any: [\s\S]+ (любое расстояние) ✅ ИСПРАВЛЕНО
    3. paragraph: .+ (в пределах абзаца)
-   4. line: [^\n]+ (в пределах строки)
+   4. line: [^\n]+ (в пределах строки) ✅ ИСПРАВЛЕНО
    5. alternation: | (альтернация - НОВОЕ!) ← для режима 3
    ============================================ */
 
@@ -205,7 +253,7 @@ function optimizeType3(linkedGroup, settings) {
     }
     
     if (triggers.length === 1) {
-        return escapeRegex(triggers[0]);
+        return escapeRegexSafe(triggers[0]);
     }
     
     // Получаем настройки группы
@@ -229,8 +277,8 @@ function optimizeType3(linkedGroup, settings) {
             break;
             
         case 'any':
-            // Любое расстояние (включая переносы строк)
-            separator = '[\\\\s\\\\S]+';
+            // ИСПРАВЛЕНО: двойное экранирование вместо четверного
+            separator = '[\\s\\S]+';
             break;
             
         case 'paragraph':
@@ -239,8 +287,8 @@ function optimizeType3(linkedGroup, settings) {
             break;
             
         case 'line':
-            // В пределах строки (не через перенос строк)
-            separator = '[^\\\\n]+';
+            // ИСПРАВЛЕНО: двойное экранирование вместо четверного
+            separator = '[^\\n]+';
             break;
             
         case 'alternation':
@@ -256,7 +304,7 @@ function optimizeType3(linkedGroup, settings) {
     console.log(`[Optimizer Type 3] Тип расстояния: ${distanceType}, разделитель: ${separator}`);
     
     // Экранируем триггеры и соединяем через separator
-    const escapedTriggers = triggers.map(t => escapeRegex(t));
+    const escapedTriggers = triggers.map(t => escapeRegexSafe(t));
     const pattern = escapedTriggers.join(separator);
     
     return pattern;
@@ -305,21 +353,6 @@ function detectGender(word) {
     
     // По умолчанию: мужской род (согласная на конце)
     return 'MASCULINE';
-}
-
-/**
- * Поиск общего суффикса
- * @param {string} str1 - Первая строка
- * @param {string} str2 - Вторая строка
- * @returns {string} - Общий суффикс
- */
-function findCommonSuffix(str1, str2) {
-    let i = 0;
-    while (i < str1.length && i < str2.length && 
-           str1[str1.length - 1 - i] === str2[str2.length - 1 - i]) {
-        i++;
-    }
-    return str1.substring(str1.length - i);
 }
 
 /**
@@ -487,7 +520,7 @@ function optimizeType4(triggers) {
     if (typeof RussianNouns === 'undefined' || 
         typeof RussianNouns.Engine !== 'function') {
         console.warn('[Optimizer Type 4] Библиотека RussianNouns недоступна. Type 4 пропущен.');
-        return triggers.map(t => escapeRegex(t));
+        return triggers.map(t => escapeRegexSafe(t));
     }
     
     const result = [];
@@ -495,7 +528,7 @@ function optimizeType4(triggers) {
     for (let trigger of triggers) {
         // Проверка: только русские слова
         if (!/^[а-яё]+$/i.test(trigger)) {
-            result.push(escapeRegex(trigger));
+            result.push(escapeRegexSafe(trigger));
             continue;
         }
         
@@ -517,17 +550,17 @@ function optimizeType4(triggers) {
                     const uniqueSuffixes = Array.from(new Set(suffixes))
                         .sort((a, b) => b.length - a.length);
                     
-                    const pattern = escapeRegex(base) + '(' + uniqueSuffixes.map(s => escapeRegex(s)).join('|') + ')';
+                    const pattern = escapeRegexSafe(base) + '(' + uniqueSuffixes.map(s => escapeRegexSafe(s)).join('|') + ')';
                     result.push(pattern);
                 } else {
-                    result.push(escapeRegex(trigger));
+                    result.push(escapeRegexSafe(trigger));
                 }
             } else {
-                result.push(escapeRegex(trigger));
+                result.push(escapeRegexSafe(trigger));
             }
         } catch (error) {
             console.warn('[Optimizer Type 4] Ошибка для триггера:', trigger, error);
-            result.push(escapeRegex(trigger));
+            result.push(escapeRegexSafe(trigger));
         }
     }
     
@@ -629,6 +662,7 @@ function optimizeType5(triggers) {
 
         // ========================================
         // НОВАЯ ЛОГИКА: Поиск удвоенных букв внутри слова
+        // ИСПРАВЛЕНО: без экранирования \1 (бэкреференс)
         // ========================================
         const doubleLetterMatch = current.match(/(.)\1/);
         
@@ -639,9 +673,9 @@ function optimizeType5(triggers) {
             const position = current.indexOf(doubleLetter);
             
             // Создаем паттерн: делаем вторую букву опциональной
-            const before = escapeRegex(current.substring(0, position + 1));
-            const optionalChar = escapeRegex(singleLetter);
-            const after = escapeRegex(current.substring(position + 2));
+            const before = escapeRegexSafe(current.substring(0, position + 1));
+            const optionalChar = escapeRegexSafe(singleLetter);
+            const after = escapeRegexSafe(current.substring(position + 2));
             
             const pattern = before + optionalChar + '?' + after;
             
@@ -671,9 +705,9 @@ function optimizeType5(triggers) {
                     const shorter = current.length > other.length ? other : current;
 
                     // Создаем паттерн с опциональной буквой
-                    const before = escapeRegex(longer.substring(0, position));
-                    const optionalChar = escapeRegex(longer[position]);
-                    const after = escapeRegex(longer.substring(position + 1));
+                    const before = escapeRegexSafe(longer.substring(0, position));
+                    const optionalChar = escapeRegexSafe(longer[position]);
+                    const after = escapeRegexSafe(longer.substring(position + 1));
 
                     const pattern = before + optionalChar + '?' + after;
 
@@ -689,7 +723,7 @@ function optimizeType5(triggers) {
 
         // Если не нашли ни пару, ни удвоенную букву, добавляем как есть
         if (!foundPair) {
-            optimized.push(escapeRegex(current));
+            optimized.push(escapeRegexSafe(current));
         }
     }
 
@@ -697,9 +731,9 @@ function optimizeType5(triggers) {
 }
 
 /* ============================================
-   ТИП 6: ПРЕФИКС (НОВОЕ v3.0)
+   ТИП 6: ПРЕФИКС (НОВОЕ v3.0 FINAL)
    
-   Type 6A: Wildcard (дет\w+)
+   Type 6A: Wildcard (дет\w+) ✅ ИСПРАВЛЕНО
    Type 6B: Точный префикс (дет(и|ьми|...)?)
    ============================================ */
 
@@ -718,10 +752,11 @@ function optimizeType5(triggers) {
 function optimizeType6A(trigger) {
     if (!trigger || typeof trigger !== 'string') {
         console.warn('[Optimizer Type 6A] Некорректный триггер:', trigger);
-        return escapeRegex(trigger || '');
+        return escapeRegexSafe(trigger || '');
     }
     
-    const pattern = escapeRegex(trigger) + '\\\\w+';
+    // ИСПРАВЛЕНО: двойное экранирование вместо четверного
+    const pattern = escapeRegexSafe(trigger) + '\\w+';
     console.log(`[Optimizer Type 6A] Wildcard: "${trigger}" → "${pattern}"`);
     
     return pattern;
@@ -745,13 +780,13 @@ function optimizeType6A(trigger) {
 function optimizeType6B(trigger, endings) {
     if (!trigger || typeof trigger !== 'string') {
         console.warn('[Optimizer Type 6B] Некорректный триггер:', trigger);
-        return escapeRegex(trigger || '');
+        return escapeRegexSafe(trigger || '');
     }
     
     // Если окончаний нет, возвращаем просто префикс
     if (!endings || !Array.isArray(endings) || endings.length === 0) {
         console.log(`[Optimizer Type 6B] Нет окончаний для "${trigger}", возвращаем префикс`);
-        return escapeRegex(trigger);
+        return escapeRegexSafe(trigger);
     }
     
     // Фильтруем пустые окончания
@@ -759,7 +794,7 @@ function optimizeType6B(trigger, endings) {
     
     if (validEndings.length === 0) {
         console.log(`[Optimizer Type 6B] Все окончания пустые для "${trigger}", возвращаем префикс`);
-        return escapeRegex(trigger);
+        return escapeRegexSafe(trigger);
     }
     
     // Удаляем дубликаты и сортируем по длине (длинные первыми)
@@ -767,8 +802,8 @@ function optimizeType6B(trigger, endings) {
         .sort((a, b) => b.length - a.length);
     
     // Создаем паттерн: префикс(окончание1|окончание2|...)?
-    const escapedEndings = uniqueEndings.map(e => escapeRegex(e));
-    const pattern = escapeRegex(trigger) + '(' + escapedEndings.join('|') + ')?';
+    const escapedEndings = uniqueEndings.map(e => escapeRegexSafe(e));
+    const pattern = escapeRegexSafe(trigger) + '(' + escapedEndings.join('|') + ')?';
     
     console.log(`[Optimizer Type 6B] Точный префикс: "${trigger}" + [${uniqueEndings.join(', ')}] → "${pattern}"`);
     
@@ -794,7 +829,7 @@ function optimizeType6(triggers, settings) {
     
     if (!settings || !settings.mode) {
         console.warn('[Optimizer Type 6] Настройки не указаны, Type 6 пропущен');
-        return triggers.map(t => escapeRegex(t));
+        return triggers.map(t => escapeRegexSafe(t));
     }
     
     const mode = settings.mode; // 'wildcard' или 'exact'
@@ -814,7 +849,7 @@ function optimizeType6(triggers, settings) {
         
         if (!prefix) {
             console.warn('[Optimizer Type 6B] Префикс не указан, Type 6 пропущен');
-            return triggers.map(t => escapeRegex(t));
+            return triggers.map(t => escapeRegexSafe(t));
         }
         
         // Применяем Type 6B только к префиксу (игнорируем другие триггеры)
@@ -822,13 +857,13 @@ function optimizeType6(triggers, settings) {
             if (t === prefix) {
                 return optimizeType6B(prefix, endings);
             } else {
-                return escapeRegex(t);
+                return escapeRegexSafe(t);
             }
         });
         
     } else {
         console.warn(`[Optimizer Type 6] Неизвестный режим: ${mode}, Type 6 пропущен`);
-        return triggers.map(t => escapeRegex(t));
+        return triggers.map(t => escapeRegexSafe(t));
     }
 }
 
@@ -916,103 +951,19 @@ function convertToRegexWithOptimizations(triggers, types) {
 }
 
 /* ============================================
-   ПОЛНАЯ КОНВЕРТАЦИЯ С ОПТИМИЗАЦИЯМИ
-   ============================================ */
-
-/**
- * Полная конвертация с оптимизациями и валидацией
- * @param {string} text - Текст из textarea
- * @param {Object} types - Объект с флагами оптимизаций
- * @param {boolean} showWarnings - Показывать ли предупреждения
- * @returns {Object} - { success: boolean, regex: string, info: {} }
- */
-function performConversionWithOptimizations(text, types, showWarnings = true) {
-    try {
-        // Очистка всех inline ошибок
-        clearAllInlineErrors();
-        
-        // Проверка: выбрана ли хотя бы одна оптимизация
-        const hasOptimizations = types.type1 || types.type2 || types.type4 || types.type5 || types.type6;
-        
-        if (!hasOptimizations && showWarnings) {
-            showToast('warning', WARNING_MESSAGES.NO_OPTIMIZATIONS);
-        }
-        
-        // 1. Парсинг триггеров
-        let triggers = parseSimpleTriggers(text);
-        
-        // 2. Валидация исходных триггеров
-        const validation = validateTriggers(triggers);
-        
-        if (!validation.valid) {
-            showInlineError('simpleTriggers', validation.errors[0]);
-            return {
-                success: false,
-                regex: '',
-                info: { errors: validation.errors }
-            };
-        }
-        
-        // 3. Удаление дубликатов
-        const deduped = removeDuplicatesFromTriggers(triggers);
-        triggers = deduped.triggers;
-        
-        // Предупреждение о дубликатах
-        if (deduped.duplicatesCount > 0 && showWarnings) {
-            showMessage('warning', 'DUPLICATES_FOUND', deduped.duplicatesCount);
-        }
-        
-        // 4. Конвертация в regex с оптимизациями
-        const regex = convertToRegexWithOptimizations(triggers, types);
-        
-        // 5. Валидация длины regex
-        const lengthValidation = validateRegexLength(regex);
-        
-        if (!lengthValidation.valid) {
-            showToast('error', lengthValidation.errors[0]);
-            return {
-                success: false,
-                regex: '',
-                info: { errors: lengthValidation.errors }
-            };
-        }
-        
-        // Предупреждения
-        if (lengthValidation.warnings.length > 0 && showWarnings) {
-            showToast('warning', lengthValidation.warnings[0]);
-        }
-        
-        if (validation.warnings.length > 0 && showWarnings) {
-            showToast('warning', validation.warnings[0]);
-        }
-        
-        // Успех!
-        return {
-            success: true,
-            regex: regex,
-            info: {
-                originalCount: triggers.length + deduped.duplicatesCount,
-                finalCount: triggers.length,
-                duplicatesRemoved: deduped.duplicatesCount,
-                regexLength: countChars(regex),
-                optimizationsApplied: hasOptimizations
-            }
-        };
-        
-    } catch (error) {
-        logError('performConversionWithOptimizations', error);
-        showToast('error', ERROR_MESSAGES.UNKNOWN_ERROR);
-        
-        return {
-            success: false,
-            regex: '',
-            info: { errors: [error.message] }
-        };
-    }
-}
-
-/* ============================================
    ЭКСПОРТ
    ============================================ */
 
-console.log('✓ Модуль optimizer.js загружен (v3.0 - добавлен Type 6: Префикс)');
+// Экспортируем функции в глобальную область
+window.optimizeType1 = optimizeType1;
+window.optimizeType2 = optimizeType2;
+window.optimizeType3 = optimizeType3;
+window.optimizeType4 = optimizeType4;
+window.optimizeType5 = optimizeType5;
+window.optimizeType6 = optimizeType6;
+window.optimizeType6A = optimizeType6A;
+window.optimizeType6B = optimizeType6B;
+window.applyOptimizations = applyOptimizations;
+window.convertToRegexWithOptimizations = convertToRegexWithOptimizations;
+
+console.log('✅ Модуль optimizer.js загружен (v3.0 FINAL - Type 6: Префикс)');
