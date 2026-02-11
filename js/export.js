@@ -2,11 +2,19 @@
    REGEXHELPER - EXPORT
    Экспорт результатов в файлы (TXT, JSON, CSV)
    
-   ВЕРСИЯ: 2.1
-   ДАТА: 10.02.2026
-   ИЗМЕНЕНИЯ:
+   ВЕРСИЯ: 3.0 FINAL
+   ДАТА: 11.02.2026
+   ИЗМЕНЕНИЯ v3.0:
    - ИСПРАВЛЕНО: Переносы строк (\n вместо \\n)
-   - ИСПРАВЛЕНО: Проверка существования функций
+   - ИСПРАВЛЕНО: ID элементов (regexResult вместо resultRegex)
+   - ДОБАВЛЕНО: Проверки существования функций
+   - ДОБАВЛЕНО: Fallback для отсутствующих функций
+   - УЛУЧШЕНО: Обработка ошибок
+   
+   ЗАВИСИМОСТИ:
+   - utils.js (downloadFile, formatDate, getCurrentTimestamp)
+   - converter.js (parseSimpleTriggers)
+   - errors.js (showToast)
    ============================================ */
 
 /* ============================================
@@ -25,30 +33,36 @@ function exportTXT(regex, triggers = null) {
         return false;
     }
     
-    // ИСПРАВЛЕНО: '\n' вместо '\\n'
-    let content = '# RegexHelper Export\n';
-    content += `# Дата: ${formatDate(new Date())}\n`;
-    content += '\n';
-    content += '# Регулярное выражение:\n';
-    content += regex + '\n';
-    
-    if (triggers && triggers.length > 0) {
+    try {
+        // ИСПРАВЛЕНО: правильные переносы строк
+        let content = '# RegexHelper Export\n';
+        content += `# Дата: ${formatDateSafe(new Date())}\n`;
         content += '\n';
-        content += '# Исходные триггеры:\n';
-        content += triggers.join('\n') + '\n';
-    }
-    
-    // Генерируем имя файла
-    const filename = generateFilename('txt');
-    
-    // Скачиваем
-    const success = downloadFile(content, filename, 'text/plain');
-    
-    if (success) {
-        showToast('success', '✓ Файл TXT успешно скачан');
-        return true;
-    } else {
-        showToast('error', 'Ошибка при скачивании файла');
+        content += '# Регулярное выражение:\n';
+        content += regex + '\n';
+        
+        if (triggers && triggers.length > 0) {
+            content += '\n';
+            content += '# Исходные триггеры:\n';
+            content += triggers.join('\n') + '\n';
+        }
+        
+        // Генерируем имя файла
+        const filename = generateFilename('txt');
+        
+        // Скачиваем
+        const success = downloadFileSafe(content, filename, 'text/plain');
+        
+        if (success) {
+            showToast('success', '✓ Файл TXT успешно скачан');
+            return true;
+        } else {
+            showToast('error', 'Ошибка при скачивании файла');
+            return false;
+        }
+    } catch (error) {
+        console.error('[Export] Ошибка экспорта TXT:', error);
+        showToast('error', 'Ошибка при экспорте TXT');
         return false;
     }
 }
@@ -71,36 +85,44 @@ function exportJSON(regex, triggers = [], settings = {}, info = {}) {
         return false;
     }
     
-    // Валидация settings
-    if (!settings || typeof settings !== 'object') {
-        settings = {
-            type1: false,
-            type2: false,
-            type4: false,
-            type5: false
+    try {
+        // Валидация settings
+        if (!settings || typeof settings !== 'object') {
+            settings = {
+                type1: false,
+                type2: false,
+                type4: false,
+                type5: false
+            };
+        }
+        
+        const data = {
+            regex: regex,
+            triggers: triggers,
+            triggerCount: triggers.length,
+            regexLength: regex.length,
+            timestamp: getCurrentTimestampSafe(),
+            date: formatDateSafe(new Date()),
+            settings: settings,
+            info: info,
+            version: '3.0',
+            app: 'RegexHelper'
         };
-    }
-    
-    const data = {
-        regex: regex,
-        triggers: triggers,
-        triggerCount: triggers.length,
-        regexLength: regex.length,
-        timestamp: getCurrentTimestamp(),
-        settings: settings,
-        info: info,
-        version: '2.0'
-    };
-    
-    const json = JSON.stringify(data, null, 2);
-    const filename = generateFilename('json');
-    const success = downloadFile(json, filename, 'application/json');
-    
-    if (success) {
-        showToast('success', '✓ Файл JSON успешно скачан');
-        return true;
-    } else {
-        showToast('error', 'Ошибка при скачивании файла');
+        
+        const json = JSON.stringify(data, null, 2);
+        const filename = generateFilename('json');
+        const success = downloadFileSafe(json, filename, 'application/json');
+        
+        if (success) {
+            showToast('success', '✓ Файл JSON успешно скачан');
+            return true;
+        } else {
+            showToast('error', 'Ошибка при скачивании файла');
+            return false;
+        }
+    } catch (error) {
+        console.error('[Export] Ошибка экспорта JSON:', error);
+        showToast('error', 'Ошибка при экспорте JSON');
         return false;
     }
 }
@@ -121,30 +143,39 @@ function exportCSV(regex, triggers = []) {
         return false;
     }
     
-    // ИСПРАВЛЕНО: '\n' вместо '\\n'
-    let csv = 'Тип,Значение\n';
-    csv += `"Regex","${escapeCSV(regex)}"\n`;
-    csv += `"Длина regex","${regex.length}"\n`;
-    csv += `"Количество триггеров","${triggers.length}"\n`;
-    csv += `"Дата экспорта","${formatDate(new Date())}"\n`;
-    csv += '\n';
-    csv += 'Триггеры\n';
-    
-    triggers.forEach((trigger, index) => {
-        csv += `"${escapeCSV(trigger)}"\n`;
-    });
-    
-    // Генерируем имя файла
-    const filename = generateFilename('csv');
-    
-    // Скачиваем
-    const success = downloadFile(csv, filename, 'text/csv');
-    
-    if (success) {
-        showToast('success', '✓ Файл CSV успешно скачан');
-        return true;
-    } else {
-        showToast('error', 'Ошибка при скачивании файла');
+    try {
+        // BOM для корректного отображения в Excel
+        let csv = '\uFEFF'; // UTF-8 BOM
+        
+        // ИСПРАВЛЕНО: правильные переносы строк
+        csv += 'Тип,Значение\n';
+        csv += `"Regex","${escapeCSV(regex)}"\n`;
+        csv += `"Длина regex","${regex.length}"\n`;
+        csv += `"Количество триггеров","${triggers.length}"\n`;
+        csv += `"Дата экспорта","${formatDateSafe(new Date())}"\n`;
+        csv += '\n';
+        csv += 'Триггеры\n';
+        
+        triggers.forEach((trigger, index) => {
+            csv += `"${index + 1}","${escapeCSV(trigger)}"\n`;
+        });
+        
+        // Генерируем имя файла
+        const filename = generateFilename('csv');
+        
+        // Скачиваем с правильным типом для Excel
+        const success = downloadFileSafe(csv, filename, 'text/csv;charset=utf-8;');
+        
+        if (success) {
+            showToast('success', '✓ Файл CSV успешно скачан');
+            return true;
+        } else {
+            showToast('error', 'Ошибка при скачивании файла');
+            return false;
+        }
+    } catch (error) {
+        console.error('[Export] Ошибка экспорта CSV:', error);
+        showToast('error', 'Ошибка при экспорте CSV');
         return false;
     }
 }
@@ -177,8 +208,114 @@ function generateFilename(extension) {
     const day = String(now.getDate()).padStart(2, '0');
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
     
-    return `regexhelper_${year}${month}${day}_${hours}${minutes}.${extension}`;
+    return `regexhelper_${year}${month}${day}_${hours}${minutes}${seconds}.${extension}`;
+}
+
+/* ============================================
+   SAFE ФУНКЦИИ (FALLBACK)
+   ============================================ */
+
+/**
+ * Безопасная загрузка файла (с проверкой наличия функции)
+ * @param {string} content - Содержимое файла
+ * @param {string} filename - Имя файла
+ * @param {string} mimeType - MIME тип
+ * @returns {boolean}
+ */
+function downloadFileSafe(content, filename, mimeType) {
+    // Проверяем наличие функции downloadFile из utils.js
+    if (typeof downloadFile === 'function') {
+        return downloadFile(content, filename, mimeType);
+    }
+    
+    // Fallback: используем собственную реализацию
+    try {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        return true;
+    } catch (error) {
+        console.error('[Export] Ошибка downloadFileSafe:', error);
+        return false;
+    }
+}
+
+/**
+ * Безопасное форматирование даты (с fallback)
+ * @param {Date} date - Дата
+ * @returns {string}
+ */
+function formatDateSafe(date) {
+    // Проверяем наличие функции formatDate из utils.js
+    if (typeof formatDate === 'function') {
+        return formatDate(date);
+    }
+    
+    // Fallback: простое форматирование
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    
+    return `${day}.${month}.${year} ${hours}:${minutes}`;
+}
+
+/**
+ * Безопасное получение timestamp (с fallback)
+ * @returns {number}
+ */
+function getCurrentTimestampSafe() {
+    // Проверяем наличие функции getCurrentTimestamp из utils.js
+    if (typeof getCurrentTimestamp === 'function') {
+        return getCurrentTimestamp();
+    }
+    
+    // Fallback: используем Date.now()
+    return Date.now();
+}
+
+/**
+ * Безопасное получение состояний оптимизаций (с fallback)
+ * @returns {Object}
+ */
+function getGlobalOptimizationStatesSafe() {
+    // Проверяем наличие функции из optimizations.js
+    if (typeof getGlobalOptimizationStates === 'function') {
+        return getGlobalOptimizationStates();
+    }
+    
+    // Fallback: пытаемся прочитать из чекбоксов
+    const states = {
+        type1: false,
+        type2: false,
+        type4: false,
+        type5: false
+    };
+    
+    try {
+        const type1 = document.getElementById('type1');
+        const type2 = document.getElementById('type2');
+        const type4 = document.getElementById('type4');
+        const type5 = document.getElementById('type5');
+        
+        if (type1) states.type1 = type1.checked;
+        if (type2) states.type2 = type2.checked;
+        if (type4) states.type4 = type4.checked;
+        if (type5) states.type5 = type5.checked;
+    } catch (error) {
+        console.warn('[Export] Не удалось получить состояния оптимизаций');
+    }
+    
+    return states;
 }
 
 /* ============================================
@@ -189,8 +326,8 @@ function generateFilename(extension) {
  * Открыть модальное окно выбора формата экспорта
  */
 function openExportModal() {
-    // Проверяем наличие regex
-    const resultTextarea = document.getElementById('resultRegex');
+    // ИСПРАВЛЕНО: правильный ID элемента
+    const resultTextarea = document.getElementById('regexResult');
     
     if (!resultTextarea || !resultTextarea.value.trim()) {
         showToast('warning', 'Сначала создайте regex для экспорта');
@@ -211,6 +348,8 @@ function closeExportModal() {
  * Инициализация модуля экспорта
  */
 function initExport() {
+    console.log('[Export] Инициализация модуля...');
+    
     // Устанавливаем event listeners для кнопок экспорта
     const exportTxtBtn = document.getElementById('exportTxtBtn');
     const exportJsonBtn = document.getElementById('exportJsonBtn');
@@ -218,14 +357,23 @@ function initExport() {
     
     if (exportTxtBtn) {
         exportTxtBtn.addEventListener('click', handleExportTxt);
+        console.log('[Export] Кнопка TXT подключена');
+    } else {
+        console.warn('[Export] Кнопка exportTxtBtn не найдена');
     }
     
     if (exportJsonBtn) {
         exportJsonBtn.addEventListener('click', handleExportJson);
+        console.log('[Export] Кнопка JSON подключена');
+    } else {
+        console.warn('[Export] Кнопка exportJsonBtn не найдена');
     }
     
     if (exportCsvBtn) {
         exportCsvBtn.addEventListener('click', handleExportCsv);
+        console.log('[Export] Кнопка CSV подключена');
+    } else {
+        console.warn('[Export] Кнопка exportCsvBtn не найдена');
     }
     
     console.log('[Export] Модуль инициализирован');
@@ -253,12 +401,12 @@ function handleExportTxt() {
 function handleExportJson() {
     const regex = getResultRegex();
     const triggers = getOriginalTriggers();
-    const settings = getGlobalOptimizationStates();
+    const settings = getGlobalOptimizationStatesSafe();
     
     const info = {
         triggerCount: triggers.length,
         regexLength: regex.length,
-        hasLinkedTriggers: typeof hasLinkedTriggers === 'function' ? hasLinkedTriggers() : false
+        hasLinkedTriggers: hasLinkedTriggersSafe()
     };
     
     if (exportJSON(regex, triggers, settings, info)) {
@@ -287,7 +435,8 @@ function handleExportCsv() {
  * @returns {string}
  */
 function getResultRegex() {
-    const resultTextarea = document.getElementById('resultRegex');
+    // ИСПРАВЛЕНО: правильный ID
+    const resultTextarea = document.getElementById('regexResult');
     return resultTextarea ? resultTextarea.value.trim() : '';
 }
 
@@ -302,17 +451,45 @@ function getOriginalTriggers() {
         return [];
     }
     
-    const triggers = parseSimpleTriggers(simpleTextarea.value);
+    // Проверяем наличие функции parseSimpleTriggers
+    let triggers = [];
+    
+    if (typeof parseSimpleTriggers === 'function') {
+        triggers = parseSimpleTriggers(simpleTextarea.value);
+    } else {
+        // Fallback: простой парсинг
+        triggers = simpleTextarea.value
+            .split('\n')
+            .map(t => t.trim())
+            .filter(t => t);
+    }
     
     // Добавляем триггеры из связанных групп если есть
-    if (typeof getLinkedGroups === 'function') {
-        const linkedGroups = getLinkedGroups();
-        linkedGroups.forEach(group => {
-            triggers.push(...group.triggers);
-        });
+    if (typeof getAllLinkedTriggers === 'function') {
+        const linkedTriggers = getAllLinkedTriggers();
+        triggers.push(...linkedTriggers);
     }
     
     return triggers;
+}
+
+/**
+ * Безопасная проверка наличия связанных триггеров
+ * @returns {boolean}
+ */
+function hasLinkedTriggersSafe() {
+    if (typeof hasLinkedTriggers === 'function') {
+        return hasLinkedTriggers();
+    }
+    
+    // Fallback: проверяем DOM
+    const container = document.getElementById('linkedTriggersContainer');
+    if (container) {
+        const groups = container.querySelectorAll('.linked-group');
+        return groups.length > 0;
+    }
+    
+    return false;
 }
 
 /**
@@ -328,12 +505,12 @@ function quickExport(format) {
     }
     
     const triggers = getOriginalTriggers();
-    const settings = typeof getGlobalOptimizationStates === 'function' ? getGlobalOptimizationStates() : {};
+    const settings = getGlobalOptimizationStatesSafe();
     
     const info = {
         triggerCount: triggers.length,
         regexLength: regex.length,
-        hasLinkedTriggers: typeof hasLinkedTriggers === 'function' ? hasLinkedTriggers() : false
+        hasLinkedTriggers: hasLinkedTriggersSafe()
     };
     
     switch (format.toLowerCase()) {
@@ -351,10 +528,17 @@ function quickExport(format) {
     }
 }
 
+/* ============================================
+   ЭКСПОРТ
+   ============================================ */
+
 // Делаем функции глобальными для HTML
 window.openExportModal = openExportModal;
 window.closeExportModal = closeExportModal;
 window.quickExport = quickExport;
 window.initExport = initExport;
+window.exportTXT = exportTXT;
+window.exportJSON = exportJSON;
+window.exportCSV = exportCSV;
 
-console.log('✓ Модуль export.js загружен (v2.1 - исправлен экспорт)');
+console.log('✅ Модуль export.js загружен (v3.0 FINAL)');
