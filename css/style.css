@@ -376,6 +376,20 @@ button {
     font-size: 12px;
 }
 
+/* Block Button (НОВОЕ) */
+.btn-block {
+    width: 100%;
+    text-align: center;
+}
+
+.btn-description {
+    display: block;
+    font-size: 11px;
+    font-weight: 400;
+    opacity: 0.8;
+    margin-top: 4px;
+}
+
 /* Icon Button */
 .btn-icon {
     width: 40px;
@@ -912,6 +926,21 @@ button {
     display: block !important;
 }
 
+.result-stats-content {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.result-stats-content span {
+    font-size: 13px;
+}
+
+.stats-highlight {
+    color: var(--success);
+    font-weight: 600;
+}
+
 /* ============================================
    АККОРДЕОН ПАНЕЛЕЙ (НОВОЕ v3.0)
    ============================================ */
@@ -920,11 +949,13 @@ button {
     cursor: pointer;
     user-select: none;
     transition: background-color 0.2s ease;
+    padding: 8px;
+    margin: -8px;
+    border-radius: var(--radius-sm);
 }
 
 .panel-header-clickable:hover {
     background-color: #f9fcff;
-    border-radius: var(--radius-sm);
 }
 
 .panel-header-clickable:active {
@@ -1636,19 +1667,88 @@ button {
 }
 
 /* ============================================
-   FOOTER
+   FOOTER - ОБНОВЛЕНО v3.0 FINAL
    ============================================ */
 
 .footer {
-    background-color: var(--white);
-    border-top: 1px solid var(--gray-light);
-    padding: 16px 32px;
+    background: linear-gradient(135deg, #24a7ef 0%, #1a8fd4 50%, #70c4fc 100%);
+    color: #fff;
+    padding: 24px 32px;
     text-align: center;
+    margin-top: 60px;
+    box-shadow: 0 -4px 20px rgba(36, 167, 239, 0.15);
+    position: relative;
+    bottom: 0;
+    width: 100%;
 }
 
 .footer-text {
-    font-size: 13px;
-    color: var(--medium-text);
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0.3px;
+    color: rgba(255, 255, 255, 0.95);
+    line-height: 1.6;
+}
+
+.footer-separator {
+    display: inline-block;
+    margin: 0 8px;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 300;
+}
+
+.footer-links {
+    margin: 0;
+    font-size: 14px;
+}
+
+.footer-link {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border-bottom: 1px solid transparent;
+    padding-bottom: 1px;
+}
+
+.footer-link:hover {
+    color: #fff;
+    border-bottom-color: rgba(255, 255, 255, 0.8);
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+}
+
+.footer-link-github {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+}
+
+.footer-link-github svg {
+    transition: transform 0.3s ease;
+}
+
+.footer-link-github:hover svg {
+    transform: scale(1.15) rotate(5deg);
+}
+
+/* Адаптивность футера */
+@media (max-width: 600px) {
+    .footer {
+        padding: 20px 16px;
+    }
+    
+    .footer-text {
+        font-size: 13px;
+    }
+    
+    .footer-separator {
+        margin: 0 6px;
+    }
+    
+    .footer-links {
+        font-size: 13px;
+    }
 }
 
 /* ============================================
