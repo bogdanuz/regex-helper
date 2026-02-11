@@ -500,25 +500,28 @@
     <script src="js/linked-triggers.js"></script>
     
     <!-- Test Framework -->
-    <script src="tests/test-runner.js"></script>
-    
-    <!-- Test Suites -->
-    <script src="tests/test-suite.js"></script>
-    
-    <!-- Initialize Tests -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🧪 Test page loaded');
-            
-            // Initialize test runner
-            if (typeof TestRunner !== 'undefined') {
-                window.testRunner = new TestRunner();
-                console.log('✅ Test runner initialized');
-            } else {
-                console.error('❌ TestRunner not found!');
-            }
-        });
-    </script>
+<script src="tests/test-runner.js"></script>
+
+<!-- Initialize Tests ЗДЕСЬ! -->
+<script>
+    // Инициализируем testRunner ПЕРЕД загрузкой test-suite.js
+    if (typeof TestRunner !== 'undefined') {
+        window.testRunner = new TestRunner();
+        console.log('✅ Test runner initialized');
+    } else {
+        console.error('❌ TestRunner not found!');
+    }
+</script>
+
+<!-- Test Suites -->
+<script src="tests/test-suite.js"></script>
+
+<!-- DOMContentLoaded уже не нужен, но оставь для логов -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🧪 Test page loaded');
+    });
+</script>
     
 </body>
 </html>
