@@ -6,7 +6,8 @@
  */
 
 import { applyOptimizations, applyType3 } from '../converter/optimizer.js';
-import { escapeRegex, addWordBoundaries } from '../converter/parser.js';
+import { escapeRegex } from '../core/utils.js';
+import { addWordBoundaries } from '../converter/parser.js';
 import { validateTriggers } from '../converter/validator.js';
 import { showToast, showInlineError, clearInlineError } from '../core/errors.js';
 import { generateId, pluralize } from '../core/utils.js';
