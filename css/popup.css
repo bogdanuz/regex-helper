@@ -713,6 +713,102 @@
 }
 
 /* ============================================
+   HELP MODAL SECTIONS (НОВОЕ v3.0 FINAL)
+   ============================================ */
+
+.help-section {
+    margin-bottom: 24px;
+}
+
+.help-section:last-child {
+    margin-bottom: 0;
+}
+
+.help-section h4 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--dark-text);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.help-section h4::before {
+    content: '📌';
+    font-size: 18px;
+}
+
+.help-section p {
+    font-size: 14px;
+    color: var(--medium-text);
+    line-height: 1.6;
+    margin-bottom: 12px;
+}
+
+.help-section ul,
+.help-section ol {
+    margin-left: 20px;
+    margin-bottom: 12px;
+}
+
+.help-section li {
+    font-size: 14px;
+    color: var(--medium-text);
+    margin-bottom: 8px;
+    line-height: 1.6;
+}
+
+.help-example {
+    background-color: #f0f9ff;
+    border-left: 4px solid var(--primary-blue);
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    margin: 12px 0;
+}
+
+.help-example strong {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--dark-text);
+}
+
+.help-example code {
+    background-color: #e3f2fd;
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: #0d47a1;
+}
+
+.help-warning {
+    background-color: #fff3e0;
+    border-left: 4px solid var(--warning);
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    margin: 12px 0;
+}
+
+.help-warning::before {
+    content: '⚠️ ';
+    font-size: 16px;
+}
+
+.help-tip {
+    background-color: #e8f5e9;
+    border-left: 4px solid var(--success);
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    margin: 12px 0;
+}
+
+.help-tip::before {
+    content: '💡 ';
+    font-size: 16px;
+}
+
+/* ============================================
    RESPONSIVE (ОБНОВЛЕНО v3.0)
    ============================================ */
 
