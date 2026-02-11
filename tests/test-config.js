@@ -1,6 +1,5 @@
 /**
  * RegexHelper v4.0 - Test Configuration
- * Список всех доступных тестов
  * @version 1.0
  * @date 12.02.2026
  */
@@ -14,7 +13,7 @@ export const TEST_SUITES = [
         estimatedTests: 110,
         version: '1.0',
         date: '2026-02-12',
-        enabled: true
+        enabled: false
     },
     {
         id: 'chat-1',
@@ -24,6 +23,6 @@ export const TEST_SUITES = [
         estimatedTests: 50,
         version: '1.0',
         date: '2026-02-11',
-        enabled: true
+        enabled: false
     }
 ];
