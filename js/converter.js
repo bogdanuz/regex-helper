@@ -2,13 +2,20 @@
    REGEXHELPER - CONVERTER
    Базовая конвертация триггеров в regex
    
-   ВЕРСИЯ: 3.0 (Автозамена ё + Confirm с отложением)
+   ВЕРСИЯ: 3.0 FINAL
    ДАТА: 11.02.2026
-   ИЗМЕНЕНИЯ:
+   ИЗМЕНЕНИЯ v3.0:
    - БЛОК 5: Автозамена ё → [её] в каждом триггере
    - БЛОК 6: Confirm с отложением (5 минут)
    - Поддержка подгрупп из linked-triggers v3.0
    - Интеграция с 3 режимами связи
+   - Исправлено экранирование в distance patterns
+   - Добавлена функция getLinkMode()
+   
+   ЗАВИСИМОСТИ:
+   - utils.js (isEmpty, splitLines, countChars, removeDuplicates, escapeRegex)
+   - errors.js (showToast, showMessage, clearAllInlineErrors, logError)
+   - optimizations.js (applyOptimizations)
    ============================================ */
 
 /* ============================================
@@ -53,6 +60,28 @@ function replaceYo(text) {
     return text.replace(/ё/gi, (match) => {
         return match === 'ё' ? '[её]' : '[ЕЁ]';
     });
+}
+
+/* ============================================
+   ПОЛУЧЕНИЕ РЕЖИМА СВЯЗИ (НОВОЕ v3.0)
+   ============================================ */
+
+/**
+ * Получить текущий режим связи триггеров
+ * @returns {string} - 'individual' | 'common' | 'alternation'
+ */
+function getLinkMode() {
+    const modeInputs = document.getElementsByName('linkMode');
+    
+    for (let i = 0; i < modeInputs.length; i++) {
+        if (modeInputs[i].checked) {
+            return modeInputs[i].value;
+        }
+    }
+    
+    // По умолчанию - индивидуальные параметры
+    console.warn('[Converter] Режим связи не найден, используем individual');
+    return 'individual';
 }
 
 /* ============================================
@@ -188,7 +217,7 @@ function validateRegexLength(regex) {
 }
 
 /* ============================================
-   CONFIRM С ОТЛОЖЕНИЕМ (НОВОЕ v3.0 - БЛОК 6)
+   CONFIRM С ОТЛОЖЕНИЕМ (ОБНОВЛЕНО v3.0 FINAL)
    ============================================ */
 
 /**
@@ -230,30 +259,41 @@ function shouldShowConversionConfirm() {
 
 /**
  * Показать confirm перед конвертацией
+ * 
+ * ИСПРАВЛЕНО v3.0 FINAL: Используем правильную структуру модального окна
+ * 
  * @param {Function} onConfirm - Callback если пользователь нажал "Да"
  * @param {Function} onCancel - Callback если пользователь нажал "Нет"
  */
 function showConversionConfirm(onConfirm, onCancel) {
     const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
+    modal.className = 'modal-overlay show';
     modal.id = 'conversionConfirmModal';
+    modal.style.display = 'flex';
+    
     modal.innerHTML = `
-        <div class="modal-content modal-sm">
+        <div class="modal modal-small">
             <div class="modal-header">
                 <h3 class="modal-title">⚠️ Заменить существующий regex?</h3>
+                <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
             </div>
             <div class="modal-body">
-                <p>В панели 3 уже есть regex. Заменить его новым результатом?</p>
+                <p style="margin-bottom: 16px;">В панели 3 уже есть regex. Заменить его новым результатом?</p>
             </div>
             <div class="modal-footer">
-                <button class="btn-secondary" id="confirmNo">Нет</button>
-                <button class="btn-primary" id="confirmYes">Да</button>
-                <button class="btn-link" id="confirmSkip5min">Да, не спрашивать 5 минут</button>
+                <button class="btn-secondary" id="confirmNo">Отмена</button>
+                <button class="btn-primary" id="confirmYes">Да, заменить</button>
+            </div>
+            <div style="text-align: center; padding: 0 24px 16px;">
+                <button class="btn-secondary btn-sm" id="confirmSkip5min" style="font-size: 12px;">
+                    Не спрашивать 5 минут
+                </button>
             </div>
         </div>
     `;
     
     document.body.appendChild(modal);
+    document.body.classList.add('modal-open');
     
     // Обработчики кнопок
     const btnYes = modal.querySelector('#confirmYes');
@@ -262,7 +302,8 @@ function showConversionConfirm(onConfirm, onCancel) {
     
     // Функция закрытия модального окна
     const closeModal = () => {
-        document.body.removeChild(modal);
+        modal.remove();
+        document.body.classList.remove('modal-open');
     };
     
     // Кнопка "Да"
@@ -271,19 +312,20 @@ function showConversionConfirm(onConfirm, onCancel) {
         if (onConfirm) onConfirm();
     });
     
-    // Кнопка "Нет"
+    // Кнопка "Отмена"
     btnNo.addEventListener('click', () => {
         closeModal();
         if (onCancel) onCancel();
     });
     
-    // Кнопка "Да, не спрашивать 5 минут"
+    // Кнопка "Не спрашивать 5 минут"
     btnSkip.addEventListener('click', () => {
         // Устанавливаем время отложения (5 минут)
         const skipUntil = Date.now() + 5 * 60 * 1000;
         sessionStorage.setItem(SKIP_CONFIRM_KEY, skipUntil.toString());
         
         console.log('[Converter] Confirm отложен на 5 минут');
+        showToast('info', 'Подтверждение отключено на 5 минут');
         
         closeModal();
         if (onConfirm) onConfirm();
@@ -296,6 +338,16 @@ function showConversionConfirm(onConfirm, onCancel) {
             if (onCancel) onCancel();
         }
     });
+    
+    // Закрытие по ESC
+    const escHandler = (e) => {
+        if (e.key === 'Escape') {
+            closeModal();
+            if (onCancel) onCancel();
+            document.removeEventListener('keydown', escHandler);
+        }
+    };
+    document.addEventListener('keydown', escHandler);
 }
 
 /* ============================================
@@ -492,6 +544,9 @@ function getDistancePatternFromConnection(connection) {
 
 /**
  * Получить паттерн расстояния из настроек
+ * 
+ * ИСПРАВЛЕНО v3.0 FINAL: Убрано двойное экранирование
+ * 
  * @param {Object} settings - Настройки группы
  * @returns {string} - Паттерн расстояния
  */
@@ -512,13 +567,13 @@ function getDistancePattern(settings) {
             return `.{${min},${max}}`;
         
         case 'any':
-            return '[\\\\s\\\\S]+';
+            return '[\\s\\S]+';  // ИСПРАВЛЕНО: убрано двойное экранирование
         
         case 'paragraph':
             return '.+';
         
         case 'line':
-            return '[^\\\\n]+';
+            return '[^\\n]+';  // ИСПРАВЛЕНО: убрано двойное экранирование
         
         default:
             console.warn(`[Converter] Неизвестный тип расстояния: ${distanceType}, используем fixed`);
@@ -528,6 +583,9 @@ function getDistancePattern(settings) {
 
 /**
  * Генерация паттерна с любой последовательностью (A+B)|(B+A)
+ * 
+ * ЗАВИСИТ ОТ: utils.js -> getPermutations()
+ * 
  * @param {Array} triggers - Массив оптимизированных триггеров
  * @param {string} distance - Паттерн расстояния
  * @returns {string} - Regex с перестановками
@@ -535,6 +593,12 @@ function getDistancePattern(settings) {
 function generateAnyOrderPattern(triggers, distance) {
     if (triggers.length < 2) {
         return triggers[0] || '';
+    }
+    
+    // Проверяем наличие функции getPermutations
+    if (typeof getPermutations !== 'function') {
+        console.error('[Converter] Функция getPermutations не найдена! Требуется utils.js');
+        return triggers.join(distance); // fallback
     }
     
     // Получаем все перестановки
@@ -771,4 +835,19 @@ function getTriggerStats(text) {
     };
 }
 
-console.log('✓ Модуль converter.js загружен (v3.0 - автозамена ё + confirm с отложением)');
+/* ============================================
+   ЭКСПОРТ
+   ============================================ */
+
+// Делаем функции глобальными
+window.performConversion = performConversion;
+window.convertLinkedGroups = convertLinkedGroups;
+window.replaceYo = replaceYo;
+window.cleanTrigger = cleanTrigger;
+window.parseSimpleTriggers = parseSimpleTriggers;
+window.validateTriggers = validateTriggers;
+window.countTriggersInText = countTriggersInText;
+window.hasTriggersInText = hasTriggersInText;
+window.getTriggerStats = getTriggerStats;
+
+console.log('✅ Модуль converter.js загружен (v3.0 FINAL - автозамена ё + confirm с отложением)');
