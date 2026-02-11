@@ -3,18 +3,25 @@
  * ИСТОРИЯ КОНВЕРТАЦИЙ
  * ============================================
  * 
- * ВЕРСИЯ: 3.0 FINAL (Готова к заморозке ❄️)
+ * ВЕРСИЯ: 3.0 FINAL
  * ДАТА: 11.02.2026
  * ИЗМЕНЕНИЯ:
  * - БЛОК 2: Лимит 100 записей ✅
  * - БЛОК 2: Импорт с полным восстановлением ✅
  * - БЛОК 2: Экспорт из истории ✅
  * - БЛОК 2: Модальное окно "Детали" ✅
- * - НОВОЕ: Функция-обертка saveConversionToHistory() ✅
- * - НОВОЕ: Счетчик истории в UI ✅
+ * - Функция-обертка saveConversionToHistory() ✅
+ * - Счетчик истории в UI ✅
+ * - ИСПРАВЛЕНО: Переносы строк (\n вместо \\n)
+ * - ИСПРАВЛЕНО: Классы модальных окон
+ * - ДОБАВЛЕНО: Вспомогательные функции
  * - ГОТОВА К ЗАМОРОЗКЕ ❄️
  * 
- * Зависимости: utils.js, errors.js, converter.js, export.js
+ * ЗАВИСИМОСТИ:
+ * - utils.js (downloadFile, escapeHTML)
+ * - errors.js (showToast, confirmAction, logError, escapeHTML)
+ * - converter.js (parseSimpleTriggers)
+ * - linked-triggers.js (getLinkedGroups, getLinkMode, addLinkedGroup, etc.)
  */
 
 // ============================================
@@ -38,7 +45,7 @@ function initHistory() {
     try {
         // Проверка поддержки localStorage
         if (!window.localStorage) {
-            console.warn('localStorage не поддерживается');
+            console.warn('[History] localStorage не поддерживается');
             return;
         }
 
@@ -57,9 +64,9 @@ function initHistory() {
         // Рендерим историю при загрузке
         renderHistory();
 
-        console.log('✓ История инициализирована (v3.0 FINAL - готова к заморозке ❄️)');
+        console.log('[History] ✅ Модуль инициализирован (v3.0 FINAL)');
     } catch (error) {
-        console.error('Ошибка инициализации истории:', error);
+        console.error('[History] Ошибка инициализации:', error);
     }
 }
 
@@ -89,8 +96,8 @@ function saveHistoryToStorage(history) {
     try {
         localStorage.setItem(HISTORY_CONFIG.STORAGE_KEY, JSON.stringify(history));
     } catch (error) {
-        console.error('Ошибка saveHistoryToStorage:', error);
-        showToast('error', ERROR_MESSAGES.STORAGE_ERROR || 'Ошибка сохранения истории');
+        console.error('[History] Ошибка saveHistoryToStorage:', error);
+        showToast('error', 'Ошибка сохранения истории');
     }
 }
 
@@ -119,7 +126,7 @@ function saveToHistory(regex, data) {
         // Создание новой записи
         const entry = {
             id: Date.now(),
-            date: formatDate(new Date()),
+            date: formatDateSafe(new Date()),
             timestamp: Date.now(),
             
             // Тип конвертации
@@ -157,9 +164,9 @@ function saveToHistory(regex, data) {
         // Автоматически обновляем UI
         renderHistory();
 
-        console.log(`✓ Конвертация сохранена в историю (тип: ${entry.type})`);
+        console.log(`[History] ✓ Конвертация сохранена в историю (тип: ${entry.type})`);
     } catch (error) {
-        console.error('Ошибка saveToHistory:', error);
+        console.error('[History] Ошибка saveToHistory:', error);
     }
 }
 
@@ -184,10 +191,14 @@ function saveConversionToHistory(regex, conversionType) {
         if (conversionType === 'simple') {
             // Простые триггеры
             const simpleTextarea = document.getElementById('simpleTriggers');
-            const simpleTriggers = simpleTextarea ? parseSimpleTriggers(simpleTextarea.value) : [];
+            const simpleTriggers = simpleTextarea && typeof parseSimpleTriggers === 'function' 
+                ? parseSimpleTriggers(simpleTextarea.value) 
+                : [];
             
             // Настройки оптимизаций
-            const simpleParams = getGlobalOptimizationStates();
+            const simpleParams = typeof getGlobalOptimizationStates === 'function'
+                ? getGlobalOptimizationStates()
+                : {};
             
             data = {
                 type: 'simple',
@@ -199,8 +210,12 @@ function saveConversionToHistory(regex, conversionType) {
             
         } else if (conversionType === 'linked') {
             // Связанные триггеры
-            const linkedGroups = getLinkedGroups();
-            const linkMode = getLinkMode();
+            const linkedGroups = typeof getLinkedGroups === 'function' 
+                ? getLinkedGroups() 
+                : [];
+            const linkMode = typeof getLinkMode === 'function'
+                ? getLinkMode()
+                : 'individual';
             
             // Подсчет триггеров
             const triggerCount = linkedGroups.reduce((sum, group) => {
@@ -242,10 +257,10 @@ function deleteFromHistory(id) {
         // Обновление UI
         renderHistory();
         
-        showToast('success', SUCCESS_MESSAGES.HISTORY_DELETED || 'Запись удалена');
+        showToast('success', '✓ Запись удалена из истории');
     } catch (error) {
-        console.error('Ошибка deleteFromHistory:', error);
-        showToast('error', ERROR_MESSAGES.UNKNOWN_ERROR || 'Ошибка удаления');
+        console.error('[History] Ошибка deleteFromHistory:', error);
+        showToast('error', 'Ошибка удаления');
     }
 }
 
@@ -256,10 +271,10 @@ function clearHistory() {
     try {
         localStorage.removeItem(HISTORY_CONFIG.STORAGE_KEY);
         renderHistory();
-        showToast('success', SUCCESS_MESSAGES.HISTORY_CLEARED || 'История очищена');
+        showToast('success', '✓ История очищена');
     } catch (error) {
         logError('clearHistory', error);
-        showToast('error', ERROR_MESSAGES.UNKNOWN_ERROR || 'Ошибка очистки');
+        showToast('error', 'Ошибка очистки истории');
     }
 }
 
@@ -301,21 +316,22 @@ function renderHistory() {
     historyList.innerHTML = history.map(item => {
         const typeIcon = item.type === 'linked' ? '🔗' : '📝';
         const typeLabel = item.type === 'linked' ? 'Связанные' : 'Простые';
+        const pluralTriggers = pluralizeSafe(item.triggerCount || 0, ['триггер', 'триггера', 'триггеров']);
         
         return `
         <div class="history-item" data-id="${item.id}">
             <div class="history-item-header">
-                <span class="history-item-date">🕒 ${escapeHTML(item.date)}</span>
+                <span class="history-item-date">🕒 ${escapeHTMLSafe(item.date)}</span>
                 <span class="history-item-type">${typeIcon} ${typeLabel}</span>
             </div>
             
-            <div class="history-item-regex" title="${escapeHTML(item.regex)}">
-                ${escapeHTML(truncateRegex(item.regex, 60))}
+            <div class="history-item-regex" title="${escapeHTMLSafe(item.regex)}">
+                ${escapeHTMLSafe(truncateRegex(item.regex, 60))}
             </div>
             
             <div class="history-item-meta">
                 <span title="Количество триггеров">
-                    📝 ${item.triggerCount || 0} ${pluralize(item.triggerCount || 0, ['триггер', 'триггера', 'триггеров'])}
+                    📝 ${item.triggerCount || 0} ${pluralTriggers}
                 </span>
                 <span title="Длина регулярного выражения">
                     📏 ${item.regexLength} символов
@@ -338,18 +354,18 @@ function renderHistory() {
                     📥 Загрузить
                 </button>
                 <button 
-                    class="btn-sm btn-accent" 
+                    class="btn-sm btn-secondary" 
                     onclick="exportFromHistory(${item.id})"
                     title="Скачать файл"
                 >
                     💾 Скачать
                 </button>
                 <button 
-                    class="btn-icon btn-icon-danger" 
+                    class="btn-icon btn-icon-sm btn-icon-danger" 
                     onclick="deleteFromHistory(${item.id})"
                     title="Удалить запись"
                 >
-                    🗑️
+                    ×
                 </button>
             </div>
         </div>
@@ -409,7 +425,7 @@ function loadFromHistory(id) {
         
         console.log('[History] ✓ Запись загружена:', id);
     } catch (error) {
-        console.error('Ошибка loadFromHistory:', error);
+        console.error('[History] Ошибка loadFromHistory:', error);
         showToast('error', 'Ошибка загрузки');
     }
 }
@@ -448,7 +464,7 @@ function loadSimpleTriggersFromHistory(entry) {
         return;
     }
     
-    // Загружаем триггеры
+    // ИСПРАВЛЕНО: правильный перенос строк
     simpleTextarea.value = entry.simpleTriggers.join('\n');
     
     // Загружаем параметры оптимизаций
@@ -470,18 +486,20 @@ function loadSimpleTriggersFromHistory(entry) {
  */
 function loadLinkedTriggersFromHistory(entry) {
     if (!entry.linkedGroups || entry.linkedGroups.length === 0) {
+        console.warn('[History] Нет связанных групп для загрузки');
+        return;
+    }
+    
+    // Проверяем наличие необходимых функций
+    if (typeof addLinkedGroup !== 'function') {
+        console.error('[History] Функция addLinkedGroup не найдена');
+        showToast('error', 'Ошибка: модуль связанных триггеров не загружен');
         return;
     }
     
     // Устанавливаем режим связи
     if (entry.linkMode) {
-        setLinkMode(entry.linkMode);
-        
-        // Обновляем радиокнопки
-        const modeRadios = document.querySelectorAll('input[name="linkMode"]');
-        modeRadios.forEach(radio => {
-            radio.checked = (radio.value === entry.linkMode);
-        });
+        setLinkModeSafe(entry.linkMode);
     }
     
     // Создаем группы
@@ -491,13 +509,17 @@ function loadLinkedTriggersFromHistory(entry) {
         
         // Получаем ID последней созданной группы
         const container = document.getElementById('linkedTriggersContainer');
+        if (!container) return;
+        
         const groups = container.querySelectorAll('.linked-group');
         const group = groups[groups.length - 1];
+        if (!group) return;
+        
         const groupId = group.id;
         
         // Сохраняем настройки группы
         if (groupData.settings) {
-            setGroupSettings(groupId, groupData.settings);
+            setGroupSettingsSafe(groupId, groupData.settings);
         }
         
         // Очищаем дефолтную подгруппу
@@ -510,11 +532,15 @@ function loadLinkedTriggersFromHistory(entry) {
         if (groupData.subgroups && groupData.subgroups.length > 0) {
             groupData.subgroups.forEach((subgroupData, subIndex) => {
                 // Добавляем подгруппу
-                addSubgroup(groupId);
+                if (typeof addSubgroup === 'function') {
+                    addSubgroup(groupId);
+                }
                 
                 // Получаем ID последней созданной подгруппы
                 const subgroups = groupBody.querySelectorAll('.linked-subgroup');
                 const subgroup = subgroups[subgroups.length - 1];
+                if (!subgroup) return;
+                
                 const subgroupId = subgroup.id;
                 
                 // Очищаем дефолтные поля
@@ -524,7 +550,7 @@ function loadLinkedTriggersFromHistory(entry) {
                 }
                 
                 // Добавляем триггеры
-                if (subgroupData.triggers) {
+                if (subgroupData.triggers && typeof addTriggerField === 'function') {
                     subgroupData.triggers.forEach(trigger => {
                         addTriggerField(groupId, subgroupId);
                         
@@ -554,14 +580,18 @@ function loadLinkedTriggersFromHistory(entry) {
                     }
                     
                     // Обновляем UI связи
-                    updateConnectionUI(subgroupId);
+                    if (typeof updateConnectionUI === 'function') {
+                        updateConnectionUI(subgroupId);
+                    }
                 }
             });
         }
     });
     
     // Обновляем UI настроек групп
-    updateGroupSettingsUI();
+    if (typeof updateGroupSettingsUI === 'function') {
+        updateGroupSettingsUI();
+    }
     
     console.log('[History] ✓ Связанные триггеры загружены:', entry.linkedGroups.length, 'групп');
 }
@@ -581,8 +611,9 @@ function showHistoryDetails(id) {
     
     // Создаем модальное окно
     const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
+    modal.className = 'modal-overlay show';
     modal.id = 'historyDetailsModal';
+    modal.style.display = 'flex';
     
     // Формируем содержимое в зависимости от типа
     let detailsHTML = '';
@@ -592,7 +623,7 @@ function showHistoryDetails(id) {
         detailsHTML = `
             <h4>Исходные триггеры</h4>
             <div class="details-triggers">
-                ${entry.simpleTriggers.map(t => `<code>${escapeHTML(t)}</code>`).join(', ')}
+                ${entry.simpleTriggers.map(t => `<code>${escapeHTMLSafe(t)}</code>`).join(' ')}
             </div>
             
             <h4>Параметры оптимизации</h4>
@@ -606,7 +637,7 @@ function showHistoryDetails(id) {
         `;
     } else if (entry.type === 'linked') {
         // Связанные триггеры
-        const modeLabel = getModeLabel(entry.linkMode || 'individual');
+        const modeLabel = getModeLabelSafe(entry.linkMode || 'individual');
         
         detailsHTML = `
             <h4>Режим связи</h4>
@@ -619,7 +650,7 @@ function showHistoryDetails(id) {
                     ${group.subgroups.map((subgroup, sIndex) => `
                         <div class="details-subgroup">
                             <strong>📂 Подгруппа ${sIndex + 1}:</strong>
-                            ${subgroup.triggers.map(t => `<code>${escapeHTML(t)}</code>`).join(', ')}
+                            ${subgroup.triggers.map(t => `<code>${escapeHTMLSafe(t)}</code>`).join(' ')}
                             ${subgroup.connection ? `<br><small>↓ Связь: ${subgroup.connection.distanceType}</small>` : ''}
                         </div>
                     `).join('')}
@@ -629,29 +660,29 @@ function showHistoryDetails(id) {
     }
     
     modal.innerHTML = `
-        <div class="modal-content modal-lg">
+        <div class="modal modal-large">
             <div class="modal-header">
                 <h3 class="modal-title">📊 Детали регулярного выражения</h3>
-                <button class="btn-icon" onclick="closeHistoryDetailsModal()">×</button>
+                <button class="modal-close" onclick="closeHistoryDetailsModal()">×</button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body modal-body-scrollable">
                 <div class="details-info">
-                    <p><strong>Дата:</strong> ${escapeHTML(entry.date)}</p>
+                    <p><strong>Дата:</strong> ${escapeHTMLSafe(entry.date)}</p>
                     <p><strong>Тип:</strong> ${entry.type === 'linked' ? '🔗 Связанные триггеры' : '📝 Простые триггеры'}</p>
                 </div>
                 
-                <hr>
+                <div class="section-divider"></div>
                 
                 ${detailsHTML}
                 
-                <hr>
+                <div class="section-divider"></div>
                 
                 <h4>Итоговый regex</h4>
-                <div class="details-regex">
-                    <code>${escapeHTML(entry.regex)}</code>
+                <div style="background: #f0f4ff; border: 1px solid #d0e3ff; border-radius: 6px; padding: 12px; margin: 12px 0; word-break: break-all; font-family: 'Courier New', monospace; font-size: 13px;">
+                    ${escapeHTMLSafe(entry.regex)}
                 </div>
                 
-                <div class="details-stats">
+                <div style="display: flex; gap: 16px; margin-top: 12px; font-size: 13px; color: #666;">
                     <span>📝 ${entry.triggerCount} триггеров</span>
                     <span>📏 ${entry.regexLength} символов</span>
                 </div>
@@ -664,6 +695,7 @@ function showHistoryDetails(id) {
     `;
     
     document.body.appendChild(modal);
+    document.body.classList.add('modal-open');
     
     // Закрытие по клику вне модального окна
     modal.addEventListener('click', (e) => {
@@ -671,6 +703,15 @@ function showHistoryDetails(id) {
             closeHistoryDetailsModal();
         }
     });
+    
+    // Закрытие по ESC
+    const escHandler = (e) => {
+        if (e.key === 'Escape') {
+            closeHistoryDetailsModal();
+            document.removeEventListener('keydown', escHandler);
+        }
+    };
+    document.addEventListener('keydown', escHandler);
 }
 
 /**
@@ -680,6 +721,7 @@ function closeHistoryDetailsModal() {
     const modal = document.getElementById('historyDetailsModal');
     if (modal) {
         document.body.removeChild(modal);
+        document.body.classList.remove('modal-open');
     }
 }
 
@@ -698,25 +740,30 @@ function exportFromHistory(id) {
     
     // Создаем модальное окно выбора формата
     const modal = document.createElement('div');
-    modal.className = 'modal-overlay';
+    modal.className = 'modal-overlay show';
     modal.id = 'exportHistoryModal';
+    modal.style.display = 'flex';
+    
     modal.innerHTML = `
-        <div class="modal-content modal-sm">
+        <div class="modal modal-small">
             <div class="modal-header">
                 <h3 class="modal-title">💾 Экспорт записи</h3>
-                <button class="btn-icon" onclick="closeExportHistoryModal()">×</button>
+                <button class="modal-close" onclick="closeExportHistoryModal()">×</button>
             </div>
             <div class="modal-body">
                 <p>Выберите формат экспорта:</p>
                 <div class="export-options">
                     <button class="btn-primary btn-block" onclick="exportHistoryEntry(${id}, 'txt')">
-                        📄 TXT (только regex)
+                        <div><strong>📄 TXT</strong></div>
+                        <div class="btn-description">Только regex</div>
                     </button>
                     <button class="btn-primary btn-block" onclick="exportHistoryEntry(${id}, 'csv')">
-                        📊 CSV (триггеры + regex)
+                        <div><strong>📊 CSV</strong></div>
+                        <div class="btn-description">Триггеры + regex</div>
                     </button>
                     <button class="btn-primary btn-block" onclick="exportHistoryEntry(${id}, 'json')">
-                        📦 JSON (полные данные)
+                        <div><strong>📦 JSON</strong></div>
+                        <div class="btn-description">Полные данные</div>
                     </button>
                 </div>
             </div>
@@ -727,6 +774,14 @@ function exportFromHistory(id) {
     `;
     
     document.body.appendChild(modal);
+    document.body.classList.add('modal-open');
+    
+    // Закрытие по клику вне модального окна
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeExportHistoryModal();
+        }
+    });
 }
 
 /**
@@ -736,6 +791,7 @@ function closeExportHistoryModal() {
     const modal = document.getElementById('exportHistoryModal');
     if (modal) {
         document.body.removeChild(modal);
+        document.body.classList.remove('modal-open');
     }
 }
 
@@ -769,9 +825,10 @@ function exportHistoryEntry(id, format) {
             ? entry.simpleTriggers 
             : entry.linkedGroups.flatMap(g => g.subgroups.flatMap(sg => sg.triggers));
         
+        // ИСПРАВЛЕНО: правильные переносы строк
         content = 'Триггер\n' + triggers.join('\n') + '\n\nRegex\n' + entry.regex;
         filename = `regex_${entry.id}.csv`;
-        mimeType = 'text/csv';
+        mimeType = 'text/csv;charset=utf-8;';
         
     } else if (format === 'json') {
         // JSON: полные данные
@@ -781,7 +838,7 @@ function exportHistoryEntry(id, format) {
     }
     
     // Скачиваем файл
-    downloadFile(content, filename, mimeType);
+    downloadFileSafe(content, filename, mimeType);
     
     // Закрываем модальное окно
     closeExportHistoryModal();
@@ -809,15 +866,20 @@ function handleClearHistory() {
 }
 
 // ============================================
-// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+// ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (SAFE с FALLBACK)
 // ============================================
 
 /**
- * Форматирование даты
- * @param {Date} date - Объект Date
- * @returns {string} Форматированная строка
+ * Безопасное форматирование даты
+ * @param {Date} date - Дата
+ * @returns {string}
  */
-function formatDate(date) {
+function formatDateSafe(date) {
+    if (typeof formatDate === 'function') {
+        return formatDate(date);
+    }
+    
+    // Fallback
     return date.toLocaleString(HISTORY_CONFIG.DATE_FORMAT, {
         day: '2-digit',
         month: '2-digit',
@@ -829,10 +891,119 @@ function formatDate(date) {
 }
 
 /**
+ * Безопасное экранирование HTML
+ * @param {string} text - Текст
+ * @returns {string}
+ */
+function escapeHTMLSafe(text) {
+    if (typeof escapeHTML === 'function') {
+        return escapeHTML(text);
+    }
+    
+    // Fallback
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+/**
+ * Безопасная плюрализация
+ * @param {number} count - Число
+ * @param {Array} forms - Формы ['форма1', 'форма2', 'форма5']
+ * @returns {string}
+ */
+function pluralizeSafe(count, forms) {
+    if (typeof pluralize === 'function') {
+        return pluralize(count, forms);
+    }
+    
+    // Fallback: простая логика
+    const n = Math.abs(count) % 100;
+    const n1 = n % 10;
+    
+    if (n > 10 && n < 20) return forms[2];
+    if (n1 > 1 && n1 < 5) return forms[1];
+    if (n1 === 1) return forms[0];
+    return forms[2];
+}
+
+/**
+ * Безопасное получение метки режима
+ * @param {string} mode - Режим
+ * @returns {string}
+ */
+function getModeLabelSafe(mode) {
+    const labels = {
+        'individual': 'Индивидуальные параметры',
+        'common': 'Общий параметр',
+        'alternation': 'Альтернация (A|B|C)'
+    };
+    
+    return labels[mode] || mode;
+}
+
+/**
+ * Безопасная установка режима связи
+ * @param {string} mode - Режим
+ */
+function setLinkModeSafe(mode) {
+    const modeRadios = document.querySelectorAll('input[name="linkMode"]');
+    modeRadios.forEach(radio => {
+        radio.checked = (radio.value === mode);
+    });
+}
+
+/**
+ * Безопасная установка настроек группы
+ * @param {string} groupId - ID группы
+ * @param {Object} settings - Настройки
+ */
+function setGroupSettingsSafe(groupId, settings) {
+    if (typeof setGroupSettings === 'function') {
+        setGroupSettings(groupId, settings);
+        return;
+    }
+    
+    // Fallback: сохраняем в data-атрибут
+    const group = document.getElementById(groupId);
+    if (group) {
+        group.dataset.settings = JSON.stringify(settings);
+    }
+}
+
+/**
+ * Безопасная загрузка файла
+ * @param {string} content - Содержимое
+ * @param {string} filename - Имя файла
+ * @param {string} mimeType - MIME тип
+ */
+function downloadFileSafe(content, filename, mimeType) {
+    if (typeof downloadFile === 'function') {
+        downloadFile(content, filename, mimeType);
+        return;
+    }
+    
+    // Fallback: собственная реализация
+    try {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error('[History] Ошибка downloadFileSafe:', error);
+    }
+}
+
+/**
  * Обрезка regex для превью
  * @param {string} regex - Регулярное выражение
  * @param {number} maxLength - Максимальная длина
- * @returns {string} Обрезанная строка
+ * @returns {string}
  */
 function truncateRegex(regex, maxLength = 60) {
     if (regex.length <= maxLength) {
@@ -841,29 +1012,13 @@ function truncateRegex(regex, maxLength = 60) {
     return regex.substring(0, maxLength) + '...';
 }
 
-/**
- * Скачать файл
- * @param {string} content - Содержимое файла
- * @param {string} filename - Имя файла
- * @param {string} mimeType - MIME тип
- */
-function downloadFile(content, filename, mimeType) {
-    const blob = new Blob([content], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    link.click();
-    URL.revokeObjectURL(url);
-}
-
 // ============================================
 // ЭКСПОРТ
 // ============================================
 
 window.initHistory = initHistory;
 window.saveToHistory = saveToHistory;
-window.saveConversionToHistory = saveConversionToHistory; // НОВОЕ!
+window.saveConversionToHistory = saveConversionToHistory;
 window.loadHistory = loadHistory;
 window.renderHistory = renderHistory;
 window.loadFromHistory = loadFromHistory;
@@ -874,6 +1029,6 @@ window.closeHistoryDetailsModal = closeHistoryDetailsModal;
 window.exportFromHistory = exportFromHistory;
 window.closeExportHistoryModal = closeExportHistoryModal;
 window.exportHistoryEntry = exportHistoryEntry;
-window.updateHistoryCounter = updateHistoryCounter; // НОВОЕ!
+window.updateHistoryCounter = updateHistoryCounter;
 
-console.log('✓ Модуль history.js загружен (v3.0 FINAL - готова к заморозке ❄️)');
+console.log('✅ Модуль history.js загружен (v3.0 FINAL - готова к заморозке ❄️)');
