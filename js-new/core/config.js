@@ -1,121 +1,130 @@
 /**
- * Конфигурация RegexHelper v4.0
- * Все константы приложения в одном месте
- * @module core/config
+ * RegexHelper v4.0 - Core Configuration
+ * Центральный файл конфигурации приложения
  * @version 1.0
+ * @date 11.02.2026
  */
 
 /**
- * Основная конфигурация приложения
+ * Основные настройки приложения
+ * @type {Object}
  */
-export const APP_CONFIG = {
+export const APPCONFIG = {
     VERSION: '4.0.0',
-    APP_NAME: 'RegexHelper',
-    MAX_REGEX_LENGTH: 10000,
-    DEBOUNCE_DELAY: 300,
-    TOAST_DURATION: 3000,
+    APPNAME: 'RegexHelper',
+    MAXREGEXLENGTH: 10000,
+    DEBOUNCEDELAY: 300,
+    TOASTDURATION: 3000
 };
 
 /**
- * Конфигурация простых триггеров
+ * Настройки простых триггеров
+ * @type {Object}
  */
-export const SIMPLE_TRIGGERS_CONFIG = {
-    MAX_TRIGGERS: 200,
-    MIN_TRIGGER_LENGTH: 1,
-    MAX_TRIGGER_LENGTH: 100,
-    SHORT_TRIGGER_LENGTH: 3,
+export const SIMPLETRIGGERSCONFIG = {
+    MAXTRIGGERS: 200,
+    MINTRIGGERLENGTH: 1,
+    MAXTRIGGERLENGTH: 100,
+    SHORTTRIGGERLENGTH: 3
 };
 
 /**
- * Конфигурация связанных триггеров
+ * Настройки связанных триггеров
+ * @type {Object}
  */
-export const LINKED_TRIGGERS_CONFIG = {
-    MAX_GROUPS: 15,
-    MAX_SUBGROUPS: 15,
-    MAX_TRIGGERS_PER_SUBGROUP: 15,
-    DEFAULT_DISTANCE: {
+export const LINKEDTRIGGERSCONFIG = {
+    MAXGROUPS: 15,
+    MAXSUBGROUPS: 15,
+    MAXTRIGGERSPERSUBGROUP: 15,
+    DEFAULTDISTANCE: {
         min: 1,
-        max: 7,
-    },
+        max: 7
+    }
 };
 
 /**
- * Конфигурация оптимизаций
+ * Настройки оптимизатора (6 типов)
+ * @type {Object}
  */
-export const OPTIMIZER_CONFIG = {
+export const OPTIMIZERCONFIG = {
     TYPES: {
-        TYPE_1: 'prefixes',
-        TYPE_2: 'commonRoot',
-        TYPE_3: 'distance',
-        TYPE_4: 'declensions',
-        TYPE_5: 'optional',
-        TYPE_6: 'variations',
+        TYPE1: 'prefixes',        // Латиница/кириллица
+        TYPE2: 'commonRoot',      // Общие корни
+        TYPE3: 'distance',        // Расстояние (только для linked!)
+        TYPE4: 'declensions',     // Склонения
+        TYPE5: 'optional',        // Удвоенные буквы
+        TYPE6: 'variations'       // Вариации (t.e.s.t)
     },
-    DECLENSION_ENDINGS: ['а', 'у', 'ом', 'е', 'ов', 'ам', 'ами', 'ах'],
+    DECLENSIONENDINGS: ['а', 'у', 'ом', 'е', 'ы', 'ами', 'ах', 'ой', 'ою']
 };
 
 /**
- * Конфигурация истории
+ * Настройки истории
+ * @type {Object}
  */
-export const HISTORY_CONFIG = {
-    MAX_ENTRIES: 100,
-    STORAGE_KEY: 'regexhelper_history',
+export const HISTORYCONFIG = {
+    MAXENTRIES: 100,
+    STORAGEKEY: 'regexhelper-history'
 };
 
 /**
- * Конфигурация тестера
+ * Настройки тестера regex
+ * @type {Object}
  */
-export const TESTER_CONFIG = {
-    MAX_MATCHES: 100,
-    MAX_MATCH_LENGTH: 100,
-    HIGHLIGHT_COLOR: '#ffeb3b',
+export const TESTERCONFIG = {
+    MAXMATCHES: 100,
+    MAXMATCHLENGTH: 100,
+    HIGHLIGHTCOLOR: '#ffeb3b'
 };
 
 /**
- * Конфигурация визуализатора
+ * Настройки визуализатора
+ * @type {Object}
  */
-export const VISUALIZER_CONFIG = {
-    MAX_REGEX_LENGTH: 500,
-    DEFAULT_ZOOM: 1.0,
-    MIN_ZOOM: 0.5,
-    MAX_ZOOM: 2.0,
-    ZOOM_STEP: 0.1,
+export const VISUALIZERCONFIG = {
+    MAXREGEXLENGTH: 500,
+    DEFAULTZOOM: 1.0,
+    MINZOOM: 0.5,
+    MAXZOOM: 2.0,
+    ZOOMSTEP: 0.1
 };
 
 /**
- * Конфигурация toast уведомлений
+ * Конфигурация toast-уведомлений
+ * @type {Object}
  */
-export const TOAST_CONFIG = {
+export const TOASTCONFIG = {
     SUCCESS: {
         type: 'success',
         duration: 3000,
-        icon: '✅',
+        icon: '✓'
     },
     ERROR: {
         type: 'error',
         duration: 5000,
-        icon: '❌',
+        icon: '✕'
     },
     WARNING: {
         type: 'warning',
         duration: 4000,
-        icon: '⚠️',
+        icon: '⚠'
     },
     INFO: {
         type: 'info',
         duration: 3000,
-        icon: 'ℹ️',
-    },
+        icon: 'ℹ'
+    }
 };
 
 /**
  * Сообщения об ошибках
+ * @type {Object}
  */
-export const ERROR_MESSAGES = {
-    TOO_MANY_TRIGGERS: 'Слишком много триггеров (максимум 200)',
-    REGEX_TOO_LONG: 'Regex слишком длинный (максимум 10,000 символов)',
-    INVALID_REGEX: 'Неправильный формат regex',
-    NO_TRIGGERS: 'Введите хотя бы один триггер',
-    COPY_FAILED: 'Не удалось скопировать в буфер обмена',
-    SAVE_FAILED: 'Не удалось сохранить в историю',
+export const ERRORMESSAGES = {
+    TOOMANYTRIGGERS: 'Слишком много триггеров (максимум 200)',
+    REGEXTOOLONG: 'Regex слишком длинный (максимум 10,000 символов)',
+    INVALIDREGEX: 'Некорректный regex',
+    NOTRIGGERS: 'Нет триггеров для конвертации',
+    COPYFAILED: 'Не удалось скопировать в буфер обмена',
+    SAVEFAILED: 'Не удалось сохранить данные'
 };
