@@ -2,12 +2,20 @@
    REGEXHELPER - SUGGESTIONS
    Индивидуальные настройки триггеров
    
-   ВЕРСИЯ: 2.0 (Исправлено CRIT-1)
-   ДАТА: 10.02.2026
+   ВЕРСИЯ: 2.0 FINAL
+   ДАТА: 11.02.2026
    ИЗМЕНЕНИЯ:
    - CRIT-1: Удален type3 из настроек триггеров
    - Теперь только: type1, type2, type4, type5
    - Type 3 используется ТОЛЬКО для связанных групп
+   - ДОБАВЛЕНО: Safe функции с fallback
+   - ДОБАВЛЕНО: Полный экспорт функций
+   - УЛУЧШЕНО: Проверки зависимостей
+   
+   ЗАВИСИМОСТИ:
+   - converter.js (parseSimpleTriggers)
+   - errors.js (showToast)
+   - utils.js или errors.js (closeModal)
    ============================================ */
 
 /**
@@ -20,6 +28,57 @@
 
 // Глобальный объект для хранения индивидуальных настроек
 const triggerSettings = new Map(); // Map<triggerText, {type1, type2, type4, type5}>
+
+/* ============================================
+   SAFE ФУНКЦИИ (FALLBACK)
+   ============================================ */
+
+/**
+ * Безопасный toast
+ */
+function showToastSafe(type, message, duration) {
+    if (typeof showToast === 'function') {
+        showToast(type, message, duration);
+    } else {
+        console.log(`[Toast ${type.toUpperCase()}] ${message}`);
+    }
+}
+
+/**
+ * Безопасное закрытие модального окна
+ */
+function closeModalSafe(modalId) {
+    if (typeof closeModal === 'function') {
+        closeModal(modalId);
+        return;
+    }
+    
+    // Fallback
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.classList.remove('modal-open');
+    }
+}
+
+/**
+ * Безопасный парсинг триггеров
+ */
+function parseSimpleTriggersSafe(text) {
+    if (typeof parseSimpleTriggers === 'function') {
+        return parseSimpleTriggers(text);
+    }
+    
+    // Fallback
+    if (!text) return [];
+    return text.split('\n')
+        .map(t => t.trim().toLowerCase())
+        .filter(t => t.length > 0);
+}
+
+/* ============================================
+   ИНДИВИДУАЛЬНЫЕ НАСТРОЙКИ ТРИГГЕРОВ
+   ============================================ */
 
 /**
  * Сохранение настроек триггера в localStorage
@@ -256,7 +315,7 @@ function cleanupStaleSettings() {
     const textarea = document.getElementById('simpleTriggers');
     if (!textarea) return;
     
-    const currentTriggers = parseSimpleTriggers(textarea.value);
+    const currentTriggers = parseSimpleTriggersSafe(textarea.value);
     const currentTriggerSet = new Set(currentTriggers);
     
     // Удаляем настройки для триггеров, которых больше нет
@@ -287,14 +346,14 @@ function updateTriggerSettingsUI() {
     const textarea = document.getElementById('simpleTriggers');
     if (!textarea) return;
     
-    const triggers = parseSimpleTriggers(textarea.value);
+    const triggers = parseSimpleTriggersSafe(textarea.value);
     
     // Создаем контейнер для кнопок если его нет
     let buttonsContainer = document.getElementById('triggerSettingsButtons');
     if (!buttonsContainer) {
         buttonsContainer = document.createElement('div');
         buttonsContainer.id = 'triggerSettingsButtons';
-        buttonsContainer.style.cssText = 'display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;';
+        buttonsContainer.className = 'trigger-settings-buttons';
         textarea.parentElement.appendChild(buttonsContainer);
     }
     
@@ -316,45 +375,18 @@ function updateTriggerSettingsUI() {
         
         // Контейнер для триггера
         const wrapper = document.createElement('div');
-        wrapper.className = 'trigger-settings-item';
-        wrapper.style.cssText = `
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 10px;
-            border: 2px solid ${hasSettings ? '#4CAF50' : '#ddd'};
-            border-radius: 6px;
-            background: ${hasSettings ? '#E8F5E9' : '#f9f9f9'};
-            transition: all 0.2s ease;
-            cursor: pointer;
-        `;
-        
-        // При наведении
-        wrapper.onmouseenter = () => {
-            wrapper.style.borderColor = hasSettings ? '#45a049' : '#2196F3';
-            wrapper.style.transform = 'translateY(-1px)';
-            wrapper.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-        };
-        wrapper.onmouseleave = () => {
-            wrapper.style.borderColor = hasSettings ? '#4CAF50' : '#ddd';
-            wrapper.style.transform = 'translateY(0)';
-            wrapper.style.boxShadow = 'none';
-        };
+        wrapper.className = `trigger-settings-item ${hasSettings ? 'has-settings' : ''}`;
         
         // Название триггера
         const label = document.createElement('span');
+        label.className = 'trigger-label';
         label.textContent = trigger.length > 20 ? trigger.substring(0, 20) + '...' : trigger;
         label.title = trigger;
-        label.style.cssText = `
-            font-size: 13px;
-            color: ${hasSettings ? '#2E7D32' : '#333'};
-            font-weight: ${hasSettings ? '600' : '400'};
-        `;
         
         // Иконка настроек
         const icon = document.createElement('span');
+        icon.className = 'trigger-icon';
         icon.textContent = hasSettings ? '⚙️✓' : '⚙️';
-        icon.style.cssText = 'font-size: 16px;';
         
         wrapper.appendChild(label);
         wrapper.appendChild(icon);
@@ -394,7 +426,7 @@ function openTriggerSettingsModal(trigger) {
     
     // Показываем модальное окно
     modal.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
+    document.body.classList.add('modal-open');
     
     // Обработчик кнопки "Применить"
     const applyBtn = document.getElementById('applyTriggerSettingsBtn');
@@ -418,23 +450,23 @@ function openTriggerSettingsModal(trigger) {
             if (allUnchecked) {
                 // Если все галочки сняты - удаляем индивидуальные настройки
                 removeTriggerSettings(trigger);
-                closeModal('triggerSettingsModal');
+                closeModalSafe('triggerSettingsModal');
                 
                 setTimeout(() => {
                     updateTriggerSettingsUI();
                 }, 100);
                 
-                showToast('info', `Настройки сброшены для "${trigger}". Используются глобальные.`);
+                showToastSafe('info', `Настройки сброшены для "${trigger}". Используются глобальные.`);
             } else {
                 // Если хотя бы одна галочка стоит - сохраняем индивидуальные настройки
                 setTriggerSettings(trigger, newSettings);
-                closeModal('triggerSettingsModal');
+                closeModalSafe('triggerSettingsModal');
                 
                 setTimeout(() => {
                     updateTriggerSettingsUI();
                 }, 100);
                 
-                showToast('success', `Настройки применены для "${trigger}"`);
+                showToastSafe('success', `Настройки применены для "${trigger}"`);
             }
         };
     }
@@ -447,14 +479,14 @@ function openTriggerSettingsModal(trigger) {
         resetBtn.onclick = () => {
             // Сразу удаляем настройки без подтверждения
             removeTriggerSettings(trigger);
-            closeModal('triggerSettingsModal');
+            closeModalSafe('triggerSettingsModal');
             
             // Обновляем UI после закрытия модалки
             setTimeout(() => {
                 updateTriggerSettingsUI();
             }, 100);
             
-            showToast('info', `Настройки сброшены для "${trigger}". Используются глобальные.`);
+            showToastSafe('info', `Настройки сброшены для "${trigger}". Используются глобальные.`);
         };
     }
 }
@@ -496,11 +528,32 @@ function initSuggestions() {
         updateTriggerSettingsUI();
     }
     
-    console.log('[Suggestions] Модуль инициализирован (v2.0 - CRIT-1 исправлен)');
+    console.log('[Suggestions] ✅ Модуль инициализирован (v2.0 FINAL - CRIT-1 исправлен)');
 }
 
 /* ============================================
-   ЭКСПОРТ
+   ЭКСПОРТ (РАСШИРЕННЫЙ v2.0 FINAL)
    ============================================ */
 
-console.log('✓ Модуль suggestions.js загружен (v2.0 - Type 3 удален из настроек триггеров)');
+// Индивидуальные настройки триггеров
+window.getTriggerSettings = getTriggerSettings;
+window.setTriggerSettings = setTriggerSettings;
+window.removeTriggerSettings = removeTriggerSettings;
+window.hasTriggerSettings = hasTriggerSettings;
+window.clearAllTriggerSettings = clearAllTriggerSettings;
+window.getEffectiveSettings = getEffectiveSettings;
+
+// Глобальные настройки оптимизаций
+window.getGlobalOptimizationStates = getGlobalOptimizationStates;
+window.saveGlobalOptimizationStates = saveGlobalOptimizationStates;
+window.loadGlobalOptimizationStates = loadGlobalOptimizationStates;
+window.applyGlobalOptimizationStates = applyGlobalOptimizationStates;
+
+// UI
+window.updateTriggerSettingsUI = updateTriggerSettingsUI;
+window.openTriggerSettingsModal = openTriggerSettingsModal;
+
+// Инициализация
+window.initSuggestions = initSuggestions;
+
+console.log('✅ Модуль suggestions.js загружен (v2.0 FINAL - Type 3 удален из настроек триггеров)');
