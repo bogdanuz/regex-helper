@@ -2,15 +2,15 @@
    REGEXHELPER - MAIN
    Главный файл приложения
    
-   ВЕРСИЯ: 3.0 FINAL (Готов к заморозке ❄️)
+   ВЕРСИЯ: 3.0 (+ toggleAccordion)
    ДАТА: 11.02.2026
    ИЗМЕНЕНИЯ:
    - БЛОК 2: Интеграция расширенной истории (saveConversionToHistory)
    - БЛОК 3: Поддержка подгрупп и 3 режимов связи
    - БЛОК 5: Автозамена ё → [её] (через converter.js)
    - БЛОК 6: Confirm с отложением (через converter.js)
+   - БЛОК 8: toggleAccordion() для сворачивания панелей ✅
    - Убрана старая логика сохранения истории
-   - ГОТОВ К ЗАМОРОЗКЕ ❄️
    ============================================ */
 
 /* ============================================
@@ -22,7 +22,7 @@
  */
 function initApp() {
     console.log('='.repeat(50));
-    console.log('RegexHelper v3.0 FINAL - Запуск приложения');
+    console.log('RegexHelper v3.0 - Запуск приложения');
     console.log('='.repeat(50));
     
     // Проверка совместимости браузера
@@ -817,6 +817,59 @@ function confirmClearResult() {
 }
 
 /* ============================================
+   АККОРДЕОН ПАНЕЛЕЙ (НОВОЕ - БЛОК 8) ✅
+   ============================================ */
+
+/**
+ * Сворачивание/разворачивание панелей
+ * 
+ * БЛОК 8: UI/UX улучшения
+ * 
+ * @param {string} panelId - ID панели (например, 'panel1')
+ * 
+ * @example
+ * HTML: <button class="btn-accordion" onclick="toggleAccordion('panel1')">▼</button>
+ */
+function toggleAccordion(panelId) {
+    const panel = document.getElementById(panelId);
+    
+    if (!panel) {
+        console.warn(`[Main] Панель ${panelId} не найдена`);
+        return;
+    }
+    
+    const body = panel.querySelector('.panel-body');
+    const btn = panel.querySelector('.btn-accordion');
+    
+    if (!body) {
+        console.warn(`[Main] .panel-body не найден в панели ${panelId}`);
+        return;
+    }
+    
+    if (!btn) {
+        console.warn(`[Main] .btn-accordion не найдена в панели ${panelId}`);
+        return;
+    }
+    
+    // Проверяем текущее состояние
+    const isCollapsed = body.style.display === 'none';
+    
+    if (isCollapsed) {
+        // Разворачиваем
+        body.style.display = 'block';
+        btn.textContent = '▼';
+        btn.title = 'Свернуть панель';
+        console.log(`[Main] Панель ${panelId} развернута`);
+    } else {
+        // Сворачиваем
+        body.style.display = 'none';
+        btn.textContent = '▲';
+        btn.title = 'Развернуть панель';
+        console.log(`[Main] Панель ${panelId} свернута`);
+    }
+}
+
+/* ============================================
    ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
    ============================================ */
 
@@ -837,13 +890,14 @@ function focusFirstInput() {
  * Показать версию приложения в консоли
  */
 function showVersionInfo() {
-    console.log('%c RegexHelper v3.0 FINAL ', 'background: #4CAF50; color: white; padding: 5px 10px; border-radius: 3px;');
-    console.log('%c Конвертер триггеров в regex (готов к заморозке ❄️) ', 'background: #2196F3; color: white; padding: 3px 8px;');
+    console.log('%c RegexHelper v3.0 ', 'background: #4CAF50; color: white; padding: 5px 10px; border-radius: 3px;');
+    console.log('%c Конвертер триггеров в regex ', 'background: #2196F3; color: white; padding: 3px 8px;');
     console.log('');
     console.log('✓ БЛОК 2: История 100 записей + импорт/экспорт');
     console.log('✓ БЛОК 3: Подгруппы + 3 режима связи');
     console.log('✓ БЛОК 5: Автозамена ё → [её]');
     console.log('✓ БЛОК 6: Confirm с отложением');
+    console.log('✓ БЛОК 8: toggleAccordion() для сворачивания панелей');
     console.log('');
     console.log('Разработчик: bogdanuz');
     console.log('GitHub: https://github.com/bogdanuz/regex-helper');
@@ -863,5 +917,6 @@ document.addEventListener('DOMContentLoaded', () => {
 // Делаем функции глобальными
 window.confirmClearSimpleTriggers = confirmClearSimpleTriggers;
 window.confirmClearResult = confirmClearResult;
+window.toggleAccordion = toggleAccordion; // НОВОЕ! ✅
 
-console.log('✓ Модуль main.js загружен (v3.0 FINAL - готов к заморозке ❄️)');
+console.log('✓ Модуль main.js загружен (v3.0 с toggleAccordion)');
