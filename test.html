@@ -12,84 +12,81 @@
         }
 
         body {
-            font-family: 'Courier New', 'Consolas', monospace;
-            background: #000;
-            color: #0f0;
-            font-size: 12px;
-            line-height: 1.4;
-            padding: 8px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            font-size: 13px;
+            line-height: 1.5;
+            padding: 12px;
         }
 
         .container {
             max-width: 100%;
-            height: calc(100vh - 16px);
+            height: calc(100vh - 24px);
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 8px;
         }
 
         .header {
-            background: #111;
-            padding: 6px 8px;
-            border: 1px solid #333;
+            background: #242424;
+            padding: 10px 16px;
+            border-radius: 6px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         .header h1 {
-            font-size: 13px;
-            font-weight: normal;
-            color: #0f0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #e0e0e0;
         }
 
         .header-stats {
             color: #888;
-            font-size: 11px;
+            font-size: 12px;
         }
 
         .main {
             display: flex;
-            gap: 4px;
+            gap: 8px;
             flex: 1;
             overflow: hidden;
         }
 
         .left-panel {
-            width: 500px;
+            width: 450px;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 8px;
         }
 
         .test-list-container {
             flex: 1;
-            background: #111;
-            border: 1px solid #333;
+            background: #242424;
+            border-radius: 6px;
             overflow-y: auto;
-            overflow-x: hidden;
-        }
-
-        .test-list {
-            width: 100%;
         }
 
         .test-item {
             display: flex;
             align-items: center;
-            padding: 4px 6px;
-            border-bottom: 1px solid #222;
+            padding: 8px 12px;
+            border-bottom: 1px solid #2a2a2a;
             cursor: pointer;
-            transition: background 0.1s;
+            transition: background 0.15s;
         }
 
         .test-item:hover {
-            background: #1a1a1a;
+            background: #2a2a2a;
         }
 
         .test-item input[type="checkbox"] {
-            margin-right: 8px;
+            margin-right: 10px;
             cursor: pointer;
+            width: 16px;
+            height: 16px;
         }
 
         .test-info {
@@ -98,145 +95,151 @@
         }
 
         .test-name {
-            color: #0f0;
-            font-size: 11px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            color: #e0e0e0;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 2px;
         }
 
         .test-meta {
             color: #666;
-            font-size: 10px;
-            margin-top: 2px;
+            font-size: 11px;
         }
 
         .controls {
-            background: #111;
-            border: 1px solid #333;
-            padding: 6px 8px;
+            background: #242424;
+            border-radius: 6px;
+            padding: 10px 12px;
             display: flex;
             gap: 8px;
             align-items: center;
         }
 
         .btn {
-            background: #222;
-            color: #0f0;
-            border: 1px solid #333;
-            padding: 4px 12px;
-            font-size: 11px;
-            font-family: 'Courier New', monospace;
+            background: #333;
+            color: #e0e0e0;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.1s;
+            transition: all 0.15s;
         }
 
         .btn:hover {
-            background: #333;
-            border-color: #0f0;
+            background: #3a3a3a;
         }
 
         .btn:active {
-            background: #0f0;
-            color: #000;
+            transform: scale(0.98);
         }
 
         .btn:disabled {
-            opacity: 0.3;
+            opacity: 0.4;
             cursor: not-allowed;
         }
 
         .btn-primary {
-            border-color: #0f0;
+            background: #4a9eff;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #5ba8ff;
         }
 
         .info {
             flex: 1;
-            color: #666;
-            font-size: 11px;
+            color: #888;
+            font-size: 12px;
         }
 
         .right-panel {
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 8px;
         }
 
         .stats-bar {
-            background: #111;
-            border: 1px solid #333;
-            padding: 6px 8px;
+            background: #242424;
+            border-radius: 6px;
+            padding: 10px 16px;
             display: flex;
-            gap: 20px;
+            gap: 24px;
         }
 
         .stat {
-            font-size: 11px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .stat-label {
-            color: #666;
+            color: #888;
         }
 
         .stat-value {
-            color: #0f0;
-            margin-left: 6px;
+            color: #e0e0e0;
+            font-weight: 600;
+            font-size: 14px;
         }
 
-        .stat-value.passed { color: #0f0; }
-        .stat-value.failed { color: #f00; }
+        .stat-value.passed { color: #5ec269; }
+        .stat-value.failed { color: #ff5555; }
 
         .logs-container {
             flex: 1;
-            background: #000;
-            border: 1px solid #333;
+            background: #1f1f1f;
+            border-radius: 6px;
             overflow-y: auto;
-            overflow-x: hidden;
-            font-family: 'Courier New', monospace;
+            font-family: 'Monaco', 'Consolas', monospace;
             font-size: 11px;
-            padding: 6px;
+            padding: 12px;
             white-space: pre-wrap;
             word-break: break-word;
         }
 
         .logs-container:empty::before {
-            content: '> Waiting for tests...';
-            color: #666;
+            content: 'No logs yet...';
+            color: #555;
         }
 
         .log-line {
-            margin-bottom: 2px;
+            margin-bottom: 3px;
+            line-height: 1.5;
         }
 
-        .log-success { color: #0f0; }
-        .log-error { color: #f00; }
-        .log-info { color: #0ff; }
-        .log-muted { color: #666; }
+        .log-success { color: #5ec269; }
+        .log-error { color: #ff5555; }
+        .log-info { color: #4a9eff; }
+        .log-muted { color: #888; }
 
         ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+            width: 10px;
         }
 
         ::-webkit-scrollbar-track {
-            background: #000;
+            background: #1a1a1a;
         }
 
         ::-webkit-scrollbar-thumb {
             background: #333;
+            border-radius: 5px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: #555;
+            background: #444;
         }
 
         .spinner {
             display: inline-block;
-            width: 8px;
-            height: 8px;
+            width: 10px;
+            height: 10px;
             border: 2px solid #333;
-            border-top-color: #0f0;
+            border-top-color: #4a9eff;
             border-radius: 50%;
             animation: spin 0.6s linear infinite;
         }
@@ -248,56 +251,48 @@
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
         <div class="header">
-            <h1>[REGEX HELPER v4.0 - TEST RUNNER]</h1>
-            <div class="header-stats" id="headerStats">READY</div>
+            <h1>RegexHelper v4.0 - Test Runner</h1>
+            <div class="header-stats" id="headerStats">Ready</div>
         </div>
 
-        <!-- Main -->
         <div class="main">
-            <!-- Left Panel -->
             <div class="left-panel">
-                <!-- Test List -->
                 <div class="test-list-container">
-                    <div class="test-list" id="testList"></div>
+                    <div id="testList"></div>
                 </div>
 
-                <!-- Controls -->
                 <div class="controls">
                     <button class="btn btn-primary" id="runBtn">
-                        <span id="runText">RUN</span>
+                        <span id="runText">Run Tests</span>
                     </button>
-                    <button class="btn" id="selectAllBtn">SELECT ALL</button>
-                    <button class="btn" id="clearBtn">CLEAR</button>
-                    <button class="btn" id="copyBtn">COPY LOGS</button>
+                    <button class="btn" id="selectAllBtn">Select All</button>
+                    <button class="btn" id="clearBtn">Clear</button>
+                    <button class="btn" id="copyBtn">Copy Logs</button>
                     <div class="info" id="selectedInfo">0 selected</div>
                 </div>
             </div>
 
-            <!-- Right Panel -->
             <div class="right-panel">
-                <!-- Stats -->
                 <div class="stats-bar">
                     <div class="stat">
-                        <span class="stat-label">TOTAL:</span>
+                        <span class="stat-label">Total:</span>
                         <span class="stat-value" id="totalTests">0</span>
                     </div>
                     <div class="stat">
-                        <span class="stat-label">PASSED:</span>
+                        <span class="stat-label">Passed:</span>
                         <span class="stat-value passed" id="passedTests">0</span>
                     </div>
                     <div class="stat">
-                        <span class="stat-label">FAILED:</span>
+                        <span class="stat-label">Failed:</span>
                         <span class="stat-value failed" id="failedTests">0</span>
                     </div>
                     <div class="stat">
-                        <span class="stat-label">RATE:</span>
-                        <span class="stat-value" id="passRate">0.0%</span>
+                        <span class="stat-label">Rate:</span>
+                        <span class="stat-value" id="passRate">0%</span>
                     </div>
                 </div>
 
-                <!-- Logs -->
                 <div class="logs-container" id="logs"></div>
             </div>
         </div>
@@ -310,14 +305,11 @@
         let isRunning = false;
         let consoleLogBuffer = [];
 
-        // Сортировка: новые сверху
         const sortedSuites = [...TEST_SUITES].sort((a, b) => {
             return new Date(b.date) - new Date(a.date);
         });
 
-        // Перехват console.log
         const originalLog = console.log;
-        const originalError = console.error;
 
         console.log = function(...args) {
             originalLog.apply(console, args);
@@ -328,14 +320,18 @@
                 return String(arg);
             }).join(' ');
             consoleLogBuffer.push(message);
+            
+            // Перехват статистики из console.log
+            if (message.includes('Пройдено:') && message.includes('Провалено:')) {
+                const totalMatch = message.match(/(\d+)\/(\d+)/);
+                if (totalMatch) {
+                    const passed = parseInt(totalMatch[1]);
+                    const total = parseInt(totalMatch[2]);
+                    updateStats(total, passed, total - passed);
+                }
+            }
+            
             appendLog(message);
-        };
-
-        console.error = function(...args) {
-            originalError.apply(console, args);
-            const message = args.map(arg => String(arg)).join(' ');
-            consoleLogBuffer.push('[ERROR] ' + message);
-            appendLog('[ERROR] ' + message, 'error');
         };
 
         function init() {
@@ -348,7 +344,7 @@
             const container = document.getElementById('testList');
             
             if (sortedSuites.length === 0) {
-                container.innerHTML = '<div style="padding:20px;color:#666;">NO TESTS FOUND</div>';
+                container.innerHTML = '<div style="padding:20px;color:#666;">No tests found</div>';
                 return;
             }
 
@@ -362,7 +358,7 @@
                     >
                     <div class="test-info">
                         <div class="test-name">${suite.name}</div>
-                        <div class="test-meta">${suite.file} | ${suite.estimatedTests} tests | v${suite.version} | ${suite.date}</div>
+                        <div class="test-meta">${suite.file} • ${suite.estimatedTests} tests • v${suite.version} • ${suite.date}</div>
                     </div>
                 </div>
             `).join('');
@@ -417,13 +413,13 @@
                 .reduce((sum, s) => sum + s.estimatedTests, 0);
 
             document.getElementById('selectedInfo').textContent = 
-                count === 0 ? '0 selected' : `${count} file(s) | ~${totalTests} tests`;
+                count === 0 ? '0 selected' : `${count} file(s) • ~${totalTests} tests`;
         }
 
         async function runTests() {
             if (isRunning) return;
             if (selectedTests.size === 0) {
-                appendLog('[ERROR] No tests selected', 'error');
+                appendLog('ERROR: No tests selected', 'error');
                 return;
             }
 
@@ -433,7 +429,7 @@
             consoleLogBuffer = [];
 
             const startTime = Date.now();
-            document.getElementById('headerStats').textContent = 'RUNNING...';
+            document.getElementById('headerStats').textContent = 'Running...';
 
             for (const suiteId of selectedTests) {
                 const suite = sortedSuites.find(s => s.id === suiteId);
@@ -442,12 +438,12 @@
                 try {
                     await import(`./tests/${suite.file}?t=${Date.now()}`);
                 } catch (error) {
-                    appendLog(`[ERROR] Failed to load ${suite.file}: ${error.message}`, 'error');
+                    appendLog(`ERROR: Failed to load ${suite.file}: ${error.message}`, 'error');
                 }
             }
 
             const duration = Date.now() - startTime;
-            document.getElementById('headerStats').textContent = `COMPLETED IN ${duration}ms`;
+            document.getElementById('headerStats').textContent = `Completed in ${duration}ms`;
 
             setTimeout(() => {
                 updateRunButton(false);
@@ -464,17 +460,26 @@
             logsEl.scrollTop = logsEl.scrollHeight;
         }
 
+        function updateStats(total, passed, failed) {
+            document.getElementById('totalTests').textContent = total || 0;
+            document.getElementById('passedTests').textContent = passed || 0;
+            document.getElementById('failedTests').textContent = failed || 0;
+            
+            const rate = total > 0 ? ((passed / total) * 100).toFixed(1) : '0.0';
+            document.getElementById('passRate').textContent = rate + '%';
+        }
+
         async function copyLogs() {
             if (consoleLogBuffer.length === 0) {
-                appendLog('[ERROR] No logs to copy', 'error');
+                appendLog('ERROR: No logs to copy', 'error');
                 return;
             }
 
             try {
                 await navigator.clipboard.writeText(consoleLogBuffer.join('\n'));
-                appendLog('[OK] Logs copied to clipboard', 'success');
+                appendLog('Logs copied to clipboard', 'success');
             } catch (error) {
-                appendLog('[ERROR] Failed to copy logs', 'error');
+                appendLog('ERROR: Failed to copy logs', 'error');
             }
         }
 
@@ -483,8 +488,8 @@
             document.getElementById('totalTests').textContent = '0';
             document.getElementById('passedTests').textContent = '0';
             document.getElementById('failedTests').textContent = '0';
-            document.getElementById('passRate').textContent = '0.0%';
-            document.getElementById('headerStats').textContent = 'READY';
+            document.getElementById('passRate').textContent = '0%';
+            document.getElementById('headerStats').textContent = 'Ready';
             consoleLogBuffer = [];
         }
 
@@ -494,25 +499,12 @@
 
             if (running) {
                 btn.disabled = true;
-                text.innerHTML = '<span class="spinner"></span> RUNNING';
+                text.innerHTML = '<span class="spinner"></span> Running...';
             } else {
                 btn.disabled = false;
-                text.textContent = 'RUN';
+                text.textContent = 'Run Tests';
             }
         }
-
-        // Слушаем события из тестов
-        window.addEventListener('message', (event) => {
-            if (event.data.type === 'test-stats') {
-                const { total, passed, failed } = event.data;
-                document.getElementById('totalTests').textContent = total || 0;
-                document.getElementById('passedTests').textContent = passed || 0;
-                document.getElementById('failedTests').textContent = failed || 0;
-                
-                const rate = total > 0 ? ((passed / total) * 100).toFixed(1) : '0.0';
-                document.getElementById('passRate').textContent = rate + '%';
-            }
-        });
 
         init();
     </script>
