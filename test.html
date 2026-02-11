@@ -298,7 +298,7 @@
         </div>
     </div>
 
-    <script type="module">
+        <script type="module">
         import { TEST_SUITES } from './tests/test-config.js';
 
         let selectedTests = new Set();
@@ -321,13 +321,15 @@
             }).join(' ');
             consoleLogBuffer.push(message);
             
-            // Перехват статистики из console.log
-            if (message.includes('Пройдено:') && message.includes('Провалено:')) {
-                const totalMatch = message.match(/(\d+)\/(\d+)/);
-                if (totalMatch) {
-                    const passed = parseInt(totalMatch[1]);
-                    const total = parseInt(totalMatch[2]);
-                    updateStats(total, passed, total - passed);
+            // Парсинг статистики из console.log
+            // Ищем строку: "✅ Пройдено: 110/110"
+            if (message.includes('Пройдено:') && message.includes('/')) {
+                const match = message.match(/(\d+)\/(\d+)/);
+                if (match) {
+                    const passed = parseInt(match[1]);
+                    const total = parseInt(match[2]);
+                    const failed = total - passed;
+                    updateStats(total, passed, failed);
                 }
             }
             
