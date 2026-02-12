@@ -1,271 +1,321 @@
-/* =============================================================================
-   REGEXHELPER V4.0 - HISTORY STYLES
-   Стили истории: History List, Items, Actions
-   ============================================================================= */
+/**
+ * RegexHelper v4.0 - History Styles
+ * 
+ * Стили для истории: список, элементы, actions, пагинация,
+ * empty state, details modal.
+ * 
+ * @version 1.0
+ * @date 12.02.2026
+ */
 
-/* HISTORY SECTION */
+/* ============================================================================
+   HISTORY SECTION
+   ============================================================================ */
 #historySection {
-    /* Специфичные стили, если нужны */
 }
 
-/* HISTORY COUNTER v3.0 */
+/* ============================================================================
+   HISTORY COUNTER v3.0
+   ============================================================================ */
 .history-counter {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--medium-text);
-    margin-left: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--medium-text);
+  margin-left: 8px;
 }
 
-/* HISTORY CONTAINER */
+/* ============================================================================
+   HISTORY CONTAINER
+   ============================================================================ */
 .history-container {
-    max-height: 400px;
-    overflow-y: auto;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
-/* HISTORY LIST */
+/* ============================================================================
+   HISTORY LIST
+   ============================================================================ */
 .history-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-/* HISTORY ITEM */
+/* ============================================================================
+   HISTORY ITEM
+   ============================================================================ */
 .history-item {
-    background: #FAFAFA;
-    border: 2px solid #E0E0E0;
-    border-radius: 8px;
-    padding: 16px;
-    transition: all 0.2s ease;
+  background: #FAFAFA;
+  border: 2px solid #E0E0E0;
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s ease;
 }
 
 .history-item:hover {
-    border-color: #2196F3;
-    background: white;
-    box-shadow: 0 2px 8px rgba(33, 150, 243, 0.15);
+  border-color: #2196F3;
+  background: white;
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.15);
 }
 
-/* HISTORY ITEM HEADER */
+/* ============================================================================
+   HISTORY ITEM HEADER
+   ============================================================================ */
 .history-item-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
 }
 
 .history-item-date {
-    font-size: 13px;
-    color: #607D8B;
-    font-weight: 500;
+  font-size: 13px;
+  color: #607D8B;
+  font-weight: 500;
 }
 
 .history-item-type {
-    font-size: 12px;
-    padding: 4px 8px;
-    background-color: #E3F2FD;
-    color: #1976D2;
-    border-radius: var(--radius-sm);
-    font-weight: 600;
+  font-size: 12px;
+  padding: 4px 8px;
+  background-color: #E3F2FD;
+  color: #1976D2;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
 }
 
-/* HISTORY ITEM ACTIONS */
+/* ============================================================================
+   HISTORY ITEM ACTIONS
+   ============================================================================ */
 .history-item-actions {
-    display: flex;
-    gap: 8px;
+  display: flex;
+  gap: 8px;
 }
 
-/* HISTORY ITEM REGEX */
+/* ============================================================================
+   HISTORY ITEM REGEX
+   ============================================================================ */
 .history-item-regex {
-    background: white;
-    border: 1px solid #BDBDBD;
-    border-radius: 4px;
-    padding: 10px 12px;
-    font-family: 'Courier New', monospace;
-    font-size: 13px;
-    color: #424242;
-    margin-bottom: 12px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
+  background: white;
+  border: 1px solid #BDBDBD;
+  border-radius: 4px;
+  padding: 10px 12px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: #424242;
+  margin-bottom: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
-/* HISTORY ITEM META */
+/* ============================================================================
+   HISTORY ITEM META
+   ============================================================================ */
 .history-item-meta {
-    display: flex;
-    gap: 16px;
-    font-size: 12px;
-    color: #757575;
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: #757575;
 }
 
 .history-item-meta span {
-    display: flex;
-    align-items: center;
-    gap: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-/* HISTORY EMPTY STATE */
+/* ============================================================================
+   HISTORY EMPTY STATE
+   ============================================================================ */
 .history-empty {
-    text-align: center;
-    padding: 60px 24px;
-    color: #9E9E9E;
+  text-align: center;
+  padding: 60px 24px;
+  color: #9E9E9E;
 }
 
 .history-empty p:first-child {
-    font-size: 64px;
-    margin-bottom: 16px;
-    line-height: 1;
+  font-size: 64px;
+  margin-bottom: 16px;
+  line-height: 1;
 }
 
 .history-empty .text-muted {
-    font-size: 15px;
-    color: #757575;
-    margin-top: 8px;
+  font-size: 15px;
+  color: #757575;
+  margin-top: 8px;
 }
 
-/* HISTORY ITEM BUTTONS */
+/* ============================================================================
+   HISTORY ITEM BUTTONS
+   ============================================================================ */
 .history-item .btn-icon {
-    width: 32px;
-    height: 32px;
-    font-size: 16px;
-    border: 1px solid #BDBDBD;
-    background: white;
+  width: 32px;
+  height: 32px;
+  font-size: 16px;
+  border: 1px solid #BDBDBD;
+  background: white;
 }
 
 .history-item .btn-icon:hover {
-    background: #F5F5F5;
-    border-color: #757575;
+  background: #F5F5F5;
+  border-color: #757575;
 }
 
-/* EXPORT OPTIONS */
+/* Favorite Button */
+.btn-favorite {
+  color: #757575;
+}
+
+.btn-favorite.favorite-active {
+  color: #ffc107;
+  background: #fff9e6;
+  border-color: #ffc107;
+}
+
+.btn-favorite.favorite-active:hover {
+  background: #fff3cd;
+}
+
+/* Load Button */
+.btn-load {
+  color: #2196F3;
+}
+
+.btn-load:hover {
+  background: #e3f2fd;
+  border-color: #2196F3;
+}
+
+/* ============================================================================
+   EXPORT OPTIONS
+   ============================================================================ */
 .export-options {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
 }
 
 .export-options .btn-primary,
 .export-options .btn-secondary {
-    width: 100%;
-    justify-content: flex-start;
+  width: 100%;
+  justify-content: flex-start;
 }
 
-/* HISTORY DETAILS MODAL v3.0 */
+/* ============================================================================
+   HISTORY DETAILS MODAL v3.0
+   ============================================================================ */
 .details-info {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 .details-info p {
-    margin-bottom: 8px;
-    font-size: 14px;
+  margin-bottom: 8px;
+  font-size: 14px;
 }
 
 .details-triggers {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
 .details-triggers code {
-    background-color: #f0f4ff;
-    padding: 4px 8px;
-    border-radius: var(--radius-sm);
-    font-size: 13px;
-    color: var(--primary-blue);
-    border: 1px solid #d0e3ff;
+  background-color: #f0f4ff;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--primary-blue);
+  border: 1px solid #d0e3ff;
 }
 
 .details-params {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .details-params li {
-    padding: 8px 12px;
-    background-color: #fafafa;
-    border-radius: var(--radius-sm);
-    margin-bottom: 6px;
-    font-size: 13px;
+  padding: 8px 12px;
+  background-color: #fafafa;
+  border-radius: var(--radius-sm);
+  margin-bottom: 6px;
+  font-size: 13px;
 }
 
 .details-group {
-    background-color: #f9f9f9;
-    border: 1px solid #e0e0e0;
-    border-radius: var(--radius-md);
-    padding: 12px;
-    margin-bottom: 12px;
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: var(--radius-md);
+  padding: 12px;
+  margin-bottom: 12px;
 }
 
 .details-group h5 {
-    margin-top: 0;
-    margin-bottom: 10px;
-    font-size: 14px;
-    color: var(--dark-text);
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: var(--dark-text);
 }
 
 .details-subgroup {
-    margin-bottom: 10px;
-    padding-left: 12px;
-    border-left: 3px solid var(--primary-blue);
+  margin-bottom: 10px;
+  padding-left: 12px;
+  border-left: 3px solid var(--primary-blue);
 }
 
 .details-subgroup strong {
-    display: block;
-    margin-bottom: 6px;
-    font-size: 13px;
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
 }
 
 .details-subgroup code {
-    margin-right: 6px;
+  margin-right: 6px;
 }
 
 .details-subgroup small {
-    color: var(--medium-text);
-    font-size: 12px;
+  color: var(--medium-text);
+  font-size: 12px;
 }
 
-/* RESPONSIVE */
-@media (max-width: 768px) {
-    .history-container {
-        max-height: 300px;
-    }
-    
-    .history-item {
-        padding: 12px;
-    }
-    
-    .history-item-header {
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-    
-    .history-item-meta {
-        flex-direction: column;
-        gap: 8px;
-    }
+/* ============================================================================
+   PAGINATION
+   ============================================================================ */
+.pagination {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
 }
 
-@media (max-width: 480px) {
-    .history-empty p:first-child {
-        font-size: 48px;
-    }
-    
-    .history-empty .text-muted {
-        font-size: 13px;
-    }
-    
-    .history-item-regex {
-        font-size: 12px;
-        padding: 8px 10px;
-    }
-    
-    .export-options {
-        gap: 8px;
-    }
-    
-    .details-triggers {
-        gap: 6px;
-    }
+.pagination-btn {
+  padding: 8px 12px;
+  border: 1px solid var(--gray-border);
+  background: var(--white);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--dark-text);
+  transition: all 0.15s ease;
+}
+
+.pagination-btn:hover {
+  border-color: var(--primary-blue);
+  background: #f0f9ff;
+  color: var(--primary-blue);
+}
+
+.pagination-btn-active {
+  background: var(--primary-blue);
+  color: white;
+  border-color: var(--primary-blue);
+}
+
+.pagination-ellipsis {
+  color: var(--medium-text);
+  padding: 0 4px;
 }
