@@ -1,0 +1,108 @@
+/* =============================================================================
+   REGEXHELPER V4.0 - CASE CONVERTER STYLES
+   Стили конвертера регистра: Uppercase/Lowercase
+   ============================================================================= */
+
+/* CASE CONVERTER SECTION */
+#caseConverterSection {
+    /* Специфичные стили, если нужны */
+}
+
+.case-input {
+    width: 100%;
+    min-height: 120px;
+    padding: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-family: 'Courier New', Consolas, Monaco, monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    resize: vertical;
+    transition: all 0.3s ease;
+    background: #fafafa;
+}
+
+.case-input:focus {
+    outline: none;
+    border-color: #4A90E2;
+    box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.1);
+    background: #fff;
+}
+
+.case-output {
+    width: 100%;
+    min-height: 120px;
+    padding: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-family: 'Courier New', Consolas, Monaco, monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    resize: vertical;
+    background: #f8f9fa;
+    color: #1c2b3a;
+}
+
+.case-output:focus {
+    outline: none;
+    border-color: #4A90E2;
+    box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.1);
+}
+
+/* Case Converter Buttons */
+.case-buttons {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.case-buttons button {
+    padding: 12px 24px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #333;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.case-buttons button:hover {
+    border-color: #4A90E2;
+    background: #f0f7ff;
+    color: #4A90E2;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.case-buttons button:active {
+    transform: translateY(0);
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .case-buttons {
+        flex-direction: column;
+    }
+    
+    .case-buttons button {
+        width: 100%;
+    }
+    
+    .case-input,
+    .case-output {
+        min-height: 100px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .case-input,
+    .case-output {
+        min-height: 80px;
+        font-size: 12px;
+        padding: 12px;
+    }
+}
