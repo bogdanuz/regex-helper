@@ -186,6 +186,27 @@ export function formatDate(date) {
 }
 
 /**
+ * Экранирует текст для CSV формата
+ * @param {string} text - Текст для экранирования
+ * @returns {string} - Экранированный текст
+ * @example
+ * escapeCSV('test, "hello"') // '"test, ""hello"""'
+ */
+export function escapeCSV(text) {
+  if (text == null) return '';
+  
+  const str = String(text);
+  
+  // Если содержит запятую, кавычки или перенос строки - оборачиваем в кавычки
+  if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+    // Экранируем двойные кавычки удвоением
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  
+  return str;
+}
+
+/**
  * Возвращает текущий timestamp в миллисекундах
  * @returns {number} - Timestamp
  * @example
