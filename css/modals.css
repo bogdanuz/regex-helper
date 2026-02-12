@@ -1,396 +1,286 @@
 /**
  * RegexHelper v4.0 - Modals Styles
  * 
- * Стили для модальных окон: overlay, headers, body, footer,
- * animations, toast notifications.
+ * Стили для модальных окон (справка, информация и т.д.).
  * 
- * @version 1.0
- * @date 12.02.2026
+ * @version 1.0 (FIXED)
+ * @date 13.02.2026
  */
 
 /* ============================================================================
-   MODAL BASE
+   MODAL OVERLAY
    ============================================================================ */
-.modal {
-  display: none;
+
+.modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 1000;
-  background-color: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  overflow-y: auto;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
 }
 
-.modal-show {
-  animation: fadeIn 0.3s ease;
+.modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
 }
 
-.modal-hide {
-  animation: fadeOut 0.3s ease;
-}
+/* ============================================================================
+   MODAL CONTAINER
+   ============================================================================ */
 
-@keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
-
-.modal-content {
-  background-color: var(--white);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+.modal {
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   max-width: 600px;
-  width: 100%;
+  width: 90%;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  animation: scaleIn 0.3s ease;
+  transform: scale(0.9) translateY(-20px);
+  opacity: 0;
+  transition: all 0.3s ease;
 }
 
-.modal-large .modal-content {
-  max-width: 900px;
-}
-
-.modal-small .modal-content {
-  max-width: 400px;
+.modal-overlay.active .modal {
+  transform: scale(1) translateY(0);
+  opacity: 1;
 }
 
 /* ============================================================================
    MODAL HEADER
    ============================================================================ */
+
 .modal-header {
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--gray-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 24px;
+  border-bottom: 1px solid var(--gray-light);
 }
 
 .modal-title {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
   color: var(--dark-text);
-  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.modal-close,
-.btn-close {
+.modal-close {
   width: 32px;
   height: 32px;
   border: none;
   background: transparent;
   color: var(--medium-text);
   font-size: 24px;
-  font-weight: 400;
   cursor: pointer;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.15s ease;
-  padding: 0;
-  line-height: 1;
+  transition: all 0.2s ease;
 }
 
-.modal-close:hover,
-.btn-close:hover {
-  background-color: var(--gray-light);
+.modal-close:hover {
+  background: var(--gray-light);
   color: var(--dark-text);
-}
-
-.modal-close:active,
-.btn-close:active {
-  transform: scale(0.95);
 }
 
 /* ============================================================================
    MODAL BODY
    ============================================================================ */
+
 .modal-body {
   padding: 24px;
   overflow-y: auto;
   flex: 1;
 }
 
-.modal-body p {
-  margin-bottom: 16px;
-  line-height: 1.6;
+.modal-body h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--dark-text);
+  margin-bottom: 12px;
+  margin-top: 20px;
 }
 
-.modal-body p:last-child {
-  margin-bottom: 0;
+.modal-body h3:first-child {
+  margin-top: 0;
+}
+
+.modal-body p {
+  font-size: 14px;
+  color: var(--medium-text);
+  line-height: 1.6;
+  margin-bottom: 12px;
+}
+
+.modal-body ul,
+.modal-body ol {
+  margin-left: 20px;
+  margin-bottom: 16px;
+}
+
+.modal-body li {
+  font-size: 14px;
+  color: var(--medium-text);
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.modal-body code {
+  background: var(--gray-light);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: var(--font-mono);
+}
+
+.modal-body pre {
+  background: #fafafa;
+  border: 1px solid var(--gray-border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  overflow-x: auto;
+  margin-bottom: 16px;
+}
+
+.modal-body pre code {
+  background: none;
+  padding: 0;
 }
 
 /* ============================================================================
    MODAL FOOTER
    ============================================================================ */
-.modal-footer {
-  padding: 16px 24px;
-  border-top: 1px solid var(--gray-border);
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-}
 
-.modal-footer .btn-primary,
-.modal-footer .btn-secondary,
-.modal-footer .btn-danger {
-  min-width: 100px;
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 20px 24px;
+  border-top: 1px solid var(--gray-light);
 }
 
 /* ============================================================================
-   CONFIRM MODAL
+   MODAL VARIANTS
    ============================================================================ */
-#confirmModal .modal-body {
-  text-align: center;
+
+/* Info Modal */
+.modal.modal-info .modal-title {
+  color: var(--info);
 }
 
-#confirmModal .modal-title {
-  text-align: center;
-  width: 100%;
+/* Warning Modal */
+.modal.modal-warning .modal-header {
+  background: #fff3e0;
+  border-bottom-color: var(--warning);
 }
 
-#confirmMessage {
+.modal.modal-warning .modal-title {
+  color: var(--warning);
+}
+
+/* Error Modal */
+.modal.modal-error .modal-header {
+  background: #ffebee;
+  border-bottom-color: var(--error);
+}
+
+.modal.modal-error .modal-title {
+  color: var(--error);
+}
+
+/* Success Modal */
+.modal.modal-success .modal-header {
+  background: #f1f8f4;
+  border-bottom-color: var(--success);
+}
+
+.modal.modal-success .modal-title {
+  color: var(--success);
+}
+
+/* ============================================================================
+   HELP MODAL SPECIFIC
+   ============================================================================ */
+
+.help-section {
+  margin-bottom: 24px;
+}
+
+.help-section:last-child {
+  margin-bottom: 0;
+}
+
+.help-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--dark-text);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.help-section-content {
   font-size: 14px;
   color: var(--medium-text);
-  margin: 16px 0;
+  line-height: 1.6;
 }
 
-/* ============================================================================
-   TOAST NOTIFICATIONS
-   ============================================================================ */
-#toastContainer,
-.toast-container {
-  position: fixed;
-  top: 80px;
-  right: 20px;
-  z-index: 15000;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  pointer-events: none;
-}
-
-.toast {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 20px;
-  border-radius: 8px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-  min-width: 300px;
-  max-width: 500px;
-  font-size: 14px;
-  pointer-events: auto;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  animation: slideInRight 0.3s ease;
-}
-
-.toast:hover {
-  transform: translateX(-5px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-}
-
-@keyframes slideInRight {
-  from {
-    transform: translateX(400px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slideOutRight {
-  from {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  to {
-    transform: translateX(400px);
-    opacity: 0;
-  }
-}
-
-.toast-success {
-  background-color: #4caf50;
-  color: white;
-}
-
-.toast-error {
-  background-color: #f44336;
-  color: white;
-}
-
-.toast-warning {
-  background-color: #ff9800;
-  color: white;
-}
-
-.toast-info {
-  background-color: #24a7ef;
-  color: white;
-}
-
-.toast-icon {
-  font-size: 20px;
-  font-weight: bold;
-  flex-shrink: 0;
-}
-
-.toast-text {
-  flex: 1;
-  line-height: 1.4;
-}
-
-.toast-close {
-  font-size: 18px;
-  opacity: 0.7;
-  flex-shrink: 0;
-  background: transparent;
-  border: none;
-  color: inherit;
-  cursor: pointer;
-  padding: 0;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.toast-close:hover {
-  opacity: 1;
-}
-
-/* Progress Toast */
-.toast-progress {
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.toast-progress-bar {
-  width: 100%;
-  height: 4px;
-  background: rgba(255,255,255,0.3);
-  border-radius: 2px;
-  margin-top: 8px;
-  overflow: hidden;
-}
-
-.toast-progress-fill {
-  height: 100%;
-  background: white;
-  width: 0%;
-  border-radius: 2px;
-}
-
-/* Action Toast */
-.toast-action-btn {
-  padding: 6px 12px;
-  background: rgba(255,255,255,0.2);
-  border: none;
-  border-radius: 4px;
-  color: white;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  margin-left: auto;
-  transition: background 0.2s;
-}
-
-.toast-action-btn:hover {
-  background: rgba(255,255,255,0.3);
-}
-
-/* Persistent Toast */
-.toast-persistent {
-  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-}
-
-/* Position Classes */
-.toast-container.toast-top-right { 
-  top: 80px; 
-  right: 20px; 
-}
-
-.toast-container.toast-top-left { 
-  top: 80px; 
-  left: 20px; 
-}
-
-.toast-container.toast-bottom-right { 
-  bottom: 20px; 
-  right: 20px; 
-  top: auto; 
-}
-
-.toast-container.toast-bottom-left { 
-  bottom: 20px; 
-  left: 20px; 
-  top: auto; 
-}
-
-.toast-container.toast-top-center { 
-  top: 80px; 
-  left: 50%; 
-  transform: translateX(-50%); 
-}
-
-.toast-container.toast-bottom-center { 
-  bottom: 20px; 
-  left: 50%; 
-  transform: translateX(-50%); 
-  top: auto; 
-}
-
-/* ============================================================================
-   MODAL LOCKED STATE
-   ============================================================================ */
-.modal-locked .modal-close,
-.modal-locked .btn-close {
-  display: none;
-}
-
-.modal-locked {
-  pointer-events: auto;
-}
-
-/* ============================================================================
-   INLINE ERRORS
-   ============================================================================ */
-.inline-error {
-  color: #f44336;
+.help-example {
+  background: #f9fcff;
+  border-left: 4px solid var(--primary-blue);
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  margin-top: 12px;
+  font-family: var(--font-mono);
   font-size: 13px;
-  margin-top: 6px;
-  padding: 8px 12px;
-  background: #ffebee;
-  border-left: 3px solid #f44336;
-  border-radius: 4px;
-  animation: slideDown 0.3s ease;
-  display: flex;
-  align-items: center;
-  gap: 6px;
 }
 
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.error-message {
-  color: #f44336;
+.help-tip {
+  background: #fff3e0;
+  border-left: 4px solid var(--warning);
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  margin-top: 12px;
   font-size: 13px;
+}
+
+.help-tip strong {
+  color: var(--warning);
+}
+
+/* ============================================================================
+   RESPONSIVE
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  .modal {
+    max-width: 95%;
+    max-height: 95vh;
+  }
+
+  .modal-header,
+  .modal-body,
+  .modal-footer {
+    padding: 16px;
+  }
+
+  .modal-title {
+    font-size: 18px;
+  }
 }
