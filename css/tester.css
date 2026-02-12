@@ -1,175 +1,134 @@
-/* =============================================================================
-   REGEXHELPER V4.0 - TESTER STYLES
-   Стили тестера regex: Test Panel, Highlighting, Matches
-   ============================================================================= */
+/**
+ * RegexHelper v4.0 - Tester Styles
+ * 
+ * Стили для тестера regex (будущая функциональность).
+ * Placeholder для Phase 7-8.
+ * 
+ * @version 1.0
+ * @date 12.02.2026
+ */
 
-/* TESTER PANEL */
+/* ============================================================================
+   TESTER PANEL
+   ============================================================================ */
 #testerPanel {
-    background: #F0F4FF;
-    border: 2px solid #2196F3;
+  /* Будет реализовано в Phase 7 */
 }
 
-.test-stats {
-    display: flex;
-    gap: 24px;
-    padding: 16px;
-    background: white;
-    border-radius: 8px;
-    margin-bottom: 16px;
-    border: 2px solid #E0E0E0;
+.tester-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.test-stat-item {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+.tester-input-section {
+  margin-bottom: 20px;
 }
 
-.test-stat-label {
-    font-size: 13px;
-    color: #607D8B;
-    font-weight: 500;
+.tester-textarea {
+  width: 100%;
+  min-height: 150px;
+  padding: 12px;
+  border: 2px solid var(--gray-border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  resize: vertical;
 }
 
-.test-stat-value {
-    font-size: 28px;
-    font-weight: 700;
-    color: #2196F3;
+.tester-textarea:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px rgba(36, 167, 239, 0.1);
 }
 
-/* TEST HIGHLIGHT */
-.test-highlight-container {
-    margin-bottom: 16px;
+/* ============================================================================
+   TESTER RESULTS
+   ============================================================================ */
+.tester-results {
+  background: #fafafa;
+  border: 1px solid var(--gray-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  min-height: 100px;
 }
 
-.test-highlight-label {
-    margin-bottom: 8px;
-    color: #424242;
-    font-size: 14px;
+.tester-match {
+  display: inline;
+  background-color: #ffeb3b;
+  padding: 2px 4px;
+  border-radius: 2px;
+  font-weight: 600;
 }
 
-.test-highlight {
-    background: white;
-    border: 2px solid #E0E0E0;
-    border-radius: 8px;
-    padding: 16px;
-    font-family: 'Courier New', monospace;
-    font-size: 14px;
-    line-height: 1.8;
-    color: #212121;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    max-height: 400px;
-    overflow-y: auto;
+.tester-stats {
+  margin-top: 12px;
+  padding: 12px;
+  background: #e3f2fd;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: #0d47a1;
 }
 
-.test-match {
-    background: #FFEB3B;
-    color: #000;
-    font-weight: 600;
-    padding: 2px 4px;
-    border-radius: 3px;
-    border: 1px solid #FBC02D;
+.tester-stats-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
 }
 
-/* TEST MATCHES LIST */
-.test-matches-container {
-    margin-top: 16px;
+.tester-stats-item:last-child {
+  margin-bottom: 0;
 }
 
-.test-matches-label {
-    margin-bottom: 8px;
-    color: #424242;
-    font-size: 14px;
+/* ============================================================================
+   TESTER CONTROLS
+   ============================================================================ */
+.tester-controls {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
 }
 
-.test-matches-list {
-    background: white;
-    border: 2px solid #E0E0E0;
-    border-radius: 8px;
-    padding: 12px;
-    max-height: 200px;
-    overflow-y: auto;
+.tester-flags {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-top: 12px;
 }
 
-.test-match-item {
-    padding: 8px 12px;
-    margin-bottom: 8px;
-    background: #F5F5F5;
-    border-radius: 4px;
-    font-family: 'Courier New', monospace;
-    font-size: 13px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.tester-flag-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.test-match-item:last-child {
-    margin-bottom: 0;
+/* ============================================================================
+   TESTER EMPTY STATE
+   ============================================================================ */
+.tester-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--medium-text);
+  font-style: italic;
 }
 
-.test-match-text {
-    color: #212121;
-    font-weight: 600;
+/* ============================================================================
+   PLACEHOLDER FOR FUTURE
+   ============================================================================ */
+.tester-placeholder {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--light-text);
+  font-size: 14px;
 }
 
-.test-match-position {
-    color: #757575;
-    font-size: 12px;
+.tester-placeholder p {
+  margin-bottom: 12px;
 }
 
-/* TEST EMPTY STATE */
-.test-empty {
-    text-align: center;
-    padding: 48px 24px;
-    color: #9E9E9E;
-}
-
-.test-empty p:first-child {
-    font-size: 48px;
-    margin-bottom: 16px;
-    line-height: 1;
-}
-
-.test-empty .text-muted {
-    font-size: 14px;
-    color: #757575;
-    margin-top: 8px;
-}
-
-/* RESPONSIVE */
-@media (max-width: 768px) {
-    .test-stats {
-        flex-wrap: wrap;
-        gap: 16px;
-    }
-    
-    .test-stat-value {
-        font-size: 24px;
-    }
-    
-    .test-highlight {
-        font-size: 13px;
-        padding: 12px;
-    }
-}
-
-@media (max-width: 480px) {
-    .test-stats {
-        padding: 12px;
-    }
-    
-    .test-stat-value {
-        font-size: 20px;
-    }
-    
-    .test-highlight {
-        font-size: 12px;
-    }
-    
-    .test-match-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 4px;
-    }
+.tester-placeholder code {
+  background: #e3f2fd;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: #1976D2;
 }
