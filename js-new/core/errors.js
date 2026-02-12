@@ -1,204 +1,328 @@
 /**
- * RegexHelper v4.0 - Error Handling
- * Обработка ошибок и toast-уведомлений
+ * RegexHelper v4.0 - Error Handling & Toast Notifications
+ * 
+ * Модуль для обработки ошибок, показа toast-уведомлений и inline-ошибок в полях ввода.
+ * 
  * @version 1.0
- * @date 11.02.2026
+ * @date 12.02.2026
  */
 
-import { TOASTCONFIG, ERRORMESSAGES } from './config.js';
+import { TOASTCONFIG, APPCONFIG } from './config.js';
 
 /**
  * Показывает toast-уведомление
- * @param {string} type - Тип уведомления: success, error, warning, info
+ * @param {string} type - Тип уведомления: 'success', 'error', 'warning', 'info'
  * @param {string} message - Текст сообщения
- * @param {number} [duration] - Длительность показа в мс (по умолчанию из TOASTCONFIG)
+ * @param {number} [duration] - Длительность показа (мс), если не указана - берется из TOASTCONFIG
+ * @returns {void}
  * @example
  * showToast('success', 'Regex скопирован!');
- * showToast('error', 'Ошибка валидации', 5000);
+ * showToast('error', 'Превышен лимит триггеров', 5000);
  */
 export function showToast(type, message, duration) {
-    let container = document.getElementById('toastContainer');
-    
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'toastContainer';
-        container.style.cssText = `
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            z-index: 15000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            pointer-events: none;
-        `;
-        document.body.appendChild(container);
-    }
+  if (!message || typeof message !== 'string') {
+    console.warn('showToast: message is required');
+    return;
+  }
 
-    const colors = {
-        success: { bg: '#4CAF50', icon: '✓', emoji: '✅' },
-        error: { bg: '#F44336', icon: '✕', emoji: '❌' },
-        warning: { bg: '#FF9800', icon: '⚠', emoji: '⚠️' },
-        info: { bg: '#24a7ef', icon: 'ℹ', emoji: 'ℹ️' }
-    };
+  // Получаем конфигурацию для типа уведомления
+  const config = TOASTCONFIG[type.toUpperCase()] || TOASTCONFIG.INFO;
+  const finalDuration = duration || config.duration || APPCONFIG.TOASTDURATION;
 
-    const color = colors[type] || colors.info;
-    const toastDuration = duration || TOASTCONFIG[type.toUpperCase()]?.duration || 3000;
+  // Создаем контейнер для toast, если его еще нет
+  let toastContainer = document.getElementById('toast-container');
+  if (!toastContainer) {
+    toastContainer = document.createElement('div');
+    toastContainer.id = 'toast-container';
+    toastContainer.className = 'toast-container';
+    document.body.appendChild(toastContainer);
+  }
 
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-    toast.style.cssText = `
-        background: ${color.bg};
-        color: white;
-        padding: 14px 20px;
-        border-radius: 8px;
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        min-width: 300px;
-        max-width: 500px;
-        font-size: 14px;
-        pointer-events: auto;
-        animation: slideInRight 0.3s ease;
-        cursor: pointer;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    `;
+  // Создаем элемент toast
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.setAttribute('role', 'alert');
+  toast.setAttribute('aria-live', 'assertive');
+  toast.setAttribute('aria-atomic', 'true');
 
-    toast.innerHTML = `
-        <span style="font-size: 20px; font-weight: bold; flex-shrink: 0;">${color.emoji}</span>
-        <span style="flex: 1; line-height: 1.4;">${escapeHTML(message)}</span>
-        <span style="font-size: 18px; opacity: 0.7; flex-shrink: 0;">×</span>
-    `;
+  // Иконка + сообщение
+  const icon = document.createElement('span');
+  icon.className = 'toast-icon';
+  icon.textContent = config.icon;
 
-    toast.onmouseenter = () => {
-        toast.style.transform = 'translateX(-5px)';
-        toast.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.3)';
-    };
+  const text = document.createElement('span');
+  text.className = 'toast-text';
+  text.textContent = message;
 
-    toast.onmouseleave = () => {
-        toast.style.transform = 'translateX(0)';
-        toast.style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.2)';
-    };
+  // Кнопка закрытия
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'toast-close';
+  closeBtn.innerHTML = '×';
+  closeBtn.setAttribute('aria-label', 'Закрыть уведомление');
+  closeBtn.onclick = () => removeToast(toast);
 
-    toast.onclick = () => {
-        toast.style.animation = 'slideOutRight 0.3s ease';
-        setTimeout(() => toast.remove(), 300);
-    };
+  toast.appendChild(icon);
+  toast.appendChild(text);
+  toast.appendChild(closeBtn);
 
-    container.appendChild(toast);
+  // Добавляем в контейнер
+  toastContainer.appendChild(toast);
 
-    setTimeout(() => {
-        if (toast.parentElement) {
-            toast.style.animation = 'slideOutRight 0.3s ease';
-            setTimeout(() => toast.remove(), 300);
-        }
-    }, toastDuration);
+  // Анимация появления
+  requestAnimationFrame(() => {
+    toast.classList.add('toast-show');
+  });
+
+  // Автоматическое удаление
+  const timeoutId = setTimeout(() => {
+    removeToast(toast);
+  }, finalDuration);
+
+  // Сохраняем ID таймера для возможной отмены
+  toast.dataset.timeoutId = timeoutId;
 }
 
 /**
- * Логирует ошибку в консоль
+ * Удаляет toast с анимацией
+ * @param {HTMLElement} toast - Элемент toast
+ * @returns {void}
+ * @private
+ */
+function removeToast(toast) {
+  if (!toast || !toast.parentNode) return;
+
+  // Отменяем таймер автоудаления
+  if (toast.dataset.timeoutId) {
+    clearTimeout(Number(toast.dataset.timeoutId));
+  }
+
+  // Анимация скрытия
+  toast.classList.remove('toast-show');
+  toast.classList.add('toast-hide');
+
+  // Удаление из DOM после анимации
+  setTimeout(() => {
+    if (toast.parentNode) {
+      toast.parentNode.removeChild(toast);
+    }
+
+    // Удаляем контейнер, если он пустой
+    const container = document.getElementById('toast-container');
+    if (container && container.children.length === 0) {
+      container.remove();
+    }
+  }, 300);
+}
+
+/**
+ * Логирует ошибку в консоль с контекстом
  * @param {string} context - Контекст ошибки (название функции/модуля)
- * @param {Error} error - Объект ошибки
+ * @param {Error|string} error - Ошибка или сообщение об ошибке
+ * @returns {void}
  * @example
- * logError('parseSimpleTriggers', error);
+ * try {
+ *   // code
+ * } catch (error) {
+ *   logError('parseSimpleTriggers', error);
+ * }
  */
 export function logError(context, error) {
-    console.error(`❌ [${context}]`, error);
+  const timestamp = new Date().toISOString();
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  const stackTrace = error instanceof Error ? error.stack : '';
+
+  console.error(`[${timestamp}] [${APPCONFIG.APPNAME}] [${context}]`, errorMessage);
+  
+  if (stackTrace) {
+    console.error('Stack trace:', stackTrace);
+  }
 }
 
 /**
  * Показывает inline-ошибку под полем ввода
  * @param {string} fieldId - ID поля ввода
  * @param {string} message - Текст ошибки
+ * @returns {void}
  * @example
- * showInlineError('simpleTriggers', 'Поле не может быть пустым');
+ * showInlineError('simpleTriggers', 'Добавьте хотя бы один триггер');
  */
 export function showInlineError(fieldId, message) {
-    const field = document.getElementById(fieldId);
-    if (!field) {
-        console.error('showInlineError: поле не найдено', fieldId);
-        return;
-    }
+  if (!fieldId || !message) return;
 
-    clearInlineError(fieldId);
+  const field = document.getElementById(fieldId);
+  if (!field) {
+    console.warn(`showInlineError: field with id "${fieldId}" not found`);
+    return;
+  }
 
-    field.classList.add('input-error', 'error');
+  // Удаляем предыдущую ошибку, если есть
+  clearInlineError(fieldId);
 
-    const errorEl = document.createElement('div');
-    errorEl.className = 'inline-error error-message';
-    errorEl.id = `${fieldId}-error`;
-    errorEl.textContent = message;
-    errorEl.style.cssText = `
-        color: #F44336;
-        font-size: 13px;
-        margin-top: 6px;
-        padding: 8px 12px;
-        background: #FFEBEE;
-        border-left: 3px solid #F44336;
-        border-radius: 4px;
-        animation: slideDown 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    `;
+  // Добавляем класс ошибки к полю
+  field.classList.add('error');
+  field.setAttribute('aria-invalid', 'true');
 
-    field.parentElement.insertBefore(errorEl, field.nextSibling);
+  // Создаем элемент ошибки
+  const errorElement = document.createElement('div');
+  errorElement.className = 'inline-error';
+  errorElement.id = `${fieldId}-error`;
+  errorElement.textContent = message;
+  errorElement.setAttribute('role', 'alert');
+  errorElement.setAttribute('aria-live', 'polite');
+
+  // Вставляем после поля
+  field.parentNode.insertBefore(errorElement, field.nextSibling);
+
+  // Фокус на поле с ошибкой
+  field.focus();
 }
 
 /**
- * Убирает inline-ошибку у поля
+ * Убирает inline-ошибку с поля ввода
  * @param {string} fieldId - ID поля ввода
+ * @returns {void}
  * @example
  * clearInlineError('simpleTriggers');
  */
 export function clearInlineError(fieldId) {
-    const field = document.getElementById(fieldId);
-    const errorEl = document.getElementById(`${fieldId}-error`);
+  if (!fieldId) return;
 
-    if (field) {
-        field.classList.remove('input-error', 'error');
-    }
+  const field = document.getElementById(fieldId);
+  if (field) {
+    field.classList.remove('error');
+    field.removeAttribute('aria-invalid');
+  }
 
-    if (errorEl) {
-        errorEl.remove();
-    }
+  const errorElement = document.getElementById(`${fieldId}-error`);
+  if (errorElement) {
+    errorElement.remove();
+  }
 }
 
 /**
  * Убирает все inline-ошибки на странице
+ * @returns {void}
  * @example
  * clearAllInlineErrors();
  */
 export function clearAllInlineErrors() {
-    const errorEls = document.querySelectorAll('.inline-error');
-    const errorFields = document.querySelectorAll('.input-error');
+  // Убираем класс error со всех полей
+  const errorFields = document.querySelectorAll('.error');
+  errorFields.forEach((field) => {
+    field.classList.remove('error');
+    field.removeAttribute('aria-invalid');
+  });
 
-    errorEls.forEach(el => el.remove());
-    errorFields.forEach(field => field.classList.remove('input-error', 'error'));
+  // Удаляем все элементы inline-ошибок
+  const errorElements = document.querySelectorAll('.inline-error');
+  errorElements.forEach((element) => {
+    element.remove();
+  });
 }
 
 /**
- * Инициализирует глобальную обработку ошибок
+ * Инициализирует глобальный обработчик ошибок
+ * @returns {void}
  * @example
- * initErrorHandling();
+ * initErrorHandling(); // вызывается в main.js
  */
 export function initErrorHandling() {
-    window.addEventListener('error', (event) => {
-        logError('Global', event.error);
-    });
+  // Обработчик необработанных ошибок
+  window.addEventListener('error', (event) => {
+    logError('Global Error Handler', event.error || event.message);
+    
+    // Показываем toast только для критических ошибок
+    if (event.error && event.error.name !== 'SyntaxError') {
+      showToast('error', 'Произошла непредвиденная ошибка. Попробуйте обновить страницу.');
+    }
+  });
 
-    window.addEventListener('unhandledrejection', (event) => {
-        logError('Promise', event.reason);
-    });
+  // Обработчик необработанных Promise rejections
+  window.addEventListener('unhandledrejection', (event) => {
+    logError('Unhandled Promise Rejection', event.reason);
+    showToast('error', 'Произошла ошибка при выполнении операции.');
+    event.preventDefault(); // Предотвращаем вывод в консоль
+  });
+
+  console.log(`[${APPCONFIG.APPNAME}] Error handling initialized`);
 }
 
 /**
- * Вспомогательная функция для экранирования HTML
- * @private
+ * Показывает confirm-диалог с кастомным стилем (через toast)
+ * @param {string} message - Текст вопроса
+ * @param {Function} onConfirm - Callback при подтверждении
+ * @param {Function} [onCancel] - Callback при отмене
+ * @returns {void}
+ * @example
+ * confirmAction('Очистить все триггеры?', () => clearTriggers());
  */
-function escapeHTML(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+export function confirmAction(message, onConfirm, onCancel) {
+  if (!message || typeof onConfirm !== 'function') {
+    console.warn('confirmAction: message and onConfirm are required');
+    return;
+  }
+
+  // Создаем контейнер для confirm
+  const overlay = document.createElement('div');
+  overlay.className = 'confirm-overlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-labelledby', 'confirm-message');
+
+  const confirmBox = document.createElement('div');
+  confirmBox.className = 'confirm-box';
+
+  const messageEl = document.createElement('p');
+  messageEl.id = 'confirm-message';
+  messageEl.className = 'confirm-message';
+  messageEl.textContent = message;
+
+  const buttonsContainer = document.createElement('div');
+  buttonsContainer.className = 'confirm-buttons';
+
+  const confirmBtn = document.createElement('button');
+  confirmBtn.className = 'btn-primary';
+  confirmBtn.textContent = 'Да';
+  confirmBtn.onclick = () => {
+    overlay.remove();
+    onConfirm();
+  };
+
+  const cancelBtn = document.createElement('button');
+  cancelBtn.className = 'btn-secondary';
+  cancelBtn.textContent = 'Отмена';
+  cancelBtn.onclick = () => {
+    overlay.remove();
+    if (onCancel) onCancel();
+  };
+
+  buttonsContainer.appendChild(confirmBtn);
+  buttonsContainer.appendChild(cancelBtn);
+
+  confirmBox.appendChild(messageEl);
+  confirmBox.appendChild(buttonsContainer);
+  overlay.appendChild(confirmBox);
+
+  document.body.appendChild(overlay);
+
+  // Фокус на кнопку "Да"
+  confirmBtn.focus();
+
+  // Закрытие по Escape
+  const handleEscape = (e) => {
+    if (e.key === 'Escape') {
+      overlay.remove();
+      if (onCancel) onCancel();
+      document.removeEventListener('keydown', handleEscape);
+    }
+  };
+  document.addEventListener('keydown', handleEscape);
+
+  // Закрытие по клику на overlay
+  overlay.onclick = (e) => {
+    if (e.target === overlay) {
+      overlay.remove();
+      if (onCancel) onCancel();
+    }
+  };
 }
