@@ -1,356 +1,468 @@
 /**
  * RegexHelper v4.0 - Core Utilities
- * Утилитарные функции для работы приложения
+ * 
+ * Библиотека утилитарных функций общего назначения.
+ * Этот модуль не имеет зависимостей и используется всеми остальными модулями.
+ * 
  * @version 1.0
- * @date 11.02.2026
+ * @date 12.02.2026
  */
 
 /**
- * Экранирует HTML-символы для безопасного отображения
+ * Экранирует HTML-символы для безопасного вывода
  * @param {string} str - Строка для экранирования
  * @returns {string} - Экранированная строка
  * @example
- * escapeHTML('<script>alert("XSS")</script>') // => '&lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;'
+ * escapeHTML('<script>alert("XSS")</script>') // '&lt;script&gt;alert(&quot;XSS&quot;)&lt;/script&gt;'
  */
 export function escapeHTML(str) {
-    if (!str || typeof str !== 'string') return '';
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
+  if (!str || typeof str !== 'string') return '';
+  
+  const htmlEscapeMap = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  };
+  
+  return str.replace(/[&<>"']/g, (char) => htmlEscapeMap[char]);
 }
 
 /**
- * Экранирует специальные символы для использования в regex
- * КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: правильное экранирование обратного слэша
+ * Экранирует спецсимволы regex (важнейшая функция v4.0!)
  * @param {string} str - Строка для экранирования
- * @returns {string} - Экранированная строка для regex
+ * @returns {string} - Экранированная строка
  * @example
- * escapeRegex('test.') // => 'test\\.'
- * escapeRegex('a+b') // => 'a\\+b'
- * escapeRegex('a?b') // => 'a\\?b'
+ * escapeRegex('test.com') // 'test\\.com'
+ * escapeRegex('a(b)') // 'a\\(b\\)'
+ * escapeRegex('a|b') // 'a\\|b'
  */
 export function escapeRegex(str) {
-    if (!str || typeof str !== 'string') return '';
-    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-/**
- * Убирает HTML-экранирование
- * @param {string} str - Экранированная строка
- * @returns {string} - Обычная строка
- */
-export function unescapeHTML(str) {
-    if (!str || typeof str !== 'string') return '';
-    const textarea = document.createElement('textarea');
-    textarea.innerHTML = str;
-    return textarea.value;
-}
-
-/**
- * Обрезает текст до указанной длины
- * @param {string} text - Текст для обрезки
- * @param {number} maxLength - Максимальная длина
- * @returns {string} - Обрезанный текст с многоточием
- * @example
- * truncateText('Длинный текст', 10) // => 'Длинный...'
- */
-export function truncateText(text, maxLength) {
-    if (!text || typeof text !== 'string') return '';
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
+  if (!str || typeof str !== 'string') return '';
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 /**
  * Копирует текст в буфер обмена
  * @param {string} text - Текст для копирования
- * @returns {Promise<boolean>} - true если успешно, false если ошибка
+ * @returns {Promise<boolean>} - true при успехе, false при ошибке
  * @example
- * const success = await copyToClipboard('Hello');
+ * const success = await copyToClipboard('test');
+ * if (success) showToast('success', 'Скопировано!');
  */
 export async function copyToClipboard(text) {
-    if (!text || typeof text !== 'string') return false;
-    try {
-        await navigator.clipboard.writeText(text);
-        return true;
-    } catch (error) {
-        return false;
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } else {
+      // Fallback для старых браузеров
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.left = '-999999px';
+      textarea.style.top = '-999999px';
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      const success = document.execCommand('copy');
+      textarea.remove();
+      return success;
     }
+  } catch (error) {
+    console.error('copyToClipboard error:', error);
+    return false;
+  }
 }
 
 /**
- * Форматирует дату в читаемый вид
- * @param {Date|string|number} date - Дата для форматирования
- * @returns {string} - Отформатированная дата
- * @example
- * formatDate(new Date()) // => '11.02.2026, 23:02'
- */
-export function formatDate(date) {
-    if (!date) return '';
-    const d = new Date(date);
-    if (isNaN(d.getTime())) return '';
-    return d.toLocaleString('ru-RU', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-}
-
-/**
- * Возвращает текущий timestamp
- * @returns {number} - Timestamp в миллисекундах
- * @example
- * getCurrentTimestamp() // => 1739308920000
- */
-export function getCurrentTimestamp() {
-    return Date.now();
-}
-
-/**
- * Debounce функция (задержка выполнения)
+ * Debounce функции (задержка выполнения)
  * @param {Function} func - Функция для debounce
  * @param {number} delay - Задержка в миллисекундах
  * @returns {Function} - Debounced функция
  * @example
- * const debouncedSearch = debounce(() => console.log('Search'), 300);
+ * const debouncedSearch = debounce(() => console.log('search'), 300);
+ * input.addEventListener('input', debouncedSearch);
  */
 export function debounce(func, delay) {
-    let timeoutId;
-    return function(...args) {
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => func.apply(this, args), delay);
-    };
+  let timeoutId;
+  return function (...args) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func.apply(this, args), delay);
+  };
 }
 
 /**
- * Throttle функция (ограничение частоты выполнения)
+ * Throttle функции (ограничение частоты вызова)
  * @param {Function} func - Функция для throttle
- * @param {number} delay - Минимальная задержка между вызовами
+ * @param {number} delay - Минимальный интервал между вызовами (мс)
  * @returns {Function} - Throttled функция
  * @example
- * const throttledScroll = throttle(() => console.log('Scroll'), 100);
+ * const throttledScroll = throttle(() => console.log('scroll'), 100);
+ * window.addEventListener('scroll', throttledScroll);
  */
 export function throttle(func, delay) {
-    let lastCall = 0;
-    return function(...args) {
-        const now = Date.now();
-        if (now - lastCall >= delay) {
-            lastCall = now;
-            func.apply(this, args);
-        }
-    };
+  let lastCall = 0;
+  return function (...args) {
+    const now = Date.now();
+    if (now - lastCall >= delay) {
+      lastCall = now;
+      func.apply(this, args);
+    }
+  };
 }
 
 /**
- * Склонение слов (1 яблоко, 2 яблока, 5 яблок)
- * @param {number} count - Количество
- * @param {Array<string>} forms - Формы слова [1, 2, 5]
- * @returns {string} - Правильная форма слова
+ * Скачивает файл с заданным содержимым
+ * @param {string} content - Содержимое файла
+ * @param {string} filename - Имя файла
+ * @param {string} mimeType - MIME-тип (по умолчанию 'text/plain')
+ * @returns {void}
  * @example
- * pluralize(1, ['триггер', 'триггера', 'триггеров']) // => 'триггер'
- * pluralize(5, ['триггер', 'триггера', 'триггеров']) // => 'триггеров'
+ * downloadFile('test regex', 'regex.txt', 'text/plain');
+ * downloadFile(JSON.stringify(data), 'data.json', 'application/json');
+ */
+export function downloadFile(content, filename, mimeType = 'text/plain') {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Убирает HTML-экранирование из строки
+ * @param {string} str - Экранированная строка
+ * @returns {string} - Оригинальная строка
+ * @example
+ * unescapeHTML('&lt;div&gt;') // '<div>'
+ */
+export function unescapeHTML(str) {
+  if (!str || typeof str !== 'string') return '';
+  
+  const textarea = document.createElement('textarea');
+  textarea.innerHTML = str;
+  return textarea.value;
+}
+
+/**
+ * Обрезает текст до заданной длины с добавлением "..."
+ * @param {string} text - Текст для обрезки
+ * @param {number} maxLength - Максимальная длина
+ * @returns {string} - Обрезанный текст
+ * @example
+ * truncateText('Long text here', 10) // 'Long text...'
+ */
+export function truncateText(text, maxLength) {
+  if (!text || typeof text !== 'string') return '';
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + '...';
+}
+
+/**
+ * Форматирует дату в читаемый формат (DD.MM.YYYY HH:MM)
+ * @param {Date|string|number} date - Дата для форматирования
+ * @returns {string} - Отформатированная дата
+ * @example
+ * formatDate(new Date()) // '12.02.2026 20:15'
+ */
+export function formatDate(date) {
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return '';
+  
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  
+  return `${day}.${month}.${year} ${hours}:${minutes}`;
+}
+
+/**
+ * Возвращает текущий timestamp в миллисекундах
+ * @returns {number} - Timestamp
+ * @example
+ * const timestamp = getCurrentTimestamp(); // 1707764400000
+ */
+export function getCurrentTimestamp() {
+  return Date.now();
+}
+
+/**
+ * Склоняет слово в зависимости от числа (русский язык)
+ * @param {number} count - Число
+ * @param {string[]} forms - Массив из 3 форм: [1, 2, 5]
+ * @returns {string} - Склоненное слово
+ * @example
+ * pluralize(1, ['триггер', 'триггера', 'триггеров']) // 'триггер'
+ * pluralize(2, ['триггер', 'триггера', 'триггеров']) // 'триггера'
+ * pluralize(5, ['триггер', 'триггера', 'триггеров']) // 'триггеров'
  */
 export function pluralize(count, forms) {
-    if (!Array.isArray(forms) || forms.length !== 3) return forms[0] || '';
-    const n = Math.abs(count) % 100;
-    const n1 = n % 10;
-    if (n > 10 && n < 20) return forms[2];
-    if (n1 > 1 && n1 < 5) return forms[1];
-    if (n1 === 1) return forms[0];
-    return forms[2];
+  if (!Array.isArray(forms) || forms.length !== 3) return '';
+  
+  const cases = [2, 0, 1, 1, 1, 2];
+  const index = (count % 100 > 4 && count % 100 < 20)
+    ? 2
+    : cases[Math.min(count % 10, 5)];
+  
+  return forms[index];
 }
 
 /**
  * Генерирует уникальный ID
+ * @param {string} prefix - Префикс для ID (опционально)
  * @returns {string} - Уникальный ID
  * @example
- * generateId() // => 'id-1739308920000-abc123'
+ * generateId() // 'id-1707764400000-abc123'
+ * generateId('group') // 'group-1707764400000-abc123'
  */
-export function generateId() {
-    return `id-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+export function generateId(prefix = 'id') {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2, 9);
+  return `${prefix}-${timestamp}-${random}`;
 }
 
 /**
- * Глубокое клонирование объекта
- * @param {Object} obj - Объект для клонирования
- * @returns {Object} - Клонированный объект
+ * Создает глубокую копию объекта
+ * @param {*} obj - Объект для клонирования
+ * @returns {*} - Глубокая копия
  * @example
  * const copy = deepClone({ a: 1, b: { c: 2 } });
  */
 export function deepClone(obj) {
-    if (obj === null || typeof obj !== 'object') return obj;
-    return JSON.parse(JSON.stringify(obj));
+  if (obj === null || typeof obj !== 'object') return obj;
+  if (obj instanceof Date) return new Date(obj.getTime());
+  if (obj instanceof Array) return obj.map((item) => deepClone(item));
+  if (obj instanceof Object) {
+    const clonedObj = {};
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        clonedObj[key] = deepClone(obj[key]);
+      }
+    }
+    return clonedObj;
+  }
 }
 
 /**
- * Сравнение двух объектов
- * @param {Object} obj1 - Первый объект
- * @param {Object} obj2 - Второй объект
- * @returns {boolean} - true если объекты равны
+ * Сравнивает два объекта на глубокое равенство
+ * @param {*} obj1 - Первый объект
+ * @param {*} obj2 - Второй объект
+ * @returns {boolean} - true, если объекты равны
  * @example
- * objectEquals({ a: 1 }, { a: 1 }) // => true
+ * objectEquals({ a: 1 }, { a: 1 }) // true
+ * objectEquals({ a: 1 }, { a: 2 }) // false
  */
 export function objectEquals(obj1, obj2) {
-    return JSON.stringify(obj1) === JSON.stringify(obj2);
+  if (obj1 === obj2) return true;
+  if (obj1 == null || obj2 == null) return false;
+  if (typeof obj1 !== 'object' || typeof obj2 !== 'object') return false;
+  
+  const keys1 = Object.keys(obj1);
+  const keys2 = Object.keys(obj2);
+  
+  if (keys1.length !== keys2.length) return false;
+  
+  for (const key of keys1) {
+    if (!keys2.includes(key)) return false;
+    if (!objectEquals(obj1[key], obj2[key])) return false;
+  }
+  
+  return true;
 }
 
 /**
- * Проверка на пустое значение
- * @param {any} value - Значение для проверки
- * @returns {boolean} - true если пустое
+ * Проверяет, является ли значение пустым
+ * @param {*} value - Значение для проверки
+ * @returns {boolean} - true, если значение пустое
  * @example
- * isEmpty('') // => true
- * isEmpty(null) // => true
- * isEmpty([]) // => true
+ * isEmpty('') // true
+ * isEmpty([]) // true
+ * isEmpty(null) // true
+ * isEmpty('text') // false
  */
 export function isEmpty(value) {
-    if (value === null || value === undefined) return true;
-    if (typeof value === 'string') return value.trim().length === 0;
-    if (Array.isArray(value)) return value.length === 0;
-    if (typeof value === 'object') return Object.keys(value).length === 0;
-    return false;
+  if (value == null) return true;
+  if (typeof value === 'string' || Array.isArray(value)) return value.length === 0;
+  if (typeof value === 'object') return Object.keys(value).length === 0;
+  return false;
 }
 
 /**
- * Проверка валидности email
+ * Проверяет корректность email
  * @param {string} email - Email для проверки
- * @returns {boolean} - true если валидный
+ * @returns {boolean} - true, если email корректный
  * @example
- * isValidEmail('test@example.com') // => true
+ * isValidEmail('test@example.com') // true
+ * isValidEmail('invalid-email') // false
  */
 export function isValidEmail(email) {
-    if (!email || typeof email !== 'string') return false;
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  if (!email || typeof email !== 'string') return false;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
 }
 
 /**
- * Проверка валидности URL
+ * Проверяет корректность URL
  * @param {string} url - URL для проверки
- * @returns {boolean} - true если валидный
+ * @returns {boolean} - true, если URL корректный
  * @example
- * isValidUrl('https://example.com') // => true
+ * isValidUrl('https://example.com') // true
+ * isValidUrl('invalid-url') // false
  */
 export function isValidUrl(url) {
-    if (!url || typeof url !== 'string') return false;
-    try {
-        new URL(url);
-        return true;
-    } catch {
-        return false;
-    }
+  if (!url || typeof url !== 'string') return false;
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 /**
- * Случайное целое число в диапазоне
- * @param {number} min - Минимум
- * @param {number} max - Максимум
+ * Генерирует случайное целое число в диапазоне [min, max]
+ * @param {number} min - Минимальное значение
+ * @param {number} max - Максимальное значение
  * @returns {number} - Случайное число
  * @example
- * randomInt(1, 10) // => 7
+ * randomInt(1, 10) // 7
  */
 export function randomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 /**
- * Перемешивание массива
+ * Перемешивает массив (алгоритм Фишера-Йетса)
  * @param {Array} array - Массив для перемешивания
  * @returns {Array} - Перемешанный массив
  * @example
- * shuffleArray([1, 2, 3]) // => [3, 1, 2]
+ * shuffleArray([1, 2, 3, 4, 5]) // [3, 1, 5, 2, 4]
  */
 export function shuffleArray(array) {
-    if (!Array.isArray(array)) return [];
-    const arr = [...array];
-    for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
+  if (!Array.isArray(array)) return [];
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
 }
 
 /**
- * Сохранение в localStorage
+ * Сохраняет данные в localStorage
  * @param {string} key - Ключ
- * @param {any} value - Значение
- * @returns {boolean} - true если успешно
+ * @param {*} value - Значение (будет сериализовано в JSON)
+ * @returns {boolean} - true при успехе
  * @example
- * setLocalStorage('key', { data: 'value' });
+ * setLocalStorage('settings', { theme: 'dark' });
  */
 export function setLocalStorage(key, value) {
-    try {
-        localStorage.setItem(key, JSON.stringify(value));
-        return true;
-    } catch {
-        return false;
-    }
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+    return true;
+  } catch (error) {
+    console.error('setLocalStorage error:', error);
+    return false;
+  }
 }
 
 /**
- * Получение из localStorage
+ * Получает данные из localStorage
  * @param {string} key - Ключ
- * @param {any} defaultValue - Значение по умолчанию
- * @returns {any} - Значение или defaultValue
+ * @param {*} defaultValue - Значение по умолчанию
+ * @returns {*} - Значение из localStorage или defaultValue
  * @example
- * getLocalStorage('key', {});
+ * const settings = getLocalStorage('settings', { theme: 'light' });
  */
 export function getLocalStorage(key, defaultValue = null) {
-    try {
-        const item = localStorage.getItem(key);
-        return item ? JSON.parse(item) : defaultValue;
-    } catch {
-        return defaultValue;
-    }
+  try {
+    const item = localStorage.getItem(key);
+    return item ? JSON.parse(item) : defaultValue;
+  } catch (error) {
+    console.error('getLocalStorage error:', error);
+    return defaultValue;
+  }
 }
 
 /**
- * Удаление из localStorage
+ * Удаляет данные из localStorage
  * @param {string} key - Ключ
- * @returns {boolean} - true если успешно
+ * @returns {void}
  * @example
- * removeLocalStorage('key');
+ * removeLocalStorage('settings');
  */
 export function removeLocalStorage(key) {
-    try {
-        localStorage.removeItem(key);
-        return true;
-    } catch {
-        return false;
-    }
+  try {
+    localStorage.removeItem(key);
+  } catch (error) {
+    console.error('removeLocalStorage error:', error);
+  }
 }
 
 /**
- * Очистка localStorage
- * @returns {boolean} - true если успешно
+ * Очищает весь localStorage
+ * @returns {void}
  * @example
  * clearLocalStorage();
  */
 export function clearLocalStorage() {
-    try {
-        localStorage.clear();
-        return true;
-    } catch {
-        return false;
-    }
+  try {
+    localStorage.clear();
+  } catch (error) {
+    console.error('clearLocalStorage error:', error);
+  }
 }
 
 /**
- * Скачивание файла
- * @param {string} content - Содержимое файла
- * @param {string} filename - Имя файла
- * @param {string} mimeType - MIME-тип
+ * Устанавливает cookie
+ * @param {string} name - Имя cookie
+ * @param {string} value - Значение
+ * @param {number} days - Срок действия (дней)
+ * @returns {void}
  * @example
- * downloadFile('Hello', 'file.txt', 'text/plain');
+ * setCookie('token', 'abc123', 7);
  */
-export function downloadFile(content, filename, mimeType = 'text/plain') {
-    const blob = new Blob([content], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+export function setCookie(name, value, days = 7) {
+  const date = new Date();
+  date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+  const expires = `expires=${date.toUTCString()}`;
+  document.cookie = `${name}=${value};${expires};path=/`;
+}
+
+/**
+ * Получает значение cookie по имени
+ * @param {string} name - Имя cookie
+ * @returns {string|null} - Значение cookie или null
+ * @example
+ * const token = getCookie('token');
+ */
+export function getCookie(name) {
+  const nameEQ = `${name}=`;
+  const ca = document.cookie.split(';');
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+  }
+  return null;
+}
+
+/**
+ * Удаляет cookie по имени
+ * @param {string} name - Имя cookie
+ * @returns {void}
+ * @example
+ * deleteCookie('token');
+ */
+export function deleteCookie(name) {
+  setCookie(name, '', -1);
 }
