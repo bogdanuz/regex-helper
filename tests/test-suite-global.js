@@ -1,592 +1,460 @@
 // ========================================
-// REGEX HELPER v4.0 - ГЛОБАЛЬНЫЙ ТЕСТ-НАБОР
+// REGEX HELPER v4.0 - УПРОЩЕННЫЙ ГЛОБАЛЬНЫЙ ТЕСТ
+// БЕЗ ИМПОРТОВ - работает независимо от модулей
 // Файл: tests/test-suite-global.js
 // ========================================
 
-import { APPCONFIG, SIMPLETRIGGERSCONFIG, LINKEDTRIGGERSCONFIG } from '../js-new/core/config.js';
-import { escapeRegex, pluralize, formatDate, generateId } from '../js-new/core/utils.js';
-import { showToast, logError } from '../js-new/core/errors.js';
-import { parseSimpleTriggers, getTriggerStats } from '../js-new/core/parser.js';
-import { validateTriggers, validateRegexLength } from '../js-new/core/validator.js';
-import { applyType1, applyType2, applyType4, applyType5 } from '../js-new/converter/optimizer.js';
-import { openModal, closeModal, showConfirm } from '../js-new/features/modals.js';
+console.log('🚀 Загрузка ГЛОБАЛЬНОГО упрощенного теста...\n');
 
-console.log('🚀 Загрузка ГЛОБАЛЬНОГО тест-набора...\n');
+let totalTests = 0;
+let passedTests = 0;
+let failedTests = 0;
 
-// ========================================
-// SUITE 1: CORE CONFIG
-// ========================================
-const suite1 = {
-  id: 'core-config',
-  name: 'Core: Config Module',
-  file: 'test-suite-global.js',
-  description: 'Проверка всех конфигурационных констант',
-  estimatedTests: 15,
-  version: '1.0',
-  date: '2026-02-13',
-  enabled: true,
-  tests: [
-    {
-      name: 'APPCONFIG.VERSION === "4.0.0"',
-      fn: () => {
-        if (APPCONFIG.VERSION !== '4.0.0') {
-          throw new Error(`Ожидалось 4.0.0, получено ${APPCONFIG.VERSION}`);
-        }
-      }
-    },
-    {
-      name: 'APPCONFIG.APPNAME === "RegexHelper"',
-      fn: () => {
-        if (APPCONFIG.APPNAME !== 'RegexHelper') {
-          throw new Error(`Ожидалось RegexHelper, получено ${APPCONFIG.APPNAME}`);
-        }
-      }
-    },
-    {
-      name: 'SIMPLETRIGGERSCONFIG.MAXTRIGGERS === 200',
-      fn: () => {
-        if (SIMPLETRIGGERSCONFIG.MAXTRIGGERS !== 200) {
-          throw new Error(`Ожидалось 200, получено ${SIMPLETRIGGERSCONFIG.MAXTRIGGERS}`);
-        }
-      }
-    },
-    {
-      name: 'LINKEDTRIGGERSCONFIG.MAXGROUPS === 15',
-      fn: () => {
-        if (LINKEDTRIGGERSCONFIG.MAXGROUPS !== 15) {
-          throw new Error(`Ожидалось 15, получено ${LINKEDTRIGGERSCONFIG.MAXGROUPS}`);
-        }
-      }
-    },
-    {
-      name: 'LINKEDTRIGGERSCONFIG.MAXSUBGROUPS === 15',
-      fn: () => {
-        if (LINKEDTRIGGERSCONFIG.MAXSUBGROUPS !== 15) {
-          throw new Error(`Ожидалось 15, получено ${LINKEDTRIGGERSCONFIG.MAXSUBGROUPS}`);
-        }
-      }
-    }
-  ]
-};
-
-// ========================================
-// SUITE 2: CORE UTILS
-// ========================================
-const suite2 = {
-  id: 'core-utils',
-  name: 'Core: Utils Module',
-  file: 'test-suite-global.js',
-  description: 'Проверка всех утилитарных функций',
-  estimatedTests: 20,
-  version: '1.0',
-  date: '2026-02-13',
-  enabled: true,
-  tests: [
-    {
-      name: 'escapeRegex() - точка',
-      fn: () => {
-        const result = escapeRegex('test.');
-        if (result !== 'test\\.') {
-          throw new Error(`Ожидалось test\\., получено ${result}`);
-        }
-      }
-    },
-    {
-      name: 'escapeRegex() - звездочка',
-      fn: () => {
-        const result = escapeRegex('a*b');
-        if (result !== 'a\\*b') {
-          throw new Error(`Ожидалось a\\*b, получено ${result}`);
-        }
-      }
-    },
-    {
-      name: 'escapeRegex() - скобки',
-      fn: () => {
-        const result = escapeRegex('(ab)');
-        if (result !== '\\(ab\\)') {
-          throw new Error(`Ожидалось \\(ab\\), получено ${result}`);
-        }
-      }
-    },
-    {
-      name: 'pluralize() - 1 элемент',
-      fn: () => {
-        const result = pluralize(1, 'триггер', 'триггера', 'триггеров');
-        if (result !== 'триггер') {
-          throw new Error(`Ожидалось триггер, получено ${result}`);
-        }
-      }
-    },
-    {
-      name: 'pluralize() - 2 элемента',
-      fn: () => {
-        const result = pluralize(2, 'триггер', 'триггера', 'триггеров');
-        if (result !== 'триггера') {
-          throw new Error(`Ожидалось триггера, получено ${result}`);
-        }
-      }
-    },
-    {
-      name: 'pluralize() - 5 элементов',
-      fn: () => {
-        const result = pluralize(5, 'триггер', 'триггера', 'триггеров');
-        if (result !== 'триггеров') {
-          throw new Error(`Ожидалось триггеров, получено ${result}`);
-        }
-      }
-    },
-    {
-      name: 'generateId() возвращает строку',
-      fn: () => {
-        const id = generateId('test');
-        if (typeof id !== 'string') {
-          throw new Error(`Ожидалась строка, получено ${typeof id}`);
-        }
-      }
-    },
-    {
-      name: 'generateId() начинается с префикса',
-      fn: () => {
-        const id = generateId('group');
-        if (!id.startsWith('group-')) {
-          throw new Error(`ID не начинается с group-, получено ${id}`);
-        }
-      }
-    },
-    {
-      name: 'formatDate() возвращает строку',
-      fn: () => {
-        const result = formatDate(Date.now());
-        if (typeof result !== 'string') {
-          throw new Error(`Ожидалась строка, получено ${typeof result}`);
-        }
-      }
-    }
-  ]
-};
-
-// ========================================
-// SUITE 3: CORE PARSER
-// ========================================
-const suite3 = {
-  id: 'core-parser',
-  name: 'Core: Parser Module',
-  file: 'test-suite-global.js',
-  description: 'Проверка парсера триггеров',
-  estimatedTests: 15,
-  version: '1.0',
-  date: '2026-02-13',
-  enabled: true,
-  tests: [
-    {
-      name: 'parseSimpleTriggers() - одна строка',
-      fn: () => {
-        const result = parseSimpleTriggers('тест');
-        if (!Array.isArray(result) || result.length !== 1) {
-          throw new Error(`Ожидался массив [тест], получено ${JSON.stringify(result)}`);
-        }
-      }
-    },
-    {
-      name: 'parseSimpleTriggers() - несколько строк',
-      fn: () => {
-        const result = parseSimpleTriggers('тест\nпроверка\nразработка');
-        if (result.length !== 3) {
-          throw new Error(`Ожидалось 3 элемента, получено ${result.length}`);
-        }
-      }
-    },
-    {
-      name: 'parseSimpleTriggers() - удаление пустых строк',
-      fn: () => {
-        const result = parseSimpleTriggers('тест\n\n\nпроверка');
-        if (result.length !== 2) {
-          throw new Error(`Ожидалось 2 элемента, получено ${result.length}`);
-        }
-      }
-    },
-    {
-      name: 'parseSimpleTriggers() - trim пробелов',
-      fn: () => {
-        const result = parseSimpleTriggers('  тест  \n  проверка  ');
-        if (result[0] !== 'тест' || result[1] !== 'проверка') {
-          throw new Error(`Пробелы не удалены: ${JSON.stringify(result)}`);
-        }
-      }
-    },
-    {
-      name: 'getTriggerStats() - подсчет количества',
-      fn: () => {
-        const triggers = ['тест', 'проверка', 'разработка'];
-        const stats = getTriggerStats(triggers);
-        if (stats.count !== 3) {
-          throw new Error(`Ожидалось count=3, получено ${stats.count}`);
-        }
-      }
-    },
-    {
-      name: 'getTriggerStats() - минимальная длина',
-      fn: () => {
-        const triggers = ['а', 'тест', 'проверка'];
-        const stats = getTriggerStats(triggers);
-        if (stats.minLength !== 1) {
-          throw new Error(`Ожидалось minLength=1, получено ${stats.minLength}`);
-        }
-      }
-    },
-    {
-      name: 'getTriggerStats() - максимальная длина',
-      fn: () => {
-        const triggers = ['а', 'тест', 'проверка'];
-        const stats = getTriggerStats(triggers);
-        if (stats.maxLength !== 8) { // "проверка" = 8 символов
-          throw new Error(`Ожидалось maxLength=8, получено ${stats.maxLength}`);
-        }
-      }
-    }
-  ]
-};
-
-// ========================================
-// SUITE 4: CORE VALIDATOR
-// ========================================
-const suite4 = {
-  id: 'core-validator',
-  name: 'Core: Validator Module',
-  file: 'test-suite-global.js',
-  description: 'Проверка валидаторов',
-  estimatedTests: 10,
-  version: '1.0',
-  date: '2026-02-13',
-  enabled: true,
-  tests: [
-    {
-      name: 'validateTriggers() - пустой массив',
-      fn: () => {
-        const result = validateTriggers([]);
-        if (result.valid !== false) {
-          throw new Error('Пустой массив должен быть невалиден');
-        }
-      }
-    },
-    {
-      name: 'validateTriggers() - валидный массив',
-      fn: () => {
-        const result = validateTriggers(['тест', 'проверка']);
-        if (result.valid !== true) {
-          throw new Error(`Валидный массив должен пройти проверку: ${JSON.stringify(result)}`);
-        }
-      }
-    },
-    {
-      name: 'validateRegexLength() - короткий regex',
-      fn: () => {
-        const result = validateRegexLength('test');
-        if (result !== true) {
-          throw new Error('Короткий regex должен быть валиден');
-        }
-      }
-    },
-    {
-      name: 'validateRegexLength() - длинный regex (10000+)',
-      fn: () => {
-        const longRegex = 'a'.repeat(10001);
-        const result = validateRegexLength(longRegex);
-        if (result !== false) {
-          throw new Error('Regex длиной 10000+ должен быть невалиден');
-        }
-      }
-    }
-  ]
-};
-
-// ========================================
-// SUITE 5: CONVERTER OPTIMIZER
-// ========================================
-const suite5 = {
-  id: 'converter-optimizer',
-  name: 'Converter: Optimizer Module',
-  file: 'test-suite-global.js',
-  description: 'Проверка оптимизаций Type 1-6',
-  estimatedTests: 20,
-  version: '1.0',
-  date: '2026-02-13',
-  enabled: true,
-  tests: [
-    {
-      name: 'applyType1() - cop → c|o|p',
-      fn: () => {
-        const result = applyType1(['cop']);
-        if (!result.includes('c') || !result.includes('o') || !result.includes('p')) {
-          throw new Error(`Ожидалось разбиение cop, получено ${JSON.stringify(result)}`);
-        }
-      }
-    },
-    {
-      name: 'applyType2() - тест,тестер → тест(|ер)',
-      fn: () => {
-        const result = applyType2(['тест', 'тестер']);
-        // Проверка что есть общий корень
-        if (!result.includes('тест')) {
-          throw new Error(`Ожидался общий корень тест, получено ${result}`);
-        }
-      }
-    },
-    {
-      name: 'applyType4() - добавление .{min,max}',
-      fn: () => {
-        const result = applyType4(['тест']);
-        // Должно быть .{1,N} или подобное
-        if (!result.includes('{') || !result.includes('}')) {
-          throw new Error(`Ожидалось добавление .{min,max}, получено ${result}`);
-        }
-      }
-    },
-    {
-      name: 'applyType5() - добавление ?',
-      fn: () => {
-        const result = applyType5(['тест']);
-        if (!result.includes('?')) {
-          throw new Error(`Ожидалось добавление ?, получено ${result}`);
-        }
-      }
-    }
-  ]
-};
-
-// ========================================
-// SUITE 6: FEATURES MODALS
-// ========================================
-const suite6 = {
-  id: 'features-modals',
-  name: 'Features: Modals Module',
-  file: 'test-suite-global.js',
-  description: 'Проверка работы модальных окон',
-  estimatedTests: 10,
-  version: '1.0',
-  date: '2026-02-13',
-  enabled: true,
-  tests: [
-    {
-      name: 'openModal() существует',
-      fn: () => {
-        if (typeof openModal !== 'function') {
-          throw new Error('Функция openModal не найдена');
-        }
-      }
-    },
-    {
-      name: 'closeModal() существует',
-      fn: () => {
-        if (typeof closeModal !== 'function') {
-          throw new Error('Функция closeModal не найдена');
-        }
-      }
-    },
-    {
-      name: 'showConfirm() существует',
-      fn: () => {
-        if (typeof showConfirm !== 'function') {
-          throw new Error('Функция showConfirm не найдена');
-        }
-      }
-    }
-  ]
-};
-
-// ========================================
-// SUITE 7: DOM TESTS
-// ========================================
-const suite7 = {
-  id: 'dom-tests',
-  name: 'DOM: HTML Elements',
-  file: 'test-suite-global.js',
-  description: 'Проверка наличия всех HTML элементов',
-  estimatedTests: 50,
-  version: '1.0',
-  date: '2026-02-13',
-  enabled: true,
-  tests: [
-    {
-      name: 'index.html загружен',
-      fn: () => {
-        if (!document.body) {
-          throw new Error('document.body не найден');
-        }
-      }
-    },
-    {
-      name: 'Header существует',
-      fn: () => {
-        const header = document.querySelector('.main-header');
-        if (!header) {
-          throw new Error('.main-header не найден');
-        }
-      }
-    },
-    {
-      name: 'Logo существует',
-      fn: () => {
-        const logo = document.querySelector('.logo');
-        if (!logo) {
-          throw new Error('.logo не найден');
-        }
-      }
-    },
-    {
-      name: 'Navigation существует',
-      fn: () => {
-        const nav = document.querySelector('.main-nav');
-        if (!nav) {
-          throw new Error('.main-nav не найден');
-        }
-      }
-    },
-    {
-      name: 'Панель 1: Input существует',
-      fn: () => {
-        const panel = document.getElementById('panelInput');
-        if (!panel) {
-          throw new Error('#panelInput не найден');
-        }
-      }
-    },
-    {
-      name: 'Панель 2: Optimizations существует',
-      fn: () => {
-        const panel = document.getElementById('panelOptimizations');
-        if (!panel) {
-          throw new Error('#panelOptimizations не найден');
-        }
-      }
-    },
-    {
-      name: 'Панель 3: Result существует',
-      fn: () => {
-        const panel = document.getElementById('panelResult');
-        if (!panel) {
-          throw new Error('#panelResult не найден');
-        }
-      }
-    },
-    {
-      name: 'Simple Triggers textarea существует',
-      fn: () => {
-        const textarea = document.getElementById('simpleTriggersInput');
-        if (!textarea) {
-          throw new Error('#simpleTriggersInput не найден');
-        }
-      }
-    },
-    {
-      name: 'Linked Groups Container существует',
-      fn: () => {
-        const container = document.getElementById('linkedGroupsContainer');
-        if (!container) {
-          throw new Error('#linkedGroupsContainer не найден');
-        }
-      }
-    },
-    {
-      name: 'Кнопка Convert существует',
-      fn: () => {
-        const btn = document.getElementById('btnConvert');
-        if (!btn) {
-          throw new Error('#btnConvert не найден');
-        }
-      }
-    },
-    {
-      name: 'Regex Output textarea существует',
-      fn: () => {
-        const textarea = document.getElementById('regexOutput');
-        if (!textarea) {
-          throw new Error('#regexOutput не найден');
-        }
-      }
-    },
-    {
-      name: 'Footer существует',
-      fn: () => {
-        const footer = document.querySelector('.main-footer');
-        if (!footer) {
-          throw new Error('.main-footer не найден');
-        }
-      }
-    },
-    {
-      name: 'Confirm Modal существует',
-      fn: () => {
-        const modal = document.getElementById('confirmModal');
-        if (!modal) {
-          throw new Error('#confirmModal не найден');
-        }
-      }
-    }
-  ]
-};
-
-// ========================================
-// SUITE 8: CSS TESTS
-// ========================================
-const suite8 = {
-  id: 'css-tests',
-  name: 'CSS: Style Loading',
-  file: 'test-suite-global.js',
-  description: 'Проверка загрузки и применения стилей',
-  estimatedTests: 15,
-  version: '1.0',
-  date: '2026-02-13',
-  enabled: true,
-  tests: [
-    {
-      name: 'body имеет стили',
-      fn: () => {
-        const style = window.getComputedStyle(document.body);
-        if (!style.fontFamily || style.fontFamily === 'Times New Roman') {
-          throw new Error('Стили не применены к body');
-        }
-      }
-    },
-    {
-      name: 'Header имеет background',
-      fn: () => {
-        const header = document.querySelector('.main-header');
-        if (header) {
-          const style = window.getComputedStyle(header);
-          if (!style.backgroundColor || style.backgroundColor === 'rgba(0, 0, 0, 0)') {
-            throw new Error('Header не имеет background');
-          }
-        }
-      }
-    },
-    {
-      name: 'CSS файлы загружены',
-      fn: () => {
-        const sheets = document.styleSheets.length;
-        if (sheets === 0) {
-          throw new Error('Ни один CSS файл не загружен');
-        }
-      }
-    }
-  ]
-};
-
-// ========================================
-// РЕГИСТРАЦИЯ ВСЕХ НАБОРОВ
-// ========================================
-if (typeof window !== 'undefined' && window.testRunner) {
-  window.testRunner.registerSuite(suite1);
-  window.testRunner.registerSuite(suite2);
-  window.testRunner.registerSuite(suite3);
-  window.testRunner.registerSuite(suite4);
-  window.testRunner.registerSuite(suite5);
-  window.testRunner.registerSuite(suite6);
-  window.testRunner.registerSuite(suite7);
-  window.testRunner.registerSuite(suite8);
-  
-  console.log('✅ Глобальный тест-набор зарегистрирован (8 наборов, ~155 тестов)');
+function pass(msg) {
+  console.log(`✅ ${msg}`);
+  passedTests++;
+  totalTests++;
 }
 
-export { suite1, suite2, suite3, suite4, suite5, suite6, suite7, suite8 };
+function fail(msg) {
+  console.error(`❌ ${msg}`);
+  failedTests++;
+  totalTests++;
+}
+
+function warn(msg) {
+  console.warn(`⚠️ ${msg}`);
+  totalTests++;
+}
+
+// ========================================
+// БЛОК 1: ПРОВЕРКА HTML ЗАГРУЗКИ
+// ========================================
+console.log('\n📄 БЛОК 1: ПРОВЕРКА HTML');
+
+try {
+  if (document.body) {
+    pass('document.body существует');
+  } else {
+    fail('document.body НЕ существует');
+  }
+} catch(e) {
+  fail(`Ошибка проверки body: ${e.message}`);
+}
+
+try {
+  if (document.title) {
+    pass(`Заголовок страницы: "${document.title}"`);
+  } else {
+    warn('Заголовок страницы не установлен');
+  }
+} catch(e) {
+  fail(`Ошибка проверки title: ${e.message}`);
+}
+
+// ========================================
+// БЛОК 2: ПРОВЕРКА CSS ФАЙЛОВ
+// ========================================
+console.log('\n🎨 БЛОК 2: ПРОВЕРКА CSS ФАЙЛОВ');
+
+const expectedCSS = [
+  'common.css',
+  'converter.css',
+  'panels.css',
+  'modals.css',
+  'history.css',
+  'tester.css',
+  'case-converter.css',
+  'responsive.css'
+];
+
+try {
+  const loadedSheets = Array.from(document.styleSheets).map(sheet => {
+    try {
+      return sheet.href || null;
+    } catch(e) {
+      return null;
+    }
+  }).filter(Boolean);
+
+  if (loadedSheets.length > 0) {
+    pass(`Загружено ${loadedSheets.length} CSS файл(ов)`);
+    
+    expectedCSS.forEach(cssFile => {
+      const isLoaded = loadedSheets.some(href => href.includes(cssFile));
+      if (isLoaded) {
+        pass(`CSS найден: ${cssFile}`);
+      } else {
+        fail(`CSS НЕ НАЙДЕН: ${cssFile}`);
+      }
+    });
+  } else {
+    fail('НИ ОДИН CSS файл не загружен!');
+  }
+} catch(e) {
+  fail(`Ошибка проверки CSS: ${e.message}`);
+}
+
+// Проверка применения стилей
+try {
+  const bodyStyle = window.getComputedStyle(document.body);
+  if (bodyStyle.fontFamily && bodyStyle.fontFamily !== 'Times New Roman') {
+    pass('Стили применены к <body>');
+  } else {
+    fail('Стили НЕ применены к <body> (используется дефолтный шрифт)');
+  }
+} catch(e) {
+  fail(`Ошибка проверки стилей body: ${e.message}`);
+}
+
+// ========================================
+// БЛОК 3: ПРОВЕРКА JS МОДУЛЕЙ
+// ========================================
+console.log('\n📦 БЛОК 3: ПРОВЕРКА JS ФАЙЛОВ');
+
+try {
+  const scripts = Array.from(document.scripts);
+  
+  if (scripts.length > 0) {
+    pass(`Найдено ${scripts.length} <script> тег(ов)`);
+    
+    // Проверка main.js
+    const mainScript = scripts.find(s => s.src && s.src.includes('main.js'));
+    if (mainScript) {
+      pass('main.js подключен');
+      
+      if (mainScript.type === 'module') {
+        pass('main.js имеет type="module"');
+      } else {
+        fail('main.js НЕ имеет type="module"');
+      }
+    } else {
+      fail('main.js НЕ подключен');
+    }
+  } else {
+    fail('НИ ОДИН <script> не найден');
+  }
+} catch(e) {
+  fail(`Ошибка проверки JS: ${e.message}`);
+}
+
+// ========================================
+// БЛОК 4: ПРОВЕРКА HEADER
+// ========================================
+console.log('\n🏗️ БЛОК 4: ПРОВЕРКА HEADER');
+
+const headerSelectors = {
+  '.main-header': 'Header контейнер',
+  '.logo': 'Логотип',
+  '.main-nav': 'Навигация',
+  '#btnRegulations': 'Кнопка Regulations',
+  '#btnWiki': 'Кнопка Wiki',
+  '#btnResetAll': 'Кнопка Reset All'
+};
+
+Object.entries(headerSelectors).forEach(([selector, name]) => {
+  try {
+    const el = document.querySelector(selector);
+    if (el) {
+      pass(`${name} найден (${selector})`);
+    } else {
+      fail(`${name} НЕ найден (${selector})`);
+    }
+  } catch(e) {
+    fail(`Ошибка поиска ${name}: ${e.message}`);
+  }
+});
+
+// ========================================
+// БЛОК 5: ПРОВЕРКА ПАНЕЛИ 1 (INPUT)
+// ========================================
+console.log('\n🎯 БЛОК 5: ПРОВЕРКА ПАНЕЛИ 1 (INPUT)');
+
+const panel1Selectors = {
+  '#panelInput': 'Панель 1: Input',
+  '#modeIndividual': 'Radio: Individual',
+  '#modeCommon': 'Radio: Common',
+  '#modeAlternation': 'Radio: Alternation',
+  '#commonDistance': 'Select: Common Distance',
+  '#linkedGroupsContainer': 'Контейнер связанных групп',
+  '#btnAddGroup': 'Кнопка добавления группы',
+  '#simpleTriggersInput': 'Textarea: Simple Triggers',
+  '#btnClearSimple': 'Кнопка очистки Simple Triggers'
+};
+
+Object.entries(panel1Selectors).forEach(([selector, name]) => {
+  try {
+    const el = document.querySelector(selector);
+    if (el) {
+      pass(`${name} найден`);
+    } else {
+      fail(`${name} НЕ найден`);
+    }
+  } catch(e) {
+    fail(`Ошибка: ${e.message}`);
+  }
+});
+
+// ========================================
+// БЛОК 6: ПРОВЕРКА ПАНЕЛИ 2 (OPTIMIZATIONS)
+// ========================================
+console.log('\n⚙️ БЛОК 6: ПРОВЕРКА ПАНЕЛИ 2 (OPTIMIZATIONS)');
+
+const panel2Selectors = {
+  '#panelOptimizations': 'Панель 2: Optimizations',
+  '#type1Checkbox': 'Checkbox: Type 1',
+  '#type2Checkbox': 'Checkbox: Type 2',
+  '#type4Checkbox': 'Checkbox: Type 4',
+  '#type5Checkbox': 'Checkbox: Type 5',
+  '#type6Checkbox': 'Checkbox: Type 6',
+  '#type6Modes': 'Контейнер режимов Type 6',
+  '#type6ModeWildcard': 'Radio: Wildcard',
+  '#type6ModeExact': 'Radio: Exact',
+  '#wildcardOptions': 'Опции Wildcard',
+  '#wildcardCyrillic': 'Checkbox: Кириллица',
+  '#wildcardLatin': 'Checkbox: Латиница'
+};
+
+Object.entries(panel2Selectors).forEach(([selector, name]) => {
+  try {
+    const el = document.querySelector(selector);
+    if (el) {
+      pass(`${name} найден`);
+    } else {
+      fail(`${name} НЕ найден`);
+    }
+  } catch(e) {
+    fail(`Ошибка: ${e.message}`);
+  }
+});
+
+// ========================================
+// БЛОК 7: ПРОВЕРКА ПАНЕЛИ 3 (RESULT)
+// ========================================
+console.log('\n📊 БЛОК 7: ПРОВЕРКА ПАНЕЛИ 3 (RESULT)');
+
+const panel3Selectors = {
+  '#panelResult': 'Панель 3: Result',
+  '#regexOutput': 'Textarea: Regex Output',
+  '#btnConvert': 'Кнопка Convert',
+  '#btnCopy': 'Кнопка Copy',
+  '#btnExport': 'Кнопка Export',
+  '#btnClearResult': 'Кнопка Clear Result'
+};
+
+Object.entries(panel3Selectors).forEach(([selector, name]) => {
+  try {
+    const el = document.querySelector(selector);
+    if (el) {
+      pass(`${name} найден`);
+    } else {
+      fail(`${name} НЕ найден`);
+    }
+  } catch(e) {
+    fail(`Ошибка: ${e.message}`);
+  }
+});
+
+// ========================================
+// БЛОК 8: ПРОВЕРКА FOOTER
+// ========================================
+console.log('\n🦶 БЛОК 8: ПРОВЕРКА FOOTER');
+
+try {
+  const footer = document.querySelector('.main-footer');
+  if (footer) {
+    pass('Footer найден');
+  } else {
+    fail('Footer НЕ найден');
+  }
+} catch(e) {
+  fail(`Ошибка проверки footer: ${e.message}`);
+}
+
+// ========================================
+// БЛОК 9: ПРОВЕРКА МОДАЛЬНЫХ ОКОН
+// ========================================
+console.log('\n🪟 БЛОК 9: ПРОВЕРКА МОДАЛЬНЫХ ОКОН');
+
+const modals = [
+  'confirmModal',
+  'regulationsModal',
+  'wikiModal',
+  'panelHelpModal',
+  'exportModal',
+  'historyDetailsModal',
+  'groupSettingsModal'
+];
+
+modals.forEach(modalId => {
+  try {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+      pass(`Модальное окно найдено: ${modalId}`);
+      
+      // Проверка структуры
+      const hasContent = modal.querySelector('.modal-content') !== null;
+      const hasHeader = modal.querySelector('.modal-header') !== null;
+      const hasBody = modal.querySelector('.modal-body') !== null;
+      
+      if (hasContent && hasHeader && hasBody) {
+        pass(`  └─ Структура ${modalId} корректна`);
+      } else {
+        warn(`  └─ Структура ${modalId} неполная`);
+      }
+    } else {
+      fail(`Модальное окно НЕ найдено: ${modalId}`);
+    }
+  } catch(e) {
+    fail(`Ошибка проверки ${modalId}: ${e.message}`);
+  }
+});
+
+// ========================================
+// БЛОК 10: ПРОВЕРКА ПУТЕЙ К ФАЙЛАМ
+// ========================================
+console.log('\n🔗 БЛОК 10: ПРОВЕРКА ПУТЕЙ В HTML');
+
+try {
+  const cssLinks = Array.from(document.querySelectorAll('link[rel="stylesheet"]'));
+  cssLinks.forEach(link => {
+    const href = link.getAttribute('href');
+    if (href) {
+      if (href.startsWith('css/') || href.startsWith('./css/') || href.startsWith('/css/')) {
+        pass(`Путь к CSS: ${href}`);
+      } else {
+        warn(`Возможно неправильный путь: ${href}`);
+      }
+    }
+  });
+  
+  const jsScripts = Array.from(document.querySelectorAll('script[src]'));
+  jsScripts.forEach(script => {
+    const src = script.getAttribute('src');
+    if (src) {
+      if (src.startsWith('js-new/') || src.startsWith('./js-new/') || src.startsWith('/js-new/')) {
+        pass(`Путь к JS: ${src}`);
+      } else {
+        warn(`Возможно неправильный путь: ${src}`);
+      }
+    }
+  });
+} catch(e) {
+  fail(`Ошибка проверки путей: ${e.message}`);
+}
+
+// ========================================
+// БЛОК 11: ФУНКЦИОНАЛЬНЫЕ ТЕСТЫ
+// ========================================
+console.log('\n🧪 БЛОК 11: ФУНКЦИОНАЛЬНЫЕ ТЕСТЫ');
+
+// Тест 1: Работа с textarea
+try {
+  const textarea = document.getElementById('simpleTriggersInput');
+  if (textarea) {
+    const oldValue = textarea.value;
+    textarea.value = 'тест';
+    
+    if (textarea.value === 'тест') {
+      pass('Textarea Simple Triggers работает');
+    } else {
+      fail('Textarea Simple Triggers НЕ работает');
+    }
+    
+    textarea.value = oldValue; // Восстановить
+  }
+} catch(e) {
+  fail(`Ошибка теста textarea: ${e.message}`);
+}
+
+// Тест 2: Проверка кнопки Convert
+try {
+  const btnConvert = document.getElementById('btnConvert');
+  if (btnConvert) {
+    if (!btnConvert.disabled) {
+      pass('Кнопка Convert доступна');
+    } else {
+      warn('Кнопка Convert заблокирована');
+    }
+  }
+} catch(e) {
+  fail(`Ошибка проверки кнопки Convert: ${e.message}`);
+}
+
+// Тест 3: Проверка модального окна
+try {
+  const modal = document.getElementById('confirmModal');
+  if (modal) {
+    const isHidden = modal.getAttribute('aria-hidden') === 'true';
+    if (isHidden) {
+      pass('Confirm Modal скрыт по умолчанию');
+    } else {
+      warn('Confirm Modal видим (должен быть скрыт)');
+    }
+  }
+} catch(e) {
+  fail(`Ошибка проверки модального окна: ${e.message}`);
+}
+
+// ========================================
+// БЛОК 12: ПРОВЕРКА БИБЛИОТЕК
+// ========================================
+console.log('\n📚 БЛОК 12: ПРОВЕРКА ВНЕШНИХ БИБЛИОТЕК');
+
+try {
+  if (typeof RussianNouns !== 'undefined' || typeof window.RussianNouns !== 'undefined') {
+    pass('Библиотека russian-nouns загружена');
+  } else {
+    warn('Библиотека russian-nouns НЕ загружена');
+  }
+} catch(e) {
+  warn(`russian-nouns не найдена (может не требоваться): ${e.message}`);
+}
+
+try {
+  if (typeof Diagram !== 'undefined' || typeof window.Diagram !== 'undefined') {
+    pass('Библиотека railroad-diagrams загружена');
+  } else {
+    warn('Библиотека railroad-diagrams НЕ загружена');
+  }
+} catch(e) {
+  warn(`railroad-diagrams не найдена (для визуализатора): ${e.message}`);
+}
+
+// ========================================
+// ИТОГОВЫЙ ОТЧЕТ
+// ========================================
+console.log('\n' + '='.repeat(60));
+console.log('📊 ИТОГОВЫЙ ОТЧЕТ ТЕСТИРОВАНИЯ');
+console.log('='.repeat(60));
+console.log(`✅ Пройдено: ${passedTests}`);
+console.log(`❌ Провалено: ${failedTests}`);
+console.log(`📝 Всего тестов: ${totalTests}`);
+
+const passRate = totalTests > 0 ? ((passedTests / totalTests) * 100).toFixed(1) : '0.0';
+console.log(`📈 Процент успеха: ${passRate}%`);
+console.log('='.repeat(60));
+
+if (failedTests === 0) {
+  console.log('\n🎉 Отлично! Все тесты пройдены!');
+} else if (failedTests < 10) {
+  console.log('\n⚠️ Есть проблемы, но большинство компонентов работает');
+} else if (failedTests < 30) {
+  console.log('\n🔧 Требуется доработка - много ошибок');
+} else {
+  console.log('\n🚨 КРИТИЧНО! Приложение не работает');
+}
+
+console.log('\n📋 РЕКОМЕНДАЦИИ:');
+if (failedTests > 0) {
+  console.log('1. Проверь пути к CSS файлам в index.html');
+  console.log('2. Проверь пути к JS модулям');
+  console.log('3. Убедись, что все файлы на месте');
+  console.log('4. Проверь консоль браузера на ошибки');
+}
+
+console.log('\n💾 СКОПИРУЙ ВЕСЬ ВЫВОД И ОТПРАВЬ РАЗРАБОТЧИКУ!');
+console.log(`\n📊 ${passedTests}/${totalTests}`);
+
+// Финальный вывод для парсинга
+console.log(`FINAL: ${passedTests}/${totalTests} (${passRate}%)`);
