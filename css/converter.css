@@ -4,8 +4,8 @@
  * Стили для конвертера: panels, inputs, labels, checkboxes,
  * radio buttons, dropdowns, distance inputs.
  * 
- * @version 1.0
- * @date 12.02.2026
+ * @version 1.0 (FIXED)
+ * @date 13.02.2026
  */
 
 /* ============================================================================
@@ -16,6 +16,16 @@
 #testerPanel,
 #historySection {
   scroll-margin-top: 100px;
+}
+
+/* Converter Section (ДОБАВЛЕНО) */
+.converter-section {
+  margin-bottom: 40px;
+}
+
+/* History Section (ДОБАВЛЕНО) */
+.history-section {
+  margin-bottom: 40px;
 }
 
 /* ============================================================================
@@ -49,6 +59,24 @@
   font-size: 16px;
   font-weight: 700;
   color: var(--dark-text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Panel Number (ДОБАВЛЕНО) */
+.panel-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: var(--primary-blue);
+  color: white;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
 }
 
 .panel-actions {
@@ -189,6 +217,18 @@
   color: var(--medium-text);
   margin-bottom: 12px;
   display: block;
+}
+
+/* Section Hint (ДОБАВЛЕНО) */
+.section-hint {
+  background-color: #e3f2fd;
+  border-left: 4px solid var(--info);
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: #0d47a1;
+  line-height: 1.6;
 }
 
 /* ============================================================================
@@ -561,6 +601,139 @@
 }
 
 /* ============================================================================
+   TEXTAREA WRAPPER (ДОБАВЛЕНО)
+   ============================================================================ */
+.textarea-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* Triggers Textarea (ДОБАВЛЕНО) */
+.triggers-textarea {
+  width: 100%;
+  min-height: 150px;
+  padding: 15px;
+  padding-right: 45px; /* место для кнопки clear */
+  border: 2px solid var(--gray-border);
+  border-radius: var(--radius-lg);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+  transition: all 0.2s ease;
+  background: var(--white);
+}
+
+.triggers-textarea:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px rgba(36, 167, 239, 0.1);
+}
+
+/* Clear Button Inline (ДОБАВЛЕНО) */
+.btn-clear-inline {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 24px;
+  height: 24px;
+  background: var(--error);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: none;
+  opacity: 0;
+  transition: all 0.2s ease;
+  padding: 0;
+  z-index: 10;
+}
+
+.btn-clear-inline:hover {
+  background: #d32f2f;
+  transform: scale(1.1);
+}
+
+.btn-clear-inline:active {
+  transform: scale(0.95);
+}
+
+/* Input with Clear (для обычных input) */
+.input-with-clear {
+  position: relative;
+  width: 100%;
+}
+
+.input-with-clear .input,
+.input-with-clear input,
+.input-with-clear textarea {
+  padding-right: 40px;
+}
+
+.input-with-clear .btn-clear-inline {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.input-with-clear .btn-clear-inline:hover {
+  transform: translateY(-50%) scale(1.1);
+}
+
+/* ============================================================================
+   OPTIMIZATION ITEMS (ДОБАВЛЕНО)
+   ============================================================================ */
+.optimization-item {
+  padding: 16px;
+  background: #f9fcff;
+  border: 2px solid #d0e3ff;
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+  transition: all 0.2s ease;
+}
+
+.optimization-item:hover {
+  border-color: var(--primary-blue);
+  box-shadow: var(--shadow-sm);
+}
+
+.optimization-item:last-child {
+  margin-bottom: 0;
+}
+
+.optimization-checkbox {
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+.optimization-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--dark-text);
+  margin-bottom: 6px;
+}
+
+.optimization-description {
+  font-size: 13px;
+  color: var(--medium-text);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.optimization-example {
+  font-size: 12px;
+  color: var(--medium-text);
+  font-family: var(--font-mono);
+  background: #f0f4ff;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  margin-top: 6px;
+  display: inline-block;
+}
+
+/* ============================================================================
    SECTION UTILITIES v3.0
    ============================================================================ */
 .section-title-wrapper {
@@ -585,10 +758,10 @@
   margin-top: 16px;
 }
 
-.panel-body .input-section {
+.panel-body .input-section:first-child {
 }
 
-.input-section {
+.input-section:not(:first-child) {
   margin-top: 24px;
 }
 
@@ -601,6 +774,6 @@
   line-height: 1.5;
 }
 
-.btn-icon .btn-icon {
+.btn-icon + .btn-icon {
   margin-left: 4px;
 }
