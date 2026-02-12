@@ -317,33 +317,13 @@
         const TEST_SUITES = [
             {
                 id: 'global-test-suite',
-                name: '🌐 ГЛОБАЛЬНЫЙ СУПЕР-ТЕСТ (155 тестов)',
+                name: '🌐 ГЛОБАЛЬНЫЙ СУПЕР-ТЕСТ',
                 file: 'test-suite-global.js',
                 description: 'Полная проверка всех модулей: Core, Converter, Features, UI, DOM, CSS',
                 estimatedTests: 155,
                 version: '1.0',
                 date: '2026-02-13',
                 enabled: true
-            },
-            {
-                id: 'chat-1',
-                name: 'Chat 1: Core + Converter + UI + Modals',
-                file: 'test-suite-chat-1.js',
-                description: '50 тестов для базовых модулей',
-                estimatedTests: 50,
-                version: '1.0',
-                date: '2026-02-11',
-                enabled: true
-            },
-            {
-                id: 'chat-2',
-                name: 'Chat 2: UI Features + Main',
-                file: 'test-suite-chat-2.js',
-                description: '110 тестов для UI и главных функций',
-                estimatedTests: 110,
-                version: '1.0',
-                date: '2026-02-12',
-                enabled: false
             }
         ];
         
@@ -358,24 +338,55 @@
             return new Date(b.date) - new Date(a.date);
         });
         
-        // Перехват console.log
+        // Перехват console.log для логирования
         const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
         console.log = function(...args) {
             originalLog.apply(console, args);
-            
-            const message = args.map(arg => {
+            const message = formatMessage(args);
+            consoleLogBuffer.push(message);
+            appendLogToUI(message, 'info');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            const message = formatMessage(args);
+            consoleLogBuffer.push('ERROR: ' + message);
+            appendLogToUI('ERROR: ' + message, 'error');
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            const message = formatMessage(args);
+            consoleLogBuffer.push('WARN: ' + message);
+            appendLogToUI('WARN: ' + message, 'muted');
+        };
+        
+        function formatMessage(args) {
+            return args.map(arg => {
                 if (typeof arg === 'object') {
-                    return JSON.stringify(arg);
+                    try {
+                        return JSON.stringify(arg);
+                    } catch(e) {
+                        return String(arg);
+                    }
                 }
                 return String(arg);
             }).join(' ');
+        }
+        
+        function appendLogToUI(message, type = 'info') {
+            const logsEl = document.getElementById('logs');
+            const line = document.createElement('div');
+            line.className = `log-line log-${type}`;
+            line.textContent = message;
+            logsEl.appendChild(line);
+            logsEl.scrollTop = logsEl.scrollHeight;
             
-            consoleLogBuffer.push(message);
-            
-            console.log("110/110");
-            
-            // Парсинг результатов тестов
-            if (message.includes('✅') || message.includes('❌')) {
+            // Парсинг финальных результатов
+            if (message.includes('FINAL:')) {
                 const match = message.match(/(\d+)\/(\d+)/);
                 if (match) {
                     const passed = parseInt(match[1]);
@@ -384,9 +395,7 @@
                     updateStats(total, passed, failed);
                 }
             }
-            
-            appendLog(message);
-        };
+        }
         
         function init() {
             renderTestList();
@@ -477,7 +486,7 @@
             if (isRunning) return;
             
             if (selectedTests.size === 0) {
-                appendLog('❌ ERROR: No tests selected', 'error');
+                appendLogToUI('❌ ERROR: No tests selected', 'error');
                 return;
             }
             
@@ -494,12 +503,12 @@
                 if (!suite) continue;
                 
                 try {
-                    appendLog(`\n🚀 Loading: ${suite.name}`, 'info');
+                    appendLogToUI(`\n🚀 Loading: ${suite.name}`, 'info');
                     await import(`./tests/${suite.file}?t=${Date.now()}`);
-                    appendLog(`✅ Loaded: ${suite.file}`, 'success');
+                    appendLogToUI(`✅ Loaded: ${suite.file}`, 'success');
                 } catch (error) {
-                    appendLog(`❌ ERROR: Failed to load ${suite.file}: ${error.message}`, 'error');
-                    console.error(error);
+                    appendLogToUI(`❌ ERROR: Failed to load ${suite.file}: ${error.message}`, 'error');
+                    originalError(error);
                 }
             }
             
@@ -510,15 +519,6 @@
                 updateRunButton(false);
                 isRunning = false;
             }, 500);
-        }
-        
-        function appendLog(message, type = 'info') {
-            const logsEl = document.getElementById('logs');
-            const line = document.createElement('div');
-            line.className = `log-line log-${type}`;
-            line.textContent = message;
-            logsEl.appendChild(line);
-            logsEl.scrollTop = logsEl.scrollHeight;
         }
         
         function updateStats(total, passed, failed) {
@@ -532,15 +532,15 @@
         
         async function copyLogs() {
             if (consoleLogBuffer.length === 0) {
-                appendLog('❌ ERROR: No logs to copy', 'error');
+                appendLogToUI('❌ ERROR: No logs to copy', 'error');
                 return;
             }
             
             try {
                 await navigator.clipboard.writeText(consoleLogBuffer.join('\n'));
-                appendLog('✅ Logs copied to clipboard', 'success');
+                appendLogToUI('✅ Logs copied to clipboard', 'success');
             } catch (error) {
-                appendLog(`❌ ERROR: Failed to copy logs`, 'error');
+                appendLogToUI(`❌ ERROR: Failed to copy logs`, 'error');
             }
         }
         
