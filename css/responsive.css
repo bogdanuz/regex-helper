@@ -1,0 +1,289 @@
+/**
+ * RegexHelper v4.0 - Responsive Styles
+ * 
+ * Медиа-запросы для адаптивного дизайна.
+ * Breakpoints: 1024px, 768px, 480px.
+ * 
+ * @version 1.0
+ * @date 12.02.2026
+ */
+
+/* ============================================================================
+   TABLET (1024px и меньше)
+   ============================================================================ */
+@media (max-width: 1024px) {
+  .three-columns {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .header {
+    padding: 12px 20px;
+  }
+
+  .container {
+    padding: 16px;
+  }
+}
+
+/* ============================================================================
+   MOBILE (768px и меньше)
+   ============================================================================ */
+@media (max-width: 768px) {
+  /* Layout */
+  .three-columns {
+    grid-template-columns: 1fr;
+  }
+
+  /* Header */
+  .header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: stretch;
+  }
+
+  .logo {
+    justify-content: center;
+  }
+
+  .header-actions {
+    justify-content: center;
+  }
+
+  .header-nav {
+    display: none;
+  }
+
+  /* Scroll to Top Button */
+  .scroll-top-btn {
+    bottom: 16px;
+    left: 16px;
+    width: 44px;
+    height: 44px;
+    font-size: 20px;
+  }
+
+  /* Footer */
+  .footer {
+    padding: 20px 16px;
+  }
+
+  .footer-text {
+    font-size: 13px;
+  }
+
+  .footer-separator {
+    margin: 0 6px;
+  }
+
+  .footer-links {
+    font-size: 13px;
+  }
+
+  /* Buttons */
+  .button-group {
+    flex-direction: column;
+  }
+
+  /* Panels */
+  .panel {
+    padding: 16px;
+  }
+
+  .panel-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Link Mode */
+  .link-mode-selector {
+    flex-direction: column;
+  }
+
+  .radio-inline {
+    min-width: auto;
+  }
+
+  /* History */
+  .history-container {
+    max-height: 300px;
+  }
+
+  .history-item {
+    padding: 12px;
+  }
+
+  .history-item-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .history-item-meta {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* Case Converter */
+  .case-buttons {
+    flex-direction: column;
+  }
+
+  .case-buttons button {
+    width: 100%;
+  }
+
+  .case-input,
+  .case-output {
+    min-height: 100px;
+    font-size: 13px;
+  }
+
+  /* Toast */
+  #toastContainer,
+  .toast-container {
+    left: 10px;
+    right: 10px;
+    top: 70px;
+  }
+
+  .toast {
+    min-width: auto;
+    max-width: 100%;
+  }
+
+  /* Modals */
+  .modal {
+    padding: 10px;
+  }
+
+  .modal-content {
+    max-height: 95vh;
+  }
+
+  .modal-header {
+    padding: 16px;
+  }
+
+  .modal-body {
+    padding: 16px;
+  }
+
+  .modal-footer {
+    padding: 12px 16px;
+    flex-direction: column;
+  }
+
+  .modal-footer .btn-primary,
+  .modal-footer .btn-secondary,
+  .modal-footer .btn-danger {
+    width: 100%;
+  }
+}
+
+/* ============================================================================
+   SMALL MOBILE (480px и меньше)
+   ============================================================================ */
+@media (max-width: 480px) {
+  /* Base */
+  body {
+    font-size: 13px;
+  }
+
+  /* Container */
+  .container {
+    padding: 12px;
+  }
+
+  /* Logo */
+  .logo img {
+    height: 32px;
+  }
+
+  /* Buttons */
+  .btn-primary,
+  .btn-secondary,
+  .btn-danger {
+    font-size: 13px;
+    padding: 10px 20px;
+  }
+
+  /* Panels */
+  .panel {
+    padding: 12px;
+  }
+
+  /* History */
+  .history-empty p:first-child {
+    font-size: 48px;
+  }
+
+  .history-empty .text-muted {
+    font-size: 13px;
+  }
+
+  .history-item-regex {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+
+  .export-options {
+    gap: 8px;
+  }
+
+  .details-triggers {
+    gap: 6px;
+  }
+
+  /* Case Converter */
+  .case-input,
+  .case-output {
+    min-height: 80px;
+    font-size: 12px;
+    padding: 12px;
+  }
+
+  /* Toast */
+  .toast {
+    font-size: 13px;
+    padding: 12px 16px;
+  }
+
+  /* Pagination */
+  .pagination {
+    gap: 4px;
+  }
+
+  .pagination-btn {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+}
+
+/* ============================================================================
+   EXTRA SMALL (400px и меньше)
+   ============================================================================ */
+@media (max-width: 400px) {
+  .modal-title {
+    font-size: 16px;
+  }
+
+  .section-title {
+    font-size: 14px;
+  }
+
+  .panel-title {
+    font-size: 14px;
+  }
+}
+
+/* ============================================================================
+   LANDSCAPE MOBILE
+   ============================================================================ */
+@media (max-height: 600px) and (orientation: landscape) {
+  .modal-content {
+    max-height: 90vh;
+  }
+
+  .history-container {
+    max-height: 250px;
+  }
+}
