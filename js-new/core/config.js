@@ -12,7 +12,7 @@
  * Основная конфигурация приложения
  * @type {Object}
  */
-export const APPCONFIG = {
+export const APP_CONFIG = {
   /** @type {string} Версия приложения */
   VERSION: '4.0.0',
   
@@ -33,7 +33,7 @@ export const APPCONFIG = {
  * Конфигурация для простых триггеров
  * @type {Object}
  */
-export const SIMPLETRIGGERSCONFIG = {
+export const SIMPLE_TRIGGERS_CONFIG = {
   /** @type {number} Максимальное количество триггеров */
   MAXTRIGGERS: 200,
   
@@ -51,7 +51,7 @@ export const SIMPLETRIGGERSCONFIG = {
  * Конфигурация для связанных триггеров (групп и подгрупп)
  * @type {Object}
  */
-export const LINKEDTRIGGERSCONFIG = {
+export const LINKED_TRIGGERS_CONFIG = {
   /** @type {number} Максимальное количество групп */
   MAXGROUPS: 15,
   
@@ -72,7 +72,7 @@ export const LINKEDTRIGGERSCONFIG = {
  * Конфигурация оптимизаций Type 1-6
  * @type {Object}
  */
-export const OPTIMIZERCONFIG = {
+export const OPTIMIZER_CONFIG = {
   /** @type {Object} Типы оптимизаций */
   TYPES: {
     TYPE1: 'prefixes',      // Префиксы/суффиксы
@@ -91,7 +91,7 @@ export const OPTIMIZERCONFIG = {
  * Конфигурация истории конвертаций
  * @type {Object}
  */
-export const HISTORYCONFIG = {
+export const HISTORY_CONFIG = {
   /** @type {number} Максимальное количество записей в истории */
   MAXENTRIES: 100,
   
@@ -103,7 +103,7 @@ export const HISTORYCONFIG = {
  * Конфигурация тестера regex
  * @type {Object}
  */
-export const TESTERCONFIG = {
+export const TESTER_CONFIG = {
   /** @type {number} Максимальное количество совпадений для отображения */
   MAXMATCHES: 100,
   
@@ -121,7 +121,7 @@ export const TESTERCONFIG = {
  * Конфигурация визуализатора regex
  * @type {Object}
  */
-export const VISUALIZERCONFIG = {
+export const VISUALIZER_CONFIG = {
   /** @type {number} Максимальная длина regex для визуализации (символов) */
   MAXREGEXLENGTH: 500,
   
@@ -142,7 +142,7 @@ export const VISUALIZERCONFIG = {
  * Конфигурация toast-уведомлений
  * @type {Object}
  */
-export const TOASTCONFIG = {
+export const TOAST_CONFIG = {
   SUCCESS: {
     type: 'success',
     duration: 3000,
@@ -169,7 +169,7 @@ export const TOASTCONFIG = {
  * Сообщения об ошибках
  * @type {Object}
  */
-export const ERRORMESSAGES = {
+export const ERROR_MESSAGES = {
   /** @type {string} Превышен лимит триггеров */
   TOOMANYTRIGGERS: `Превышен лимит в ${SIMPLETRIGGERSCONFIG.MAXTRIGGERS} триггеров`,
   
