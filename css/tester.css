@@ -1,0 +1,175 @@
+/* =============================================================================
+   REGEXHELPER V4.0 - TESTER STYLES
+   Стили тестера regex: Test Panel, Highlighting, Matches
+   ============================================================================= */
+
+/* TESTER PANEL */
+#testerPanel {
+    background: #F0F4FF;
+    border: 2px solid #2196F3;
+}
+
+.test-stats {
+    display: flex;
+    gap: 24px;
+    padding: 16px;
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    border: 2px solid #E0E0E0;
+}
+
+.test-stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.test-stat-label {
+    font-size: 13px;
+    color: #607D8B;
+    font-weight: 500;
+}
+
+.test-stat-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2196F3;
+}
+
+/* TEST HIGHLIGHT */
+.test-highlight-container {
+    margin-bottom: 16px;
+}
+
+.test-highlight-label {
+    margin-bottom: 8px;
+    color: #424242;
+    font-size: 14px;
+}
+
+.test-highlight {
+    background: white;
+    border: 2px solid #E0E0E0;
+    border-radius: 8px;
+    padding: 16px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.8;
+    color: #212121;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.test-match {
+    background: #FFEB3B;
+    color: #000;
+    font-weight: 600;
+    padding: 2px 4px;
+    border-radius: 3px;
+    border: 1px solid #FBC02D;
+}
+
+/* TEST MATCHES LIST */
+.test-matches-container {
+    margin-top: 16px;
+}
+
+.test-matches-label {
+    margin-bottom: 8px;
+    color: #424242;
+    font-size: 14px;
+}
+
+.test-matches-list {
+    background: white;
+    border: 2px solid #E0E0E0;
+    border-radius: 8px;
+    padding: 12px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.test-match-item {
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    background: #F5F5F5;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.test-match-item:last-child {
+    margin-bottom: 0;
+}
+
+.test-match-text {
+    color: #212121;
+    font-weight: 600;
+}
+
+.test-match-position {
+    color: #757575;
+    font-size: 12px;
+}
+
+/* TEST EMPTY STATE */
+.test-empty {
+    text-align: center;
+    padding: 48px 24px;
+    color: #9E9E9E;
+}
+
+.test-empty p:first-child {
+    font-size: 48px;
+    margin-bottom: 16px;
+    line-height: 1;
+}
+
+.test-empty .text-muted {
+    font-size: 14px;
+    color: #757575;
+    margin-top: 8px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .test-stats {
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+    
+    .test-stat-value {
+        font-size: 24px;
+    }
+    
+    .test-highlight {
+        font-size: 13px;
+        padding: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .test-stats {
+        padding: 12px;
+    }
+    
+    .test-stat-value {
+        font-size: 20px;
+    }
+    
+    .test-highlight {
+        font-size: 12px;
+    }
+    
+    .test-match-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+}
