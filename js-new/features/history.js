@@ -1,337 +1,637 @@
 /**
- * RegexHelper v4.0 - Features History
- * История конвертаций с localStorage
+ * RegexHelper v4.0 - History Manager
+ * 
+ * Модуль для управления историей regex.
+ * Поддерживает сохранение, загрузку, фильтрацию, поиск, пагинацию,
+ * избранное и экспорт истории.
+ * 
  * @version 1.0
  * @date 12.02.2026
  */
 
 import { setLocalStorage, getLocalStorage, formatDate, truncateText, generateId } from '../core/utils.js';
-import { showToast } from '../core/errors.js';
-import { showConfirm } from '../ui/modals.js';
 import { HISTORYCONFIG } from '../core/config.js';
-
-let historyEntries = [];
+import { openModal, closeModal, showConfirmWithSkip } from './modals.js';
+import { exportHistory } from './export.js';
 
 /**
- * Инициализирует историю
+ * Состояние истории
+ */
+let historyState = {
+  items: [],
+  currentPage: 1,
+  itemsPerPage: 20,
+  filter: 'all', // 'all', 'favorites', 'recent'
+  searchQuery: ''
+};
+
+/**
+ * Инициализирует модуль истории
+ * @returns {void}
  * @example
- * initHistory();
+ * initHistory(); // вызывается в main.js
  */
 export function initHistory() {
-    loadHistoryFromStorage();
-    renderHistory();
-    
-    const clearBtn = document.getElementById('clearHistoryBtn');
-    if (clearBtn) {
-        clearBtn.addEventListener('click', () => {
-            showConfirm(
-                'Очистить историю?',
-                'Все записи будут удалены безвозвратно',
-                clearHistory
-            );
-        });
-    }
+  // Загружаем историю из localStorage
+  loadHistoryFromStorage();
+
+  // Обработчик кнопки "История"
+  const historyBtn = document.getElementById('btnHistory');
+  if (historyBtn) {
+    historyBtn.addEventListener('click', () => {
+      openModal('historyModal');
+      renderHistory();
+    });
+  }
+
+  // Обработчик поиска в истории
+  const searchInput = document.getElementById('historySearch');
+  if (searchInput) {
+    let debounceTimer;
+    searchInput.addEventListener('input', (e) => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        historyState.searchQuery = e.target.value;
+        historyState.currentPage = 1;
+        renderHistory();
+      }, 300);
+    });
+  }
+
+  // Обработчики фильтров
+  const filterButtons = document.querySelectorAll('[data-filter]');
+  filterButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      historyState.filter = btn.dataset.filter;
+      historyState.currentPage = 1;
+      updateFilterButtons();
+      renderHistory();
+    });
+  });
+
+  // Обработчик кнопки "Очистить историю"
+  const clearHistoryBtn = document.getElementById('btnClearHistory');
+  if (clearHistoryBtn) {
+    clearHistoryBtn.addEventListener('click', handleClearHistory);
+  }
+
+  // Обработчик кнопки "Экспорт истории"
+  const exportHistoryBtn = document.getElementById('btnExportHistory');
+  if (exportHistoryBtn) {
+    exportHistoryBtn.addEventListener('click', () => {
+      exportHistory(historyState.items, 'json');
+    });
+  }
+
+  console.log('[History] Initialized');
 }
 
 /**
- * Сохраняет запись в историю
- * @param {Object} entry - Запись истории
- * @returns {string} - ID записи
- * @example
- * saveToHistory({ regex: '...', triggers: [...] });
- */
-export function saveToHistory(entry) {
-    const id = generateId();
-    const timestamp = Date.now();
-    
-    const historyEntry = {
-        id,
-        timestamp,
-        date: formatDate(new Date(timestamp)),
-        ...entry
-    };
-    
-    historyEntries.unshift(historyEntry);
-    
-    if (historyEntries.length > HISTORYCONFIG.MAXENTRIES) {
-        historyEntries = historyEntries.slice(0, HISTORYCONFIG.MAXENTRIES);
-    }
-    
-    saveHistoryToStorage();
-    renderHistory();
-    
-    return id;
-}
-
-/**
- * Загружает запись из истории
- * @param {string} entryId - ID записи
- * @example
- * loadFromHistory('entry-123');
- */
-export function loadFromHistory(entryId) {
-    const entry = historyEntries.find(e => e.id === entryId);
-    
-    if (!entry) {
-        showToast('error', 'Запись не найдена');
-        return;
-    }
-    
-    if (entry.conversionType === 'simple') {
-        loadSimpleTriggersFromHistory(entry);
-    } else if (entry.conversionType === 'linked') {
-        loadLinkedTriggersFromHistory(entry);
-    }
-    
-    showToast('success', 'Запись загружена');
-}
-
-/**
- * Сохраняет конвертацию в историю
+ * Добавляет запись в историю
  * @param {string} regex - Regex
- * @param {string} conversionType - 'simple' или 'linked'
+ * @param {Object} [metadata] - Дополнительные данные
+ * @returns {void}
  * @example
- * saveConversionToHistory('(test|testing)', 'simple');
+ * addToHistory('test|hello', { source: 'simple', triggerCount: 2 });
  */
-export function saveConversionToHistory(regex, conversionType) {
-    const entry = {
-        regex,
-        conversionType,
-        regexLength: regex.length
-    };
-    
-    saveToHistory(entry);
+export function addToHistory(regex, metadata = {}) {
+  if (!regex || typeof regex !== 'string') return;
+
+  // Проверяем, не дубликат ли (последняя запись)
+  if (historyState.items.length > 0) {
+    const lastItem = historyState.items[0];
+    if (lastItem.regex === regex) {
+      // Обновляем timestamp последней записи
+      lastItem.date = new Date().toISOString();
+      saveHistoryToStorage();
+      return;
+    }
+  }
+
+  const historyItem = {
+    id: generateId('history'),
+    regex: regex,
+    date: new Date().toISOString(),
+    favorite: false,
+    ...metadata
+  };
+
+  // Добавляем в начало массива
+  historyState.items.unshift(historyItem);
+
+  // Ограничиваем размер истории
+  if (historyState.items.length > HISTORYCONFIG.MAXITEMS) {
+    historyState.items = historyState.items.slice(0, HISTORYCONFIG.MAXITEMS);
+  }
+
+  saveHistoryToStorage();
 }
 
 /**
  * Удаляет запись из истории
- * @param {string} entryId - ID записи
+ * @param {string} itemId - ID записи
+ * @returns {void}
  * @example
- * deleteFromHistory('entry-123');
+ * removeFromHistory('history-123');
  */
-export function deleteFromHistory(entryId) {
-    const index = historyEntries.findIndex(e => e.id === entryId);
-    
-    if (index === -1) {
-        return;
-    }
-    
-    historyEntries.splice(index, 1);
-    saveHistoryToStorage();
-    renderHistory();
-    
-    showToast('info', 'Запись удалена');
+export function removeFromHistory(itemId) {
+  const index = historyState.items.findIndex(item => item.id === itemId);
+  if (index === -1) return;
+
+  historyState.items.splice(index, 1);
+  saveHistoryToStorage();
+  renderHistory();
 }
 
 /**
  * Очищает всю историю
+ * @returns {void}
  * @example
  * clearHistory();
  */
 export function clearHistory() {
-    historyEntries = [];
-    saveHistoryToStorage();
-    renderHistory();
-    showToast('info', 'История очищена');
+  historyState.items = [];
+  historyState.currentPage = 1;
+  saveHistoryToStorage();
+  renderHistory();
 }
 
 /**
- * Отрисовывает список истории
+ * Переключает статус "избранное" для записи
+ * @param {string} itemId - ID записи
+ * @returns {void}
  * @example
- * renderHistory();
+ * toggleFavorite('history-123');
  */
-export function renderHistory() {
-    const container = document.getElementById('historyList');
-    
-    if (!container) {
-        return;
-    }
-    
-    if (historyEntries.length === 0) {
-        container.innerHTML = '<p class="text-muted">История пуста</p>';
-        return;
-    }
-    
-    const html = historyEntries.map(entry => `
-        <div class="history-item" data-id="${entry.id}">
-            <div class="history-header">
-                <span class="history-date">${entry.date}</span>
-                <span class="history-type">${entry.conversionType}</span>
-            </div>
-            <div class="history-regex">${truncateText(entry.regex, 100)}</div>
-            <div class="history-actions">
-                <button class="btn-small" onclick="window.loadHistoryEntry('${entry.id}')">Загрузить</button>
-                <button class="btn-small" onclick="window.deleteHistoryEntry('${entry.id}')">Удалить</button>
-            </div>
-        </div>
-    `).join('');
-    
-    container.innerHTML = html;
-    updateHistoryCounter(historyEntries.length);
+export function toggleFavorite(itemId) {
+  const item = historyState.items.find(i => i.id === itemId);
+  if (!item) return;
+
+  item.favorite = !item.favorite;
+  saveHistoryToStorage();
+  renderHistory();
 }
 
 /**
- * Показывает детали записи
- * @param {string} entryId - ID записи
+ * Загружает regex из истории в приложение
+ * @param {string} itemId - ID записи
+ * @returns {void}
  * @example
- * showHistoryDetails('entry-123');
+ * loadFromHistory('history-123');
  */
-export function showHistoryDetails(entryId) {
-    const entry = historyEntries.find(e => e.id === entryId);
-    
-    if (!entry) {
-        return;
-    }
-    
-    showToast('info', `Regex: ${entry.regex}`);
+export function loadFromHistory(itemId) {
+  const item = historyState.items.find(i => i.id === itemId);
+  if (!item) return;
+
+  // Вставляем regex в output
+  const output = document.getElementById('resultOutput');
+  if (output) {
+    output.value = item.regex;
+  }
+
+  closeModal('historyModal');
+  
+  // Вызываем custom event для синхронизации
+  const event = new CustomEvent('historyLoaded', {
+    detail: { item },
+    bubbles: true
+  });
+  document.dispatchEvent(event);
+
+  showToast('success', 'Regex загружен из истории');
 }
 
 /**
- * Экспортирует запись из истории
- * @param {string} entryId - ID записи
- * @example
- * exportFromHistory('entry-123');
- */
-export function exportFromHistory(entryId) {
-    const entry = historyEntries.find(e => e.id === entryId);
-    
-    if (!entry) {
-        showToast('error', 'Запись не найдена');
-        return;
-    }
-    
-    showToast('success', 'Экспорт записи');
-}
-
-/**
- * Получает все записи истории
+ * Возвращает все записи истории
  * @returns {Array} - Массив записей
  * @example
- * const entries = getHistoryEntries();
+ * const items = getAllHistoryItems();
  */
-export function getHistoryEntries() {
-    return [...historyEntries];
+export function getAllHistoryItems() {
+  return [...historyState.items];
 }
 
 /**
- * Сортирует историю
- * @param {string} sortBy - 'date', 'regex' или 'triggers'
+ * Возвращает избранные записи
+ * @returns {Array} - Массив избранных записей
  * @example
- * sortHistory('date');
+ * const favorites = getFavoriteItems();
  */
-export function sortHistory(sortBy) {
-    switch (sortBy) {
-        case 'date':
-            historyEntries.sort((a, b) => b.timestamp - a.timestamp);
-            break;
-        case 'regex':
-            historyEntries.sort((a, b) => a.regex.localeCompare(b.regex));
-            break;
-        default:
-            break;
-    }
-    
-    renderHistory();
+export function getFavoriteItems() {
+  return historyState.items.filter(item => item.favorite);
 }
 
 /**
- * Фильтрует историю
- * @param {string} filterType - 'simple', 'linked' или 'all'
+ * Возвращает последние N записей
+ * @param {number} count - Количество записей
+ * @returns {Array} - Массив записей
  * @example
- * filterHistory('simple');
+ * const recent = getRecentItems(10);
  */
-export function filterHistory(filterType) {
-    const container = document.getElementById('historyList');
-    
-    if (!container) {
-        return;
-    }
-    
-    const items = container.querySelectorAll('.history-item');
-    
-    items.forEach(item => {
-        const entry = historyEntries.find(e => e.id === item.dataset.id);
-        
-        if (!entry) {
-            return;
-        }
-        
-        if (filterType === 'all' || entry.conversionType === filterType) {
-            item.style.display = 'block';
-        } else {
-            item.style.display = 'none';
-        }
+export function getRecentItems(count = 10) {
+  return historyState.items.slice(0, count);
+}
+
+/**
+ * Ищет в истории по запросу
+ * @param {string} query - Поисковый запрос
+ * @returns {Array} - Массив найденных записей
+ * @example
+ * const results = searchHistory('test');
+ */
+export function searchHistory(query) {
+  if (!query || typeof query !== 'string') return historyState.items;
+
+  const lowerQuery = query.toLowerCase();
+  return historyState.items.filter(item => 
+    item.regex.toLowerCase().includes(lowerQuery)
+  );
+}
+
+/**
+ * Возвращает отфильтрованные записи (по текущему фильтру и поиску)
+ * @returns {Array} - Массив записей
+ * @private
+ */
+function getFilteredItems() {
+  let items = [...historyState.items];
+
+  // Применяем фильтр
+  if (historyState.filter === 'favorites') {
+    items = items.filter(item => item.favorite);
+  } else if (historyState.filter === 'recent') {
+    items = items.slice(0, 20);
+  }
+
+  // Применяем поиск
+  if (historyState.searchQuery) {
+    const query = historyState.searchQuery.toLowerCase();
+    items = items.filter(item => item.regex.toLowerCase().includes(query));
+  }
+
+  return items;
+}
+
+/**
+ * Возвращает записи для текущей страницы
+ * @returns {Array} - Массив записей
+ * @private
+ */
+function getPaginatedItems() {
+  const filtered = getFilteredItems();
+  const start = (historyState.currentPage - 1) * historyState.itemsPerPage;
+  const end = start + historyState.itemsPerPage;
+  return filtered.slice(start, end);
+}
+
+/**
+ * Возвращает количество страниц
+ * @returns {number} - Количество страниц
+ * @private
+ */
+function getTotalPages() {
+  const filtered = getFilteredItems();
+  return Math.ceil(filtered.length / historyState.itemsPerPage);
+}
+
+/**
+ * Рендерит историю в модальном окне
+ * @returns {void}
+ * @private
+ */
+function renderHistory() {
+  const container = document.getElementById('historyContainer');
+  if (!container) return;
+
+  const items = getPaginatedItems();
+  const totalPages = getTotalPages();
+  const filteredCount = getFilteredItems().length;
+
+  // Если нет записей
+  if (items.length === 0) {
+    container.innerHTML = `
+      <div class="history-empty">
+        <p>История пуста</p>
+      </div>
+    `;
+    renderPagination(0, 0);
+    return;
+  }
+
+  // Генерируем HTML для записей
+  const itemsHTML = items.map(item => createHistoryItemHTML(item)).join('');
+  container.innerHTML = itemsHTML;
+
+  // Добавляем event listeners
+  attachHistoryItemListeners();
+
+  // Рендерим пагинацию
+  renderPagination(historyState.currentPage, totalPages);
+
+  // Обновляем счетчик
+  updateHistoryCounter(filteredCount);
+}
+
+/**
+ * Создает HTML для одной записи истории
+ * @param {Object} item - Запись истории
+ * @returns {string} - HTML-строка
+ * @private
+ */
+function createHistoryItemHTML(item) {
+  const date = new Date(item.date);
+  const formattedDate = formatDate(date);
+  const truncatedRegex = truncateText(item.regex, 100);
+  const favoriteClass = item.favorite ? 'favorite-active' : '';
+
+  return `
+    <div class="history-item" data-item-id="${item.id}">
+      <div class="history-item-header">
+        <span class="history-item-date">${formattedDate}</span>
+        <div class="history-item-actions">
+          <button 
+            class="btn-icon btn-favorite ${favoriteClass}" 
+            data-action="toggle-favorite" 
+            data-item-id="${item.id}"
+            title="${item.favorite ? 'Убрать из избранного' : 'Добавить в избранное'}"
+          >
+            ${item.favorite ? '★' : '☆'}
+          </button>
+          <button 
+            class="btn-icon btn-load" 
+            data-action="load" 
+            data-item-id="${item.id}"
+            title="Загрузить"
+          >
+            ↻
+          </button>
+          <button 
+            class="btn-icon btn-icon-danger" 
+            data-action="remove" 
+            data-item-id="${item.id}"
+            title="Удалить"
+          >
+            ×
+          </button>
+        </div>
+      </div>
+      <div class="history-item-body">
+        <code class="history-item-regex">${truncatedRegex}</code>
+        <span class="history-item-length">${item.regex.length} символов</span>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Добавляет event listeners к элементам истории
+ * @returns {void}
+ * @private
+ */
+function attachHistoryItemListeners() {
+  const favoriteButtons = document.querySelectorAll('[data-action="toggle-favorite"]');
+  const loadButtons = document.querySelectorAll('[data-action="load"]');
+  const removeButtons = document.querySelectorAll('[data-action="remove"]');
+
+  favoriteButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      toggleFavorite(btn.dataset.itemId);
     });
+  });
+
+  loadButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      loadFromHistory(btn.dataset.itemId);
+    });
+  });
+
+  removeButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      removeFromHistory(btn.dataset.itemId);
+    });
+  });
 }
 
 /**
- * Переключает панель истории
- * @example
- * toggleHistoryPanel();
+ * Рендерит пагинацию
+ * @param {number} currentPage - Текущая страница
+ * @param {number} totalPages - Всего страниц
+ * @returns {void}
+ * @private
  */
-export function toggleHistoryPanel() {
-    const panel = document.getElementById('historyPanel');
-    
-    if (!panel) {
-        return;
+function renderPagination(currentPage, totalPages) {
+  const paginationContainer = document.getElementById('historyPagination');
+  if (!paginationContainer) return;
+
+  if (totalPages <= 1) {
+    paginationContainer.innerHTML = '';
+    return;
+  }
+
+  let paginationHTML = '<div class="pagination">';
+
+  // Кнопка "Назад"
+  if (currentPage > 1) {
+    paginationHTML += `<button class="pagination-btn" data-page="${currentPage - 1}">←</button>`;
+  }
+
+  // Номера страниц
+  for (let i = 1; i <= totalPages; i++) {
+    if (
+      i === 1 || 
+      i === totalPages || 
+      (i >= currentPage - 2 && i <= currentPage + 2)
+    ) {
+      const activeClass = i === currentPage ? 'pagination-btn-active' : '';
+      paginationHTML += `<button class="pagination-btn ${activeClass}" data-page="${i}">${i}</button>`;
+    } else if (i === currentPage - 3 || i === currentPage + 3) {
+      paginationHTML += `<span class="pagination-ellipsis">...</span>`;
     }
-    
-    panel.classList.toggle('collapsed');
+  }
+
+  // Кнопка "Вперед"
+  if (currentPage < totalPages) {
+    paginationHTML += `<button class="pagination-btn" data-page="${currentPage + 1}">→</button>`;
+  }
+
+  paginationHTML += '</div>';
+  paginationContainer.innerHTML = paginationHTML;
+
+  // Добавляем event listeners
+  const pageButtons = paginationContainer.querySelectorAll('.pagination-btn');
+  pageButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const page = parseInt(btn.dataset.page);
+      if (page) {
+        historyState.currentPage = page;
+        renderHistory();
+      }
+    });
+  });
 }
 
 /**
- * Получает статистику истории
- * @returns {Object} - Статистика
- * @example
- * const stats = getHistoryStats(); // => { total: 10, simple: 7, linked: 3 }
+ * Обновляет счетчик записей в истории
+ * @param {number} count - Количество записей
+ * @returns {void}
+ * @private
  */
-export function getHistoryStats() {
-    const total = historyEntries.length;
-    const simple = historyEntries.filter(e => e.conversionType === 'simple').length;
-    const linked = historyEntries.filter(e => e.conversionType === 'linked').length;
-    
-    return { total, simple, linked };
-}
-
-function loadSimpleTriggersFromHistory(entry) {
-    const textarea = document.getElementById('simpleTriggers');
-    
-    if (!textarea) {
-        return;
-    }
-    
-    if (entry.triggers) {
-        textarea.value = entry.triggers.join('\n');
-    }
-}
-
-function loadLinkedTriggersFromHistory(entry) {
-    showToast('info', 'Загрузка linked triggers из истории');
-}
-
 function updateHistoryCounter(count) {
-    const counter = document.getElementById('historyCount');
-    
-    if (!counter) {
-        return;
-    }
-    
-    counter.textContent = count;
+  const counter = document.getElementById('historyCounter');
+  if (!counter) return;
+
+  counter.textContent = `${count} ${pluralize(count, ['запись', 'записи', 'записей'])}`;
 }
 
+/**
+ * Обновляет состояние кнопок фильтров
+ * @returns {void}
+ * @private
+ */
+function updateFilterButtons() {
+  const filterButtons = document.querySelectorAll('[data-filter]');
+  filterButtons.forEach(btn => {
+    if (btn.dataset.filter === historyState.filter) {
+      btn.classList.add('filter-active');
+    } else {
+      btn.classList.remove('filter-active');
+    }
+  });
+}
+
+/**
+ * Обработчик кнопки "Очистить историю"
+ * @returns {void}
+ * @private
+ */
+function handleClearHistory() {
+  showConfirmWithSkip(
+    'clearHistory',
+    'Очистить историю?',
+    'Все записи будут удалены. Это действие нельзя отменить.',
+    () => {
+      clearHistory();
+      showToast('success', 'История очищена');
+    }
+  );
+}
+
+/**
+ * Сохраняет историю в localStorage
+ * @returns {void}
+ * @private
+ */
 function saveHistoryToStorage() {
-    setLocalStorage(HISTORYCONFIG.STORAGEKEY, historyEntries);
+  try {
+    setLocalStorage(HISTORYCONFIG.STORAGEKEY, historyState.items);
+  } catch (error) {
+    console.error('Failed to save history:', error);
+  }
 }
 
+/**
+ * Загружает историю из localStorage
+ * @returns {void}
+ * @private
+ */
 function loadHistoryFromStorage() {
-    const data = getLocalStorage(HISTORYCONFIG.STORAGEKEY);
-    
-    if (Array.isArray(data)) {
-        historyEntries = data;
-    }
+  try {
+    const saved = getLocalStorage(HISTORYCONFIG.STORAGEKEY, []);
+    historyState.items = Array.isArray(saved) ? saved : [];
+  } catch (error) {
+    console.error('Failed to load history:', error);
+    historyState.items = [];
+  }
 }
 
-if (typeof window !== 'undefined') {
-    window.loadHistoryEntry = loadFromHistory;
-    window.deleteHistoryEntry = deleteFromHistory;
+/**
+ * Экспортирует историю
+ * @param {string} format - Формат: 'txt', 'csv', 'json'
+ * @returns {void}
+ * @example
+ * exportHistoryData('json');
+ */
+export function exportHistoryData(format = 'json') {
+  exportHistory(historyState.items, format);
+}
+
+/**
+ * Импортирует историю из данных
+ * @param {Array} data - Массив записей истории
+ * @param {boolean} [append=false] - Добавить к существующей (true) или заменить (false)
+ * @returns {void}
+ * @example
+ * importHistoryData(importedData, true);
+ */
+export function importHistoryData(data, append = false) {
+  if (!Array.isArray(data)) {
+    showToast('error', 'Некорректный формат данных');
+    return;
+  }
+
+  if (append) {
+    historyState.items = [...data, ...historyState.items];
+  } else {
+    historyState.items = data;
+  }
+
+  // Ограничиваем размер
+  if (historyState.items.length > HISTORYCONFIG.MAXITEMS) {
+    historyState.items = historyState.items.slice(0, HISTORYCONFIG.MAXITEMS);
+  }
+
+  saveHistoryToStorage();
+  renderHistory();
+
+  showToast('success', `Импортировано ${data.length} записей`);
+}
+
+/**
+ * Возвращает размер истории
+ * @returns {number} - Количество записей
+ * @example
+ * const size = getHistorySize();
+ */
+export function getHistorySize() {
+  return historyState.items.length;
+}
+
+/**
+ * Проверяет, заполнена ли история
+ * @returns {boolean} - true, если достигнут лимит
+ * @example
+ * if (isHistoryFull()) { ... }
+ */
+export function isHistoryFull() {
+  return historyState.items.length >= HISTORYCONFIG.MAXITEMS;
+}
+
+/**
+ * Показывает toast-уведомление (временная функция)
+ * @param {string} type - Тип уведомления
+ * @param {string} message - Сообщение
+ * @returns {void}
+ * @private
+ */
+function showToast(type, message) {
+  // TODO: Заменить на import { showToast } from '../core/errors.js';
+  console.log(`[${type.toUpperCase()}] ${message}`);
+  
+  if (typeof window.showToast === 'function') {
+    window.showToast(type, message);
+  }
+}
+
+/**
+ * Склонение слов (временная функция)
+ * @param {number} count - Количество
+ * @param {string[]} forms - Формы слова [1, 2, 5]
+ * @returns {string} - Правильная форма слова
+ * @private
+ */
+function pluralize(count, forms) {
+  // TODO: Заменить на import { pluralize } from '../core/utils.js';
+  if (count % 10 === 1 && count % 100 !== 11) return forms[0];
+  if (count % 10 >= 2 && count % 10 <= 4 && (count % 100 < 10 || count % 100 >= 20)) return forms[1];
+  return forms[2];
 }
