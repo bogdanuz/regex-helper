@@ -1,22 +1,30 @@
 /**
  * RegexHelper v4.0 - Panels Styles
  * 
- * Стили для связанных триггеров: groups, subgroups, connections,
- * drag-drop визуализация, settings buttons.
+ * Стили для панелей, связанных триггеров (linked triggers),
+ * групп, подгрупп и других специфичных элементов.
  * 
- * @version 1.0
- * @date 12.02.2026
+ * @version 1.0 (FIXED)
+ * @date 13.02.2026
  */
 
 /* ============================================================================
-   LINKED TRIGGERS v3.0
+   LINKED TRIGGERS STYLES
    ============================================================================ */
+
+/* Linked Groups Container */
+#linkedGroupsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Linked Group */
 .linked-group {
-  border: 2px solid #e0e0e0;
-  border-radius: var(--radius-lg);
+  background: #f9fcff;
+  border: 2px solid #d0e3ff;
+  border-radius: var(--radius-md);
   padding: 16px;
-  margin-bottom: 16px;
-  background-color: #fafafa;
   transition: all 0.2s ease;
 }
 
@@ -25,336 +33,434 @@
   box-shadow: var(--shadow-sm);
 }
 
-.linked-group-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid #e0e0e0;
-}
-
-.linked-group-title {
-  font-weight: 600;
-  font-size: 15px;
-  color: #333;
-}
-
-.group-actions {
-  display: flex;
-  gap: 8px;
-  margin-left: auto;
-}
-
-.linked-group-body {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-/* Subgroups */
-.linked-subgroup {
-  background-color: var(--white);
-  border: 2px solid #d0d0d0;
-  border-radius: var(--radius-md);
-  padding: 12px;
-  margin-bottom: 12px;
-  transition: all 0.2s ease;
-}
-
-.linked-subgroup:hover {
-  border-color: var(--light-blue);
-}
-
-.linked-subgroup-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #e8e8e8;
-}
-
-.linked-subgroup-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--medium-text);
-}
-
-.subgroup-actions {
-  display: flex;
-  gap: 6px;
-}
-
-.linked-subgroup-body {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* ============================================================================
-   SUBGROUP CONNECTION v3.0
-   ============================================================================ */
-.subgroup-connection {
-  margin-top: 12px;
-  padding: 12px;
-  background-color: #f0f9ff;
-  border: 2px dashed var(--primary-blue);
-  border-radius: var(--radius-sm);
-  position: relative;
-}
-
-.subgroup-connection::before {
-  content: '';
-  position: absolute;
-  left: 20px;
-  top: -20px;
-  width: 2px;
-  height: 20px;
-  background: linear-gradient(to bottom, transparent, var(--primary-blue));
-}
-
-.subgroup-connection-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  user-select: none;
-}
-
-.subgroup-connection-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--primary-blue);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.connection-toggle {
-  font-size: 18px;
-  color: var(--primary-blue);
-  transition: transform 0.2s ease;
-}
-
-.connection-toggle.expanded {
-  transform: rotate(180deg);
-}
-
-.subgroup-connection-body {
-  margin-top: 12px;
-  display: none;
-}
-
-.subgroup-connection-body.visible {
-  display: block;
-}
-
-.linked-field {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.linked-input {
-  flex: 1;
-}
-
-.linked-group .btn-icon {
-  width: 28px;
-  height: 28px;
-  font-size: 16px;
-  padding: 0;
-  flex-shrink: 0;
-}
-
-.linked-field .btn-icon {
-  margin-left: auto;
-}
-
-#linkedTriggersContainer:empty::after {
-  content: 'Нет связанных групп. Нажмите "Добавить группу"';
-  display: block;
-  padding: 40px 20px;
-  text-align: center;
-  color: var(--light-text);
-  font-size: 13px;
-  font-style: italic;
-  background-color: #fafafa;
-  border: 2px dashed #e0e0e0;
-  border-radius: var(--radius-md);
-}
-
-/* ============================================================================
-   GROUP CONNECTION CONTROL v3.0
-   ============================================================================ */
-.group-connection-control {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 12px;
-  margin: 16px 0;
-  background-color: #fff9e6;
-  border: 2px dashed #ffb74d;
-  border-radius: var(--radius-md);
-}
-
-.group-connection-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #f57c00;
-}
-
-.group-connection-selector {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.group-connection-selector select {
-  padding: 6px 10px;
-  font-size: 13px;
-  border: 2px solid #ffb74d;
-  border-radius: var(--radius-sm);
-  background-color: var(--white);
-  cursor: pointer;
-}
-
-.group-connection-selector select:focus {
-  outline: none;
-  border-color: #f57c00;
-  box-shadow: 0 0 0 2px rgba(255, 152, 0, 0.1);
-}
-
-.group-connection-selector .btn-icon {
-  width: 24px;
-  height: 24px;
-  font-size: 14px;
-}
-
-/* ============================================================================
-   TRIGGER SETTINGS
-   ============================================================================ */
-.trigger-settings-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  border: 2px solid #ddd;
-  border-radius: 6px;
-  background: #f9f9f9;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  user-select: none;
-}
-
-.trigger-settings-item:hover {
-  border-color: #2196F3;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.trigger-settings-item.has-settings {
-  border-color: #4CAF50;
-  background: #E8F5E9;
-}
-
-.trigger-settings-item.has-settings:hover {
-  border-color: #45a049;
-}
-
-.trigger-settings-item span {
-  font-size: 13px;
-  color: #333;
-}
-
-.trigger-settings-item.has-settings span {
-  color: #2E7D32;
-  font-weight: 600;
-}
-
-/* ============================================================================
-   SETTINGS BUTTON v3.0
-   ============================================================================ */
-.btn-settings {
-  background: #fff;
-  border: 2px solid #ddd;
-  color: #666;
-  font-size: 16px;
-  padding: 6px 10px;
-  cursor: pointer;
-  border-radius: var(--radius-md);
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 36px;
-  height: 36px;
-}
-
-.btn-settings:hover {
-  background: #f5f5f5;
-  border-color: #ccc;
-  transform: scale(1.05);
-}
-
-.btn-settings.has-settings {
-  background: #28a745;
-  border-color: #28a745;
-  color: #fff;
-  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
-  font-weight: bold;
-}
-
-.btn-settings.has-settings:hover {
-  background: #218838;
-  border-color: #1e7e34;
-  transform: scale(1.05);
-}
-
-@keyframes pulse-green {
-  0%, 100% {
-    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
-  }
-  50% {
-    box-shadow: 0 0 0 6px rgba(40, 167, 69, 0.1);
-  }
-}
-
-.btn-settings.has-settings {
-  animation: pulse-green 2s infinite;
-}
-
-/* ============================================================================
-   DRAG AND DROP
-   ============================================================================ */
-.dragging {
+.linked-group.dragging {
   opacity: 0.5;
   cursor: move;
 }
 
-.drag-over {
-  border: 2px dashed #24a7ef;
-  background: rgba(36, 167, 239, 0.05);
+/* Linked Group Header */
+.linked-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #d0e3ff;
 }
 
-.drag-placeholder {
-  border: 2px dashed #ccc;
-  background: #f5f5f5;
-  border-radius: 8px;
-  margin: 10px 0;
+.linked-group-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--dark-text);
+  flex: 1;
 }
 
+.group-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: var(--primary-blue);
+  color: white;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Drag Handle */
 .drag-handle {
   cursor: move;
-  color: #999;
+  color: var(--medium-text);
   font-size: 18px;
-  padding: 0 8px;
-  user-select: none;
+  padding: 4px;
+  transition: color 0.2s ease;
 }
 
 .drag-handle:hover {
-  color: #666;
+  color: var(--dark-text);
+}
+
+/* Group Actions */
+.group-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Linked Group Body */
+.linked-group-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ============================================================================
+   LINKED SUBGROUPS
+   ============================================================================ */
+
+/* Subgroups Container */
+.linked-subgroups-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-left: 16px;
+  padding-left: 16px;
+  border-left: 3px solid #d0e3ff;
+}
+
+/* Linked Subgroup */
+.linked-subgroup {
+  background: var(--white);
+  border: 2px solid #e0e0e0;
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  transition: all 0.2s ease;
+}
+
+.linked-subgroup:hover {
+  border-color: var(--primary-blue);
+  box-shadow: 0 2px 4px rgba(36, 167, 239, 0.1);
+}
+
+.linked-subgroup.dragging {
+  opacity: 0.5;
+  cursor: move;
+}
+
+/* Subgroup Header */
+.linked-subgroup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.subgroup-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dark-text);
+  flex: 1;
+}
+
+.subgroup-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: #70c4fc;
+  color: white;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.subgroup-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Subgroup Body */
+.linked-subgroup-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Subgroup Textarea */
+.subgroup-textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 10px;
+  border: 2px solid var(--gray-border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+  transition: all 0.2s ease;
+}
+
+.subgroup-textarea:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 2px rgba(36, 167, 239, 0.1);
+}
+
+/* Subgroup Footer */
+.subgroup-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: var(--medium-text);
+}
+
+/* ============================================================================
+   ADD BUTTONS
+   ============================================================================ */
+
+/* Add Group Button */
+.add-group-btn {
+  width: 100%;
+  padding: 12px;
+  background: #f0f9ff;
+  border: 2px dashed var(--primary-blue);
+  border-radius: var(--radius-md);
+  color: var(--primary-blue);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.add-group-btn:hover {
+  background: #e3f2fd;
+  border-style: solid;
+  transform: translateY(-2px);
+}
+
+/* Add Subgroup Button */
+.add-subgroup-btn {
+  width: 100%;
+  padding: 10px;
+  background: #f9fcff;
+  border: 2px dashed #70c4fc;
+  border-radius: var(--radius-sm);
+  color: #1a8fd4;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.add-subgroup-btn:hover {
+  background: #e3f2fd;
+  border-style: solid;
+  transform: translateY(-2px);
+}
+
+/* ============================================================================
+   DRAG AND DROP STYLES
+   ============================================================================ */
+
+/* Drag Over State */
+.drag-over {
+  border-color: var(--primary-blue);
+  background-color: #f0f9ff;
+  box-shadow: 0 0 0 3px rgba(36, 167, 239, 0.2);
+}
+
+/* Drag Placeholder */
+.drag-placeholder {
+  border: 2px dashed var(--primary-blue);
+  border-radius: var(--radius-md);
+  background: #f0f9ff;
+  opacity: 0.5;
+  margin-bottom: 16px;
+}
+
+.group-placeholder {
+  height: 100px;
+}
+
+.subgroup-placeholder {
+  height: 60px;
+}
+
+/* ============================================================================
+   DISTANCE CONTROLS (для linked triggers)
+   ============================================================================ */
+
+.distance-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+  padding: 10px;
+  background: #f9fcff;
+  border-radius: var(--radius-sm);
+}
+
+.distance-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dark-text);
+}
+
+.distance-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.distance-input {
+  width: 60px;
+  padding: 6px 8px;
+  border: 2px solid var(--gray-border);
+  border-radius: var(--radius-sm);
+  text-align: center;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.distance-input:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 2px rgba(36, 167, 239, 0.1);
+}
+
+/* ============================================================================
+   RESULT OUTPUT TEXTAREA
+   ============================================================================ */
+
+.result-output {
+  width: 100%;
+  min-height: 120px;
+  padding: 15px;
+  border: 2px solid var(--gray-border);
+  border-radius: var(--radius-lg);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+  background: #fafafa;
+  color: var(--dark-text);
+  transition: all 0.2s ease;
+}
+
+.result-output:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px rgba(36, 167, 239, 0.1);
+  background: var(--white);
+}
+
+.result-output.success {
+  border-color: var(--success);
+  background: #f1f8f4;
+}
+
+/* ============================================================================
+   EXPORT BUTTONS SECTION
+   ============================================================================ */
+
+.export-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.export-buttons button {
+  flex: 1;
+  min-width: 140px;
+}
+
+/* ============================================================================
+   LIMITS WARNING
+   ============================================================================ */
+
+.limits-warning {
+  background: #fff3e0;
+  border-left: 4px solid var(--warning);
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  margin-top: 12px;
+  font-size: 13px;
+  color: #e65100;
+}
+
+.limits-warning strong {
+  color: #bf360c;
+}
+
+/* ============================================================================
+   EMPTY STATE
+   ============================================================================ */
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--medium-text);
+}
+
+.empty-state-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.3;
+}
+
+.empty-state-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--dark-text);
+  margin-bottom: 8px;
+}
+
+.empty-state-description {
+  font-size: 14px;
+  color: var(--medium-text);
+  line-height: 1.6;
+}
+
+/* ============================================================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  .linked-subgroups-container {
+    margin-left: 8px;
+    padding-left: 8px;
+  }
+
+  .linked-group {
+    padding: 12px;
+  }
+
+  .linked-subgroup {
+    padding: 10px;
+  }
+
+  .group-actions,
+  .subgroup-actions {
+    flex-wrap: wrap;
+  }
+}
+
+/* ============================================================================
+   ANIMATIONS
+   ============================================================================ */
+
+@keyframes slideDown {
+  from {
+    max-height: 0;
+    opacity: 0;
+  }
+  to {
+    max-height: 500px;
+    opacity: 1;
+  }
+}
+
+.linked-group,
+.linked-subgroup {
+  animation: slideDown 0.3s ease;
 }
