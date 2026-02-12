@@ -508,3 +508,16 @@ button, .btn, .btn-primary, .btn-secondary, .btn-danger,
         font-size: 13px;
     }
 }
+
+/* Toast Container */
+.toast-container { position: fixed; top: 80px; right: 20px; z-index: 9999; }
+.toast { display: flex; align-items: center; gap: 12px; padding: 16px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-bottom: 10px; min-width: 300px; max-width: 500px; animation: slideIn 0.3s ease; }
+.toast-success { background: #4caf50; color: white; }
+.toast-error { background: #f44336; color: white; }
+.toast-warning { background: #ff9800; color: white; }
+.toast-info { background: #24a7ef; color: white; }
+/* Inline Error */
+.inline-error { color: #f44336; font-size: 12px; margin-top: 4px; }
+.error { border-color: #f44336 !important; }
+
+
