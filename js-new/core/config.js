@@ -1,128 +1,122 @@
 /**
  * RegexHelper v4.0 - Core Configuration
- * 
- * Центральное хранилище всех констант, лимитов и конфигураций приложения.
- * Этот модуль не имеет зависимостей и используется всеми остальными модулями.
+ * Все константы приложения, лимиты, настройки.
  * 
  * @version 1.0
  * @date 12.02.2026
  */
 
 /**
- * Основная конфигурация приложения
+ * Основные настройки приложения
  * @type {Object}
  */
-export const APP_CONFIG = {
+export const APPCONFIG = {
   /** @type {string} Версия приложения */
   VERSION: '4.0.0',
   
   /** @type {string} Название приложения */
   APPNAME: 'RegexHelper',
   
-  /** @type {number} Максимальная длина regex (символов) */
+  /** @type {number} Максимальная длина regex */
   MAXREGEXLENGTH: 10000,
   
-  /** @type {number} Задержка debounce для автообновления (мс) */
+  /** @type {number} Задержка debounce (ms) */
   DEBOUNCEDELAY: 300,
   
-  /** @type {number} Длительность показа toast-уведомлений по умолчанию (мс) */
+  /** @type {number} Длительность toast-уведомления (ms) */
   TOASTDURATION: 3000
 };
 
 /**
- * Конфигурация для простых триггеров
+ * Настройки Simple Triggers
  * @type {Object}
  */
-export const SIMPLE_TRIGGERS_CONFIG = {
+export const SIMPLETRIGGERSCONFIG = {
   /** @type {number} Максимальное количество триггеров */
   MAXTRIGGERS: 200,
   
-  /** @type {number} Минимальная длина триггера (символов) */
+  /** @type {number} Минимальная длина триггера */
   MINTRIGGERLENGTH: 1,
   
-  /** @type {number} Максимальная длина триггера (символов) */
+  /** @type {number} Максимальная длина триггера */
   MAXTRIGGERLENGTH: 100,
   
-  /** @type {number} Длина "короткого" триггера для предупреждений (символов) */
+  /** @type {number} Длина "короткого" триггера */
   SHORTTRIGGERLENGTH: 3
 };
 
 /**
- * Конфигурация для связанных триггеров (групп и подгрупп)
+ * Настройки Linked Triggers
  * @type {Object}
  */
-export const LINKED_TRIGGERS_CONFIG = {
+export const LINKEDTRIGGERSCONFIG = {
   /** @type {number} Максимальное количество групп */
   MAXGROUPS: 15,
   
-  /** @type {number} Максимальное количество подгрупп в группе */
+  /** @type {number} Максимальное количество подгрупп */
   MAXSUBGROUPS: 15,
   
   /** @type {number} Максимальное количество триггеров в подгруппе */
   MAXTRIGGERSPERSUBGROUP: 15,
   
-  /** @type {Object} Расстояние по умолчанию */
-  DEFAULTDISTANCE: {
-    min: 1,
-    max: 7
-  }
+  /** @type {Object} Дистанция по умолчанию */
+  DEFAULTDISTANCE: { min: 1, max: 7 }
 };
 
 /**
- * Конфигурация оптимизаций Type 1-6
+ * Настройки оптимизаций Type 1-6
  * @type {Object}
  */
-export const OPTIMIZER_CONFIG = {
-  /** @type {Object} Типы оптимизаций */
+export const OPTIMIZERCONFIG = {
   TYPES: {
-    TYPE1: 'prefixes',      // Префиксы/суффиксы
-    TYPE2: 'commonRoot',    // Общий корень
-    TYPE3: 'distance',      // Расстояние (только для linked!)
-    TYPE4: 'declensions',   // Склонения
-    TYPE5: 'optional',      // Опциональные символы (ё?)
-    TYPE6: 'variations'     // Вариации (t.e.s.t)
+    TYPE1: 'prefixes',
+    TYPE2: 'commonRoot',
+    TYPE3: 'distance', // linked!
+    TYPE4: 'declensions',
+    TYPE5: 'optional', // ?
+    TYPE6: 'variations' // t.e.s.t
   },
   
-  /** @type {string[]} Окончания для склонений (Type 4) */
-  DECLENSIONENDINGS: ['а', 'у', 'ом', 'е', 'ы', 'ами', 'ах']
+  /** @type {string} Окончания для Type 4 */
+  DECLENSIONSENDINGS: ['а', 'у', 'ом', 'е', 'ы', 'ами']
 };
 
 /**
- * Конфигурация истории конвертаций
+ * Настройки истории
  * @type {Object}
  */
-export const HISTORY_CONFIG = {
-  /** @type {number} Максимальное количество записей в истории */
+export const HISTORYCONFIG = {
+  /** @type {number} Максимальное количество записей */
   MAXENTRIES: 100,
   
-  /** @type {string} Ключ для сохранения в localStorage */
+  /** @type {string} Ключ для localStorage */
   STORAGEKEY: 'regexhelper-history'
 };
 
 /**
- * Конфигурация тестера regex
+ * Настройки regex-тестера
  * @type {Object}
  */
-export const TESTER_CONFIG = {
-  /** @type {number} Максимальное количество совпадений для отображения */
+export const TESTERCONFIG = {
+  /** @type {number} Максимальное количество совпадений */
   MAXMATCHES: 100,
   
-  /** @type {number} Максимальная длина одного совпадения (символов) */
+  /** @type {number} Максимальная длина совпадения */
   MAXMATCHLENGTH: 100,
   
-  /** @type {string} Цвет подсветки совпадений (hex) */
+  /** @type {string} Цвет подсветки (hex) */
   HIGHLIGHTCOLOR: '#ffeb3b',
   
-  /** @type {number} Задержка debounce для автотестирования (мс) */
+  /** @type {number} Задержка debounce (ms) */
   DEBOUNCEDELAY: 300
 };
 
 /**
- * Конфигурация визуализатора regex
+ * Настройки regex-визуализатора
  * @type {Object}
  */
-export const VISUALIZER_CONFIG = {
-  /** @type {number} Максимальная длина regex для визуализации (символов) */
+export const VISUALIZERCONFIG = {
+  /** @type {number} Максимальная длина regex */
   MAXREGEXLENGTH: 500,
   
   /** @type {number} Zoom по умолчанию */
@@ -134,15 +128,15 @@ export const VISUALIZER_CONFIG = {
   /** @type {number} Максимальный zoom */
   MAXZOOM: 2.0,
   
-  /** @type {number} Шаг изменения zoom */
+  /** @type {number} Шаг zoom */
   ZOOMSTEP: 0.1
 };
 
 /**
- * Конфигурация toast-уведомлений
+ * Настройки toast-уведомлений
  * @type {Object}
  */
-export const TOAST_CONFIG = {
+export const TOASTCONFIG = {
   SUCCESS: {
     type: 'success',
     duration: 3000,
@@ -169,15 +163,15 @@ export const TOAST_CONFIG = {
  * Сообщения об ошибках
  * @type {Object}
  */
-export const ERROR_MESSAGES = {
-  /** @type {string} Превышен лимит триггеров */
-  TOOMANYTRIGGERS: `Превышен лимит в ${SIMPLETRIGGERSCONFIG.MAXTRIGGERS} триггеров`,
+export const ERRORMESSAGES = {
+  /** @type {string} Слишком много триггеров */
+  TOOMANYTRIGGERS: `Максимум ${SIMPLETRIGGERSCONFIG.MAXTRIGGERS} триггеров`,
   
   /** @type {string} Regex слишком длинный */
-  REGEXTOOLONG: `Regex превышает ${APPCONFIG.MAXREGEXLENGTH} символов`,
+  REGEXTOOLONG: `Regex не может быть длиннее ${APPCONFIG.MAXREGEXLENGTH} символов`,
   
-  /** @type {string} Некорректный regex */
-  INVALIDREGEX: 'Некорректный regex-паттерн',
+  /** @type {string} Невалидный regex */
+  INVALIDREGEX: 'Невалидный regex-синтаксис',
   
   /** @type {string} Нет триггеров */
   NOTRIGGERS: 'Добавьте хотя бы один триггер',
@@ -189,11 +183,11 @@ export const ERROR_MESSAGES = {
   SAVEFAILED: 'Не удалось сохранить данные',
   
   /** @type {string} Слишком много групп */
-  TOOMANYGROUPS: `Превышен лимит в ${LINKEDTRIGGERSCONFIG.MAXGROUPS} групп`,
+  TOOMANYGROUPS: `Максимум ${LINKEDTRIGGERSCONFIG.MAXGROUPS} групп`,
   
   /** @type {string} Слишком много подгрупп */
-  TOOMANYSUBGROUPS: `Превышен лимит в ${LINKEDTRIGGERSCONFIG.MAXSUBGROUPS} подгрупп`,
+  TOOMANYSUBGROUPS: `Максимум ${LINKEDTRIGGERSCONFIG.MAXSUBGROUPS} подгрупп`,
   
-  /** @type {string} Слишком длинный триггер */
-  TRIGGERTOOLONG: `Триггер превышает ${SIMPLETRIGGERSCONFIG.MAXTRIGGERLENGTH} символов`
+  /** @type {string} Триггер слишком длинный */
+  TRIGGERTOOLONG: `Триггер не может быть длиннее ${SIMPLETRIGGERSCONFIG.MAXTRIGGERLENGTH} символов`
 };
