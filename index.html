@@ -72,21 +72,415 @@
         </div>
     </header>
 
-    <!-- ═══════════════════════════════════════════════════════════
-         MAIN CONTENT (основной контент)
-         ═══════════════════════════════════════════════════════════ -->
-    <main class="main-content" role="main">
-        <!-- TODO: Модули 3-8 будут добавлены здесь -->
-        <div style="padding: 100px 0; text-align: center; color: var(--color-text-muted);">
-            <h2 style="color: var(--color-primary); font-size: 32px; margin-bottom: 16px;">🚀 RegexHelper v4.0</h2>
-            <p style="font-size: 18px;">Модули 3-8 в разработке...</p>
-            <p style="font-size: 14px; margin-top: 24px; color: var(--color-text-tertiary);">
-                ✅ Модуль 1: HTML структура<br>
-                ✅ Модуль 2: CSS темная тема<br>
-                🔄 Модуль 3: Панели (в работе)
-            </p>
-        </div>
-    </main>
+            <!-- ═══════════════════════════════════════════════════════════════
+             MAIN CONTENT
+             ═══════════════════════════════════════════════════════════════ -->
+        <main class="container" role="main">
+
+            <!-- ═══════════════════════════════════════════════════════════
+                 ПАНЕЛЬ 1: СВЯЗАННЫЕ ТРИГГЕРЫ
+                 ═══════════════════════════════════════════════════════════ -->
+            <section id="linked-triggers" class="panel" aria-labelledby="linked-triggers-title">
+                <!-- Header панели -->
+                <div class="panel-header">
+                    <h2 id="linked-triggers-title" class="panel-title">
+                        🔗 Связанные триггеры
+                    </h2>
+                    <div class="panel-actions">
+                        <button 
+                            class="btn-primary" 
+                            id="btn-add-group"
+                            aria-label="Добавить группу триггеров"
+                            title="Создать новую группу триггеров. Макс. 15 групп">
+                            + Добавить группу
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Hint -->
+                <div class="panel-hint">
+                    💡 <strong>Связанные триггеры</strong> позволяют искать несколько слов с учётом расстояния между ними.
+                    Макс. 15 групп, 15 подгрупп, 30 триггеров.
+                </div>
+
+                <!-- Контейнер для групп (пока пустой, заполнится через JS) -->
+                <div id="linked-groups-container">
+                    <!-- ДЕМО ГРУППА 1 (пример для показа структуры) -->
+                    <div class="linked-group" data-group-id="demo-1">
+                        <div class="linked-group-header">
+                            <h3 class="linked-group-title">
+                                <span class="drag-handle" title="Перетащить группу">⋮⋮</span>
+                                ГРУППА 1
+                            </h3>
+                            <button class="btn-icon btn-icon-danger btn-icon-sm" 
+                                    aria-label="Удалить группу"
+                                    title="Удалить группу">
+                                ✕
+                            </button>
+                        </div>
+
+                        <!-- Кнопки управления -->
+                        <div class="button-group button-group-compact" style="margin-bottom: 16px;">
+                            <button class="btn-secondary btn-sm" title="Добавить триггер напрямую">
+                                + Добавить триггер
+                            </button>
+                            <button class="btn-secondary btn-sm" title="Создать подгруппу внутри группы. Макс. 15 подгрупп">
+                                + Добавить подгруппу
+                            </button>
+                        </div>
+
+                        <!-- Триггеры (если без подгрупп) -->
+                        <div class="triggers-list">
+                            <div class="trigger-item">
+                                <span class="drag-handle">⋮⋮</span>
+                                <input type="text" 
+                                       class="trigger-input" 
+                                       value="актёр" 
+                                       placeholder="триггер...">
+                                <button class="btn-icon btn-icon-sm" 
+                                        aria-label="Удалить триггер"
+                                        title="Удалить триггер">
+                                    ✕
+                                </button>
+                                <label class="checkbox-wrapper">
+                                    <input type="checkbox" class="checkbox">
+                                    <span class="checkbox-label">🌐 Латиница/Кириллица</span>
+                                </label>
+                                <label class="checkbox-wrapper">
+                                    <input type="checkbox" class="checkbox">
+                                    <span class="checkbox-label">📝 Склонения</span>
+                                </label>
+                            </div>
+                            <div class="trigger-item">
+                                <span class="drag-handle">⋮⋮</span>
+                                <input type="text" 
+                                       class="trigger-input" 
+                                       value="артист" 
+                                       placeholder="триггер...">
+                                <button class="btn-icon btn-icon-sm" 
+                                        aria-label="Удалить триггер">
+                                    ✕
+                                </button>
+                                <label class="checkbox-wrapper">
+                                    <input type="checkbox" class="checkbox">
+                                    <span class="checkbox-label">🌐 Латиница/Кириллица</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Distance селектор -->
+                        <div class="distance-selector">
+                            <label class="distance-label" for="distance-demo-1">
+                                Distance до следующей группы:
+                            </label>
+                            <select id="distance-demo-1" class="select distance-select">
+                                <option value="">(не указано)</option>
+                                <option value=".{1,5}">.{1,5} — до 5 символов</option>
+                                <option value=".{1,10}" selected>.{1,10} — до 10 символов</option>
+                                <option value=".{1,20}">.{1,20} — до 20 символов</option>
+                                <option value=".{1,50}">.{1,50} — до 50 символов</option>
+                                <option value="custom">Другое...</option>
+                            </select>
+                            <span class="distance-hint">
+                                ℹ️ Если не указано → альтернация (|)
+                            </span>
+                        </div>
+
+                        <!-- Результат группы -->
+                        <div class="group-result">
+                            <div class="group-result-label">Результат группы:</div>
+                            <div class="group-result-code">(?:актёр|артист)</div>
+                        </div>
+                    </div>
+
+                    <!-- ДЕМО ГРУППА 2 (с подгруппами) -->
+                    <div class="linked-group" data-group-id="demo-2">
+                        <div class="linked-group-header">
+                            <h3 class="linked-group-title">
+                                <span class="drag-handle">⋮⋮</span>
+                                ГРУППА 2
+                            </h3>
+                            <button class="btn-icon btn-icon-danger btn-icon-sm" 
+                                    aria-label="Удалить группу">
+                                ✕
+                            </button>
+                        </div>
+
+                        <!-- Подгруппа 2.1 -->
+                        <div class="linked-subgroup" data-subgroup-id="demo-2-1">
+                            <div class="linked-subgroup-header">
+                                <h4 class="linked-subgroup-title">ПОДГРУППА 2.1</h4>
+                                <button class="btn-icon btn-icon-sm" aria-label="Удалить подгруппу">✕</button>
+                            </div>
+                            <div class="triggers-list">
+                                <div class="trigger-item">
+                                    <span class="drag-handle">⋮⋮</span>
+                                    <input type="text" class="trigger-input" value="визит" placeholder="триггер...">
+                                    <button class="btn-icon btn-icon-sm" aria-label="Удалить триггер">✕</button>
+                                    <label class="checkbox-wrapper">
+                                        <input type="checkbox" class="checkbox" checked>
+                                        <span class="checkbox-label">🌐 Латиница/Кириллица</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="distance-selector">
+                                <label class="distance-label">Distance до следующей подгруппы:</label>
+                                <select class="select distance-select">
+                                    <option value="">(не указано)</option>
+                                    <option value=".{1,5}" selected>.{1,5} — до 5 символов</option>
+                                    <option value=".{1,10}">.{1,10} — до 10 символов</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Подгруппа 2.2 -->
+                        <div class="linked-subgroup" data-subgroup-id="demo-2-2">
+                            <div class="linked-subgroup-header">
+                                <h4 class="linked-subgroup-title">ПОДГРУППА 2.2</h4>
+                                <button class="btn-icon btn-icon-sm" aria-label="Удалить подгруппу">✕</button>
+                            </div>
+                            <div class="triggers-list">
+                                <div class="trigger-item">
+                                    <span class="drag-handle">⋮⋮</span>
+                                    <input type="text" class="trigger-input" value="встреча" placeholder="триггер...">
+                                    <button class="btn-icon btn-icon-sm" aria-label="Удалить триггер">✕</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Результат группы 2 -->
+                        <div class="group-result">
+                            <div class="group-result-label">Результат группы:</div>
+                            <div class="group-result-code">(?:визит).{1,5}(?:встреча)</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══════════════════════════════════════════════════════════
+                 ПАНЕЛЬ 2: ПРОСТЫЕ ТРИГГЕРЫ
+                 ═══════════════════════════════════════════════════════════ -->
+            <section id="simple-triggers" class="panel" aria-labelledby="simple-triggers-title">
+                <!-- Header панели -->
+                <div class="panel-header">
+                    <h2 id="simple-triggers-title" class="panel-title">
+                        📝 Простые триггеры
+                    </h2>
+                    <div class="panel-actions">
+                        <button 
+                            class="btn-secondary" 
+                            id="btn-settings"
+                            aria-label="Открыть настройки параметров"
+                            title="Применить параметры (латиница/кириллица, склонения и т.д.)">
+                            ⚙️ Настройки параметров
+                        </button>
+                        <button 
+                            class="btn-danger-secondary btn-sm" 
+                            id="btn-clear-simple"
+                            aria-label="Очистить все триггеры"
+                            title="Удалить все триггеры из поля">
+                            Очистить
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Textarea -->
+                <div class="panel-body">
+                    <textarea 
+                        id="simple-triggers-textarea"
+                        class="triggers-textarea"
+                        placeholder="Введите триггеры (каждый с новой строки)&#10;Пустые строки игнорируются&#10;Макс. 1000 триггеров"
+                        aria-label="Поле ввода простых триггеров"
+                        spellcheck="false">дрон
+беспилотник
+актёр
+визит</textarea>
+                    
+                    <!-- Счетчик триггеров -->
+                    <span id="triggers-counter" class="triggers-counter">
+                        Триггеров: 4 / 1000
+                    </span>
+                </div>
+            </section>
+
+            <!-- ═══════════════════════════════════════════════════════════
+                 ПАНЕЛЬ 3: ВЫВОД РЕЗУЛЬТАТА
+                 ═══════════════════════════════════════════════════════════ -->
+            <section id="output-panel" class="output-panel panel" aria-labelledby="output-title">
+                <!-- Header панели -->
+                <div class="panel-header">
+                    <h2 id="output-title" class="panel-title">
+                        ⚡ Результат
+                    </h2>
+                </div>
+
+                <!-- Textarea результата -->
+                <div class="panel-body">
+                    <textarea 
+                        id="output-textarea"
+                        class="result-textarea"
+                        readonly
+                        placeholder="Результат появится здесь после конвертации..."
+                        aria-label="Результат конвертации"
+                        spellcheck="false">(?:дрон|беспилотник|актёр|визит)</textarea>
+                </div>
+
+                <!-- Кнопки действий -->
+                <div class="output-actions">
+                    <button 
+                        class="btn-primary btn-lg" 
+                        id="btn-convert"
+                        aria-label="Конвертировать триггеры"
+                        title="Преобразовать триггеры в regex-выражение">
+                        🔄 Конвертировать
+                    </button>
+                    
+                    <button 
+                        class="btn-secondary" 
+                        id="btn-copy"
+                        aria-label="Копировать результат"
+                        title="Скопировать результат в буфер обмена">
+                        📋 Копировать
+                    </button>
+
+                    <div class="dropdown">
+                        <button 
+                            class="btn-secondary dropdown-trigger" 
+                            id="btn-export"
+                            aria-label="Экспорт результата"
+                            title="Сохранить результат в файл (TXT, JSON, CSV)"
+                            aria-haspopup="true"
+                            aria-expanded="false">
+                            💾 Экспорт ▼
+                        </button>
+                        <ul class="dropdown-menu" role="menu">
+                            <li role="none">
+                                <button role="menuitem" class="dropdown-item" data-format="txt">
+                                    📄 TXT (текстовый)
+                                </button>
+                            </li>
+                            <li role="none">
+                                <button role="menuitem" class="dropdown-item" data-format="json">
+                                    📊 JSON (структурированный)
+                                </button>
+                            </li>
+                            <li role="none">
+                                <button role="menuitem" class="dropdown-item" data-format="csv">
+                                    📈 CSV (таблица)
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <button 
+                        class="btn-icon" 
+                        id="btn-expand"
+                        aria-label="Развернуть результат"
+                        title="Открыть результат в большом окне для просмотра и редактирования">
+                        ⛶
+                    </button>
+                </div>
+            </section>
+
+            <!-- ═══════════════════════════════════════════════════════════
+                 СЕКЦИЯ 4: ИСТОРИЯ
+                 ═══════════════════════════════════════════════════════════ -->
+            <section id="history-section" class="history-section" aria-labelledby="history-title">
+                <!-- Header секции -->
+                <div class="history-header">
+                    <h2 id="history-title" class="history-title">
+                        📚 История
+                        <span class="history-count" 
+                              title="Автоматически сохраняются последние 100 конвертаций. Хранятся в браузере (localStorage)">
+                            (последние 10 из 23)
+                        </span>
+                    </h2>
+                    <button 
+                        class="btn-secondary" 
+                        id="btn-show-all-history"
+                        aria-label="Показать всю историю"
+                        title="Открыть полную историю (все 100 записей)">
+                        Показать всё...
+                    </button>
+                </div>
+
+                <!-- Grid карточек истории -->
+                <div class="history-grid" id="history-grid">
+                    <!-- КАРТОЧКА 1 -->
+                    <div class="history-card">
+                        <div class="history-card-header">
+                            <span class="history-card-date">13.02.2026, 22:30</span>
+                            <span class="history-card-type">Простые</span>
+                        </div>
+                        <div class="history-card-meta">
+                            5 триггеров
+                        </div>
+                        <div class="history-card-result">
+                            (?:дрон|беспилотник|актёр|визит|встреча)
+                        </div>
+                        <div class="history-card-actions">
+                            <button class="btn-secondary btn-sm" 
+                                    title="Скопировать результат в буфер обмена"
+                                    aria-label="Копировать">
+                                📋 Копировать
+                            </button>
+                            <button class="btn-danger-secondary btn-sm" 
+                                    title="⚠️ Удалить запись из истории (невозможно отменить)"
+                                    aria-label="Удалить">
+                                🗑️ Удалить
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- КАРТОЧКА 2 -->
+                    <div class="history-card">
+                        <div class="history-card-header">
+                            <span class="history-card-date">13.02.2026, 21:15</span>
+                            <span class="history-card-type">Связанные</span>
+                        </div>
+                        <div class="history-card-meta">
+                            2 группы, 3 триггера
+                        </div>
+                        <div class="history-card-result">
+                            (?:актёр|артист).{1,10}(?:визит)
+                        </div>
+                        <div class="history-card-actions">
+                            <button class="btn-secondary btn-sm" aria-label="Копировать">
+                                📋 Копировать
+                            </button>
+                            <button class="btn-danger-secondary btn-sm" aria-label="Удалить">
+                                🗑️ Удалить
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- КАРТОЧКА 3 -->
+                    <div class="history-card">
+                        <div class="history-card-header">
+                            <span class="history-card-date">13.02.2026, 20:45</span>
+                            <span class="history-card-type">Простые</span>
+                        </div>
+                        <div class="history-card-meta">
+                            3 триггера
+                        </div>
+                        <div class="history-card-result">
+                            (?:[дd]р[оo]н|б[еe]спил[оo]тник)
+                        </div>
+                        <div class="history-card-actions">
+                            <button class="btn-secondary btn-sm" aria-label="Копировать">
+                                📋 Копировать
+                            </button>
+                            <button class="btn-danger-secondary btn-sm" aria-label="Удалить">
+                                🗑️ Удалить
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+    
 
     <!-- ═══════════════════════════════════════════════════════════
          FOOTER (подвал)
