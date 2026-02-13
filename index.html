@@ -3,249 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="RegexHelper v4.0 - Инструмент для конвертации триггеров в регулярные выражения">
-    <meta name="keywords" content="regex, регулярные выражения, конвертер триггеров, JavaScript">
-    <meta name="author" content="RegexHelper Team">
-    <title>RegexHelper v4.0 - Конвертер триггеров</title>
+    <meta name="description" content="RegexHelper v4.0 - Конвертер триггеров в regex. Простой инструмент для создания сложных регулярных выражений из списка слов.">
     
-    <!-- Favicon -->
+    <title>RegexHelper v4.0 - Конвертер триггеров в regex</title>
+    
+    <!-- Favicon (РЕАЛЬНЫЙ ФАЙЛ) -->
     <link rel="icon" type="image/x-icon" href="images/favicon/favicon.ico">
-    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon/favicon.ico">
     
-    <!-- Open Graph (for social media) -->
-    <meta property="og:title" content="RegexHelper v4.0">
-    <meta property="og:description" content="Мощный инструмент для конвертации триггеров в регулярные выражения">
-    <meta property="og:image" content="images/logo.png">
-    <meta property="og:type" content="website">
-    
-    <!-- Google Fonts -->
+    <!-- Google Fonts: Inter + Fira Code -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
     
     <!-- CSS -->
     <link rel="stylesheet" href="css/variables.css">
-    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/buttons.css">
     <link rel="stylesheet" href="css/inputs.css">
-    <link rel="stylesheet" href="css/header.css">
-    <link rel="stylesheet" href="css/linkedTriggers.css">
-    <link rel="stylesheet" href="css/simpleTriggers.css">
-    <link rel="stylesheet" href="css/outputPanel.css">
-    <link rel="stylesheet" href="css/history.css">
+    <link rel="stylesheet" href="css/panels.css">
     <link rel="stylesheet" href="css/modals.css">
-    <link rel="stylesheet" href="css/footer.css">
 </head>
 <body>
-    <!-- HEADER -->
+    <!-- ═══════════════════════════════════════════════════════════
+         HEADER (фиксированная шапка)
+         ═══════════════════════════════════════════════════════════ -->
     <header class="header" role="banner">
-        <div class="header__container">
-            <div class="header__logo">
-                <img src="images/logo.png" alt="RegexHelper Logo" class="header__logo-img">
+        <div class="header-container">
+            <!-- Логотип (РЕАЛЬНЫЙ ФАЙЛ) -->
+            <div class="logo">
+                <img src="images/logo.png" alt="RegexHelper Logo" height="40">
+                <h1>REGEXHELPER</h1>
+                <span class="version">v4.0</span>
             </div>
-            
-            <nav class="header__nav" role="navigation">
-                <div class="header__dropdown">
-                    <button class="header__dropdown-btn" aria-label="Инструменты" aria-haspopup="true" aria-expanded="false">
-                        Инструменты
-                        <span class="header__dropdown-icon">▼</span>
+
+            <!-- Навигация -->
+            <nav class="header-nav" role="navigation" aria-label="Основная навигация">
+                <!-- Dropdown: Инструменты -->
+                <div class="dropdown">
+                    <button class="nav-link dropdown-trigger" aria-haspopup="true" aria-expanded="false">
+                        Инструменты ▼
                     </button>
-                    <ul class="header__dropdown-menu" role="menu">
-                        <li role="menuitem">
-                            <a href="#" class="header__dropdown-item active">☑ Конвертер</a>
-                        </li>
-                        <li role="menuitem">
-                            <a href="#" class="header__dropdown-item">○ Tester</a>
-                        </li>
-                        <li role="menuitem">
-                            <a href="#" class="header__dropdown-item">○ Visualizer</a>
-                        </li>
-                        <li role="menuitem">
-                            <a href="#" class="header__dropdown-item">○ Case Converter</a>
-                        </li>
+                    <ul class="dropdown-menu" role="menu">
+                        <li role="none"><a href="#" role="menuitem" class="dropdown-item active">☑ Конвертер</a></li>
+                        <li role="none"><a href="#" role="menuitem" class="dropdown-item disabled">○ Tester</a></li>
+                        <li role="none"><a href="#" role="menuitem" class="dropdown-item disabled">○ Visualizer</a></li>
+                        <li role="none"><a href="#" role="menuitem" class="dropdown-item disabled">○ Case Converter</a></li>
                     </ul>
                 </div>
-                
-                <button class="btn btn--secondary" id="btn-handbook" aria-label="Справочник">
-                    <span class="btn__icon">📖</span>
-                    <span class="btn__text">Справочник</span>
+
+                <!-- Кнопка: Справочник -->
+                <button class="btn-secondary btn-header" aria-label="Открыть справочник по regex">
+                    📖 Справочник
                 </button>
-                
-                <button class="btn btn--icon" id="btn-help" aria-label="Помощь" title="Инструкции по использованию">
-                    <span>?</span>
-                </button>
-                
-                <button class="btn btn--danger-outline" id="btn-reset-all" aria-label="Сбросить всё" title="⚠️ Очистить все триггеры и параметры">
-                    <span class="btn__icon">🗑️</span>
-                    <span class="btn__text">Сбросить всё</span>
+
+                <!-- Кнопка: Помощь -->
+                <button class="btn-icon btn-help" aria-label="Открыть инструкции">
+                    ?
                 </button>
             </nav>
+
+            <!-- Действия -->
+            <div class="header-actions">
+                <button class="btn-danger-secondary" aria-label="Сбросить все триггеры и параметры">
+                    🗑️ Сбросить всё
+                </button>
+            </div>
         </div>
     </header>
 
-    <!-- MAIN CONTENT -->
-    <main class="main" role="main">
-        <div class="main__container">
-            
-            <!-- ПАНЕЛЬ СВЯЗАННЫХ ТРИГГЕРОВ -->
-            <section class="panel linked-triggers" aria-labelledby="linked-triggers-title">
-                <div class="panel__header">
-                    <h2 class="panel__title" id="linked-triggers-title">
-                        <span class="panel__icon">🔗</span>
-                        Связанные триггеры
-                    </h2>
-                    <button class="btn btn--secondary btn--sm" id="btn-add-group">
-                        <span class="btn__icon">+</span>
-                        Добавить группу
-                    </button>
-                </div>
-                
-                <div class="linked-triggers__content" id="linked-triggers-container">
-                    <!-- Группы будут добавляться динамически через JS -->
-                    <div class="linked-triggers__empty">
-                        <p>Нажмите "Добавить группу", чтобы создать связанные триггеры</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ПАНЕЛЬ ПРОСТЫХ ТРИГГЕРОВ -->
-            <section class="panel simple-triggers" aria-labelledby="simple-triggers-title">
-                <div class="panel__header">
-                    <h2 class="panel__title" id="simple-triggers-title">
-                        <span class="panel__icon">📝</span>
-                        Простые триггеры
-                    </h2>
-                    <div class="panel__actions">
-                        <button class="btn btn--secondary btn--sm" id="btn-settings">
-                            <span class="btn__icon">⚙️</span>
-                            Настройки параметров
-                        </button>
-                        <button class="btn btn--danger-outline btn--sm" id="btn-clear-simple">
-                            <span class="btn__icon">🗑️</span>
-                            Очистить
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="simple-triggers__content">
-                    <textarea 
-                        class="input input--textarea simple-triggers__textarea"
-                        id="simple-triggers-input"
-                        placeholder="Введите триггеры (каждый с новой строки). Макс. 1000 триггеров"
-                        aria-label="Ввод простых триггеров"
-                    ></textarea>
-                    <p class="simple-triggers__hint">
-                        <span class="hint-icon">ℹ️</span>
-                        Автосохранение (каждые 500 мс)
-                    </p>
-                </div>
-            </section>
-
-            <!-- ПАНЕЛЬ ВЫВОДА -->
-            <section class="panel output-panel" aria-labelledby="output-title">
-                <div class="panel__header">
-                    <h2 class="panel__title" id="output-title">
-                        <span class="panel__icon">✨</span>
-                        Результат
-                    </h2>
-                    <div class="panel__actions">
-                        <button class="btn btn--icon" id="btn-expand-output" aria-label="Развернуть результат" title="Развернуть на весь экран">
-                            <span>🔍</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="output-panel__content">
-                    <div class="output-panel__result">
-                        <textarea 
-                            class="input input--textarea output-panel__textarea"
-                            id="output-result"
-                            placeholder="Здесь появится regex-выражение"
-                            readonly
-                            aria-label="Результат конвертации"
-                        ></textarea>
-                    </div>
-                    
-                    <div class="output-panel__actions">
-                        <button class="btn btn--primary btn--lg" id="btn-convert" aria-label="Конвертировать триггеры в regex">
-                            <span class="btn__icon">⚡</span>
-                            <span class="btn__text">Конвертировать</span>
-                        </button>
-                        
-                        <button class="btn btn--secondary" id="btn-copy" aria-label="Копировать результат">
-                            <span class="btn__icon">📋</span>
-                            <span class="btn__text">Копировать</span>
-                        </button>
-                        
-                        <div class="dropdown">
-                            <button class="btn btn--secondary" id="btn-export" aria-label="Экспорт" aria-haspopup="true" aria-expanded="false">
-                                <span class="btn__icon">💾</span>
-                                <span class="btn__text">Экспорт</span>
-                                <span class="btn__dropdown-icon">▼</span>
-                            </button>
-                            <ul class="dropdown__menu" role="menu">
-                                <li role="menuitem">
-                                    <button class="dropdown__item" data-format="txt">TXT</button>
-                                </li>
-                                <li role="menuitem">
-                                    <button class="dropdown__item" data-format="json">JSON</button>
-                                </li>
-                                <li role="menuitem">
-                                    <button class="dropdown__item" data-format="csv">CSV</button>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- СЕКЦИЯ ИСТОРИИ -->
-            <section class="history" aria-labelledby="history-title">
-                <div class="history__header">
-                    <h2 class="history__title" id="history-title">
-                        <span class="history__icon">📚</span>
-                        История конвертаций
-                    </h2>
-                </div>
-                
-                <div class="history__grid" id="history-grid">
-                    <!-- Карточки истории будут добавляться динамически -->
-                    <div class="history__empty">
-                        <p>История пуста. Выполните первую конвертацию.</p>
-                    </div>
-                </div>
-                
-                <div class="history__footer">
-                    <button class="btn btn--secondary" id="btn-show-all-history" aria-label="Показать всю историю">
-                        Показать всё...
-                    </button>
-                </div>
-            </section>
-
+    <!-- ═══════════════════════════════════════════════════════════
+         MAIN CONTENT (основной контент)
+         ═══════════════════════════════════════════════════════════ -->
+    <main class="main-content" role="main">
+        <!-- TODO: Модули 3-8 будут добавлены здесь -->
+        <div style="padding: 100px 0; text-align: center; color: var(--color-text-muted);">
+            <h2 style="color: var(--color-primary); font-size: 32px; margin-bottom: 16px;">🚀 RegexHelper v4.0</h2>
+            <p style="font-size: 18px;">Модули 3-8 в разработке...</p>
         </div>
     </main>
 
-    <!-- FOOTER -->
-<footer class="footer" role="contentinfo">
-    <div class="footer__container">
-        <div class="footer__content">
-            <p class="footer__text">
-                © RegexHelper 2026
-                <span class="footer__separator">·</span>
-                Pet-project
-                <span class="footer__separator">·</span>
-                Built with <a href="https://claude.ai" class="footer__link" target="_blank" rel="noopener noreferrer">Claude AI</a>
-                <span class="footer__separator">·</span>
-                <a href="https://github.com/bogdanuz/regex-helper" class="footer__link" target="_blank" rel="noopener noreferrer">GitHub</a>
+    <!-- ═══════════════════════════════════════════════════════════
+         FOOTER (подвал)
+         ═══════════════════════════════════════════════════════════ -->
+    <footer class="footer" role="contentinfo">
+        <div class="footer-container">
+            <p class="footer-text">
+                <strong>RegexHelper v4.0</strong>
+                <span class="footer-separator">•</span>
+                © 2026
+                <span class="footer-separator">•</span>
+                Конвертер триггеров в regex-выражения
+            </p>
+            <p class="footer-links">
+                <a href="https://github.com/yourusername/regexhelper" 
+                   class="footer-link footer-link-github" 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   aria-label="Открыть GitHub репозиторий">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                    </svg>
+                    GitHub
+                </a>
+                <span class="footer-separator">•</span>
+                <a href="https://t.me/yourchannel" 
+                   class="footer-link" 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   aria-label="Открыть Telegram канал">
+                    📱 Telegram
+                </a>
             </p>
         </div>
-    </div>
-</footer>
+    </footer>
 
-    <!-- MODALS (будут добавлены в следующих модулях) -->
-    <div id="modal-container"></div>
-
-    <!-- JavaScript -->
-    <script type="module" src="js/main.js"></script>
+    <!-- ═══════════════════════════════════════════════════════════
+         SCRIPTS (будут добавлены позже)
+         ═══════════════════════════════════════════════════════════ -->
+    <!-- <script type="module" src="js/main.js"></script> -->
 </body>
 </html>
