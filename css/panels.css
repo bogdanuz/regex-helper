@@ -1,0 +1,422 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════
+ *                    REGEXHELPER v4.0
+ *                   PANELS & SECTIONS
+ *              ВСЕ СТИЛИ ПАНЕЛЕЙ И СЕКЦИЙ
+ * ═══════════════════════════════════════════════════════════════════
+ * 
+ * Версия: 2.0 DARK THEME
+ * Дата: 14.02.2026
+ * Соответствует: Design_Brief_v2.0.txt
+ */
+
+/* ═══════════════════════════════════════════════════════════════
+   PANEL (базовая панель)
+   ═══════════════════════════════════════════════════════════════ */
+
+.panel {
+  background-color: var(--color-bg-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+  transition: var(--transition-base);
+}
+
+.panel:hover {
+  border-color: var(--color-border-hover);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PANEL HEADER
+   ═══════════════════════════════════════════════════════════════ */
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.panel-title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-white);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin: 0;
+}
+
+.panel-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.panel-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.panel-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PANEL BODY
+   ═══════════════════════════════════════════════════════════════ */
+
+.panel-body {
+  margin-top: var(--spacing-md);
+}
+
+.panel-body .input-section:first-child {
+  margin-top: 0;
+}
+
+.panel-body .input-section:not(:first-child) {
+  margin-top: var(--spacing-lg);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PANEL HINT (информационный блок)
+   ═══════════════════════════════════════════════════════════════ */
+
+.panel-hint {
+  background-color: rgba(0, 212, 255, 0.05);
+  border-left: 4px solid var(--color-primary);
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.panel-hint .hint-text {
+  font-size: 13px;
+  color: var(--color-primary);
+  margin-bottom: 8px;
+  line-height: 1.6;
+}
+
+.panel-hint .hint-text:last-child {
+  margin-bottom: 0;
+}
+
+.panel-hint .hint-text-small {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.hint-list {
+  margin: 8px 0 8px 20px;
+  padding: 0;
+  list-style: disc;
+}
+
+.hint-list li {
+  font-size: 13px;
+  color: var(--color-primary);
+  margin-bottom: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SECTION HEADERS
+   ═══════════════════════════════════════════════════════════════ */
+
+.section-header {
+  margin-bottom: var(--spacing-md);
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.section-title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-white);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-right: var(--spacing-md);
+}
+
+.section-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.section-description {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  display: inline;
+}
+
+.section-hint {
+  background-color: rgba(0, 212, 255, 0.05);
+  border-left: 4px solid var(--color-primary);
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--spacing-md);
+  font-size: 13px;
+  color: var(--color-primary);
+  line-height: 1.6;
+}
+
+.section-divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--color-border) 20%, var(--color-border) 80%, transparent);
+  margin: var(--spacing-lg) 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PANEL NUMBER (для пронумерованных панелей)
+   ═══════════════════════════════════════════════════════════════ */
+
+.panel-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background-color: var(--color-primary);
+  color: var(--color-bg-page);
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: var(--font-weight-bold);
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ACCORDION (раскрывающиеся панели)
+   ═══════════════════════════════════════════════════════════════ */
+
+.panel-accordion {
+  transition: var(--transition-base);
+}
+
+.panel-header-clickable {
+  cursor: pointer;
+  user-select: none;
+  transition: var(--transition-base);
+  padding: var(--spacing-sm);
+  margin: calc(var(--spacing-sm) * -1);
+  border-radius: var(--radius-sm);
+}
+
+.panel-header-clickable:hover {
+  background-color: rgba(0, 212, 255, 0.05);
+}
+
+.panel-header-clickable:active {
+  transform: scale(0.99);
+}
+
+.accordion-toggle {
+  font-size: 14px;
+  color: var(--color-primary);
+  transition: var(--transition-base);
+  display: inline-block;
+  font-weight: var(--font-weight-bold);
+}
+
+.panel-accordion.collapsed .accordion-toggle {
+  transform: rotate(-90deg);
+}
+
+.panel-collapsible {
+  max-height: 5000px;
+  overflow: hidden;
+  transition: max-height 0.4s ease, opacity 0.3s ease, padding 0.3s ease;
+  opacity: 1;
+}
+
+.panel-accordion.collapsed .panel-collapsible {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   LINKED TRIGGERS (связанные триггеры)
+   ═══════════════════════════════════════════════════════════════ */
+
+.linked-group {
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  transition: var(--transition-base);
+}
+
+.linked-group:hover {
+  border-color: var(--color-border-hover);
+}
+
+.linked-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-md);
+}
+
+.linked-group-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-white);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.drag-handle {
+  cursor: move;
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-xl);
+  user-select: none;
+}
+
+.linked-subgroup {
+  background-color: rgba(26, 35, 50, 0.5);
+  border-left: 3px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  padding: var(--spacing-md);
+  margin: var(--spacing-md) 0 var(--spacing-md) var(--spacing-md);
+}
+
+.linked-subgroup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-sm);
+}
+
+.linked-subgroup-title {
+  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESULT INFO & STATS
+   ═══════════════════════════════════════════════════════════════ */
+
+.result-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--spacing-md);
+}
+
+.result-stats {
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: rgba(0, 212, 255, 0.05);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--color-primary);
+  display: none;
+}
+
+.result-stats.visible {
+  display: block !important;
+}
+
+.result-stats-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.result-stats-content span {
+  font-size: 13px;
+}
+
+.stats-highlight {
+  color: var(--color-success);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   HISTORY SECTION (секция истории)
+   ═══════════════════════════════════════════════════════════════ */
+
+.history-section {
+  padding-top: var(--spacing-2xl);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.history-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+}
+
+/* History Card */
+.history-card {
+  background-color: var(--color-bg-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  transition: var(--transition-base);
+}
+
+.history-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 12px rgba(0, 212, 255, 0.1);
+}
+
+.history-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+}
+
+.history-card-date {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-tertiary);
+}
+
+.history-card-meta {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin-bottom: var(--spacing-sm);
+}
+
+.history-card-result {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-base);
+  color: var(--color-success);
+  max-height: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: var(--spacing-md) 0;
+  line-height: 1.5;
+}
+
+.history-card-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SCROLL MARGIN (для якорных ссылок)
+   ═══════════════════════════════════════════════════════════════ */
+
+.converter-section,
+.visualizer-section,
+.tester-panel,
+.history-section {
+  scroll-margin-top: 100px;
+}
