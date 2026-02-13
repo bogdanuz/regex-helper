@@ -113,8 +113,8 @@
   --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
-  --shadow-focus: 0 0 0 3px rgba(0, 212, 255, 0.1);  /* Focus ring для primary */
-  --shadow-focus-error: 0 0 0 3px rgba(244, 67, 54, 0.1);  /* Focus ring для error */
+  --shadow-focus: 0 0 0 3px rgba(0, 212, 255, 0.1);
+  --shadow-focus-error: 0 0 0 3px rgba(244, 67, 54, 0.1);
 
   /* ═══════════════════════════════════════════════════════════════
      TRANSITIONS (Переходы)
