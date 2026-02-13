@@ -77,11 +77,6 @@
   max-width: 1200px;
 }
 
-.modal-full {
-  max-width: 1400px;
-  width: 95%;
-}
-
 /* ═══════════════════════════════════════════════════════════════
    MODAL HEADER
    ═══════════════════════════════════════════════════════════════ */
@@ -177,7 +172,7 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   MODAL CONTENT SECTIONS (для модалки настроек)
+   MODAL CONTENT SECTIONS
    ═══════════════════════════════════════════════════════════════ */
 
 .modal-section {
@@ -253,8 +248,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
-  max-height: 300px;
-  overflow-y: auto;
 }
 
 /* Drag Item */
@@ -287,107 +280,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.drag-item-actions {
-  display: flex;
-  gap: 4px;
-  flex-shrink: 0;
-}
-
-/* Параметр-специфичные цвета для drag zones */
-.drag-zone[data-param="latinCyrillic"] .drag-item {
-  border-left-color: var(--color-param-latinCyrillic);
-  background-color: rgba(0, 212, 255, 0.1);
-}
-
-.drag-zone[data-param="commonRoot"] .drag-item {
-  border-left-color: var(--color-param-commonRoot);
-  background-color: rgba(255, 149, 0, 0.1);
-}
-
-.drag-zone[data-param="declensions"] .drag-item {
-  border-left-color: var(--color-param-declensions);
-  background-color: rgba(0, 255, 136, 0.1);
-}
-
-.drag-zone[data-param="optional"] .drag-item {
-  border-left-color: var(--color-param-optional);
-  background-color: rgba(255, 215, 0, 0.1);
-}
-
-.drag-zone[data-param="prefix"] .drag-item {
-  border-left-color: var(--color-param-prefix);
-  background-color: rgba(167, 139, 250, 0.1);
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   TRIGGER LIST (список триггеров в модалке)
-   ═══════════════════════════════════════════════════════════════ */
-
-.trigger-list {
-  max-height: 300px;
-  overflow-y: auto;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  padding: var(--spacing-sm);
-}
-
-.trigger-list-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--spacing-sm);
-  border-radius: var(--radius-sm);
-  transition: var(--transition-fast);
-  margin-bottom: 4px;
-}
-
-.trigger-list-item:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-}
-
-.trigger-list-item-content {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  flex: 1;
-}
-
-.trigger-list-item-badge {
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-weight: var(--font-weight-medium);
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-}
-
-/* Badge colors */
-.badge-latinCyrillic {
-  background-color: rgba(0, 212, 255, 0.2);
-  color: var(--color-param-latinCyrillic);
-}
-
-.badge-commonRoot {
-  background-color: rgba(255, 149, 0, 0.2);
-  color: var(--color-param-commonRoot);
-}
-
-.badge-declensions {
-  background-color: rgba(0, 255, 136, 0.2);
-  color: var(--color-param-declensions);
-}
-
-.badge-optional {
-  background-color: rgba(255, 215, 0, 0.2);
-  color: var(--color-param-optional);
-}
-
-.badge-prefix {
-  background-color: rgba(167, 139, 250, 0.2);
-  color: var(--color-param-prefix);
 }
 
 /* ═══════════════════════════════════════════════════════════════
