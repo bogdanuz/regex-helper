@@ -1,0 +1,99 @@
+/**
+ * REGEXHELPER v4.0
+ * Simple Triggers Panel Styles
+ * Module 3B: Textarea and Settings
+ */
+
+/* ===== SIMPLE TRIGGERS PANEL ===== */
+
+.simple-triggers {
+    /* Base panel styles inherited from base.css */
+}
+
+.simple-triggers__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-s);
+}
+
+/* ===== TEXTAREA ===== */
+
+.simple-triggers__textarea {
+    min-height: 200px;
+    max-height: 400px;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-body);
+    line-height: var(--line-height-relaxed);
+    resize: vertical;
+}
+
+.simple-triggers__textarea::placeholder {
+    color: var(--color-text-tertiary);
+    font-style: italic;
+}
+
+/* ===== HINT TEXT ===== */
+
+.simple-triggers__hint {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-size: var(--font-size-small);
+    color: var(--color-text-secondary);
+}
+
+.simple-triggers__hint .hint-icon {
+    font-size: 14px;
+    color: var(--color-info);
+}
+
+/* ===== STATS BAR (optional, for trigger count) ===== */
+
+.simple-triggers__stats {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-s) var(--space-m);
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-small);
+}
+
+.simple-triggers__stat {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.simple-triggers__stat-label {
+    color: var(--color-text-secondary);
+}
+
+.simple-triggers__stat-value {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+}
+
+.simple-triggers__stat-value--warning {
+    color: var(--color-warning);
+}
+
+.simple-triggers__stat-value--error {
+    color: var(--color-error);
+}
+
+/* ===== ANIMATIONS ===== */
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.simple-triggers__stats {
+    animation: fadeIn 0.3s ease-out;
+}
