@@ -135,7 +135,6 @@
   line-height: var(--line-height-loose);
   resize: vertical;
   transition: var(--transition-base);
-  readonly: true;
 }
 
 .result-textarea::placeholder {
@@ -151,7 +150,7 @@
   align-items: flex-start;
   gap: 10px;
   cursor: pointer;
-  padding: 10px 0;
+  padding: 8px 0;
 }
 
 .checkbox {
@@ -195,147 +194,6 @@
   color: var(--color-text-white);
   line-height: 1.4;
   user-select: none;
-}
-
-.checkbox-content {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.checkbox-hint {
-  font-size: 11px;
-  color: var(--color-text-muted);
-  font-style: italic;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   RADIO BUTTON
-   ═══════════════════════════════════════════════════════════════ */
-
-.radio-wrapper {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  cursor: pointer;
-  padding: 10px 0;
-}
-
-.radio {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  width: 18px;
-  height: 18px;
-  min-width: 18px;
-  background-color: var(--color-bg-input);
-  border: 2px solid var(--color-border);
-  border-radius: 50%;
-  cursor: pointer;
-  position: relative;
-  transition: var(--transition-fast);
-  margin-top: 2px;
-}
-
-.radio:hover {
-  border-color: var(--color-primary);
-}
-
-.radio:checked {
-  border-color: var(--color-primary);
-  background-color: var(--color-bg-input);
-}
-
-.radio:checked::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: var(--color-primary);
-}
-
-.radio-label {
-  font-size: var(--font-size-base);
-  color: var(--color-text-white);
-  line-height: 1.4;
-  user-select: none;
-}
-
-.radio-content {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex: 1;
-}
-
-.radio-hint {
-  font-size: 11px;
-  color: var(--color-text-muted);
-  font-style: italic;
-}
-
-/* Inline Radio (для модальных окон) */
-.radio-inline {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  padding: 8px 12px;
-  border-radius: var(--radius-sm);
-  background-color: var(--color-bg-input);
-  border: 2px solid var(--color-border);
-  transition: var(--transition-fast);
-  flex: 1;
-  min-width: 150px;
-}
-
-.radio-inline:hover {
-  border-color: var(--color-primary);
-  background-color: rgba(0, 212, 255, 0.05);
-}
-
-.radio-inline:has(input:checked) {
-  border-color: var(--color-primary);
-  background-color: rgba(0, 212, 255, 0.1);
-  box-shadow: var(--shadow-focus);
-}
-
-.radio-inline input[type="radio"] {
-  margin: 0;
-}
-
-.radio-inline .radio-label {
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.radio-inline .radio-label strong {
-  display: block;
-  color: var(--color-text-white);
-}
-
-.radio-inline .radio-label small {
-  display: block;
-  font-size: 11px;
-  color: var(--color-text-muted);
-  font-weight: var(--font-weight-normal);
-}
-
-.radio-inline .radio-label code {
-  background-color: rgba(0, 212, 255, 0.1);
-  color: var(--color-primary);
-  font-size: 11px;
-  padding: 1px 4px;
-}
-
-.radio-inline:has(input:checked) .radio-label strong {
-  color: var(--color-primary);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -384,52 +242,6 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   INPUT WITH CLEAR BUTTON
-   ═══════════════════════════════════════════════════════════════ */
-
-.input-with-clear {
-  position: relative;
-  width: 100%;
-}
-
-.input-with-clear .input,
-.input-with-clear input,
-.input-with-clear textarea {
-  padding-right: 40px;
-}
-
-.btn-clear-inline {
-  position: absolute;
-  top: 50%;
-  right: 12px;
-  transform: translateY(-50%);
-  width: 20px;
-  height: 20px;
-  background-color: var(--color-error);
-  color: #ffffff;
-  border: none;
-  border-radius: 50%;
-  font-size: 14px;
-  font-weight: var(--font-weight-bold);
-  line-height: 1;
-  cursor: pointer;
-  display: none;
-  opacity: 0;
-  transition: var(--transition-base);
-  padding: 0;
-  z-index: 10;
-}
-
-.btn-clear-inline:hover {
-  background-color: var(--color-error-hover);
-  transform: translateY(-50%) scale(1.1);
-}
-
-.btn-clear-inline:active {
-  transform: translateY(-50%) scale(0.95);
-}
-
-/* ═══════════════════════════════════════════════════════════════
    INPUT LABELS & HINTS
    ═══════════════════════════════════════════════════════════════ */
 
@@ -441,27 +253,12 @@
   margin-bottom: 8px;
 }
 
-.label-hint {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-normal);
-  color: var(--color-text-muted);
-  margin-left: 4px;
-}
-
 .hint {
   display: block;
   font-size: var(--font-size-sm);
   color: var(--color-text-muted);
   margin-top: 6px;
   line-height: 1.4;
-}
-
-.hint-text {
-  font-size: 13px;
-  color: var(--color-text-muted);
-  margin-bottom: 12px;
-  display: block;
-  line-height: 1.5;
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -478,83 +275,4 @@
   height: 48px;
   padding: 0 16px;
   font-size: var(--font-size-lg);
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   INPUT WITH BUTTON
-   ═══════════════════════════════════════════════════════════════ */
-
-.input-with-button {
-  display: flex;
-  gap: var(--spacing-md);
-  align-items: center;
-}
-
-.input-with-button .input {
-  flex: 1;
-}
-
-.input-with-button button {
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   DISTANCE INPUTS (для связанных триггеров)
-   ═══════════════════════════════════════════════════════════════ */
-
-.distance-inputs {
-  display: flex;
-  gap: var(--spacing-md);
-  align-items: center;
-  padding-left: 30px;
-  margin-top: var(--spacing-sm);
-}
-
-.input-label {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  font-size: 13px;
-  color: var(--color-text-muted);
-}
-
-.distance-minmax {
-  margin-left: 28px;
-  margin-top: 8px;
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   INPUT SECTION (группировка полей)
-   ═══════════════════════════════════════════════════════════════ */
-
-.input-section {
-  margin-bottom: var(--spacing-lg);
-}
-
-.input-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 6px;
-}
-
-.counter {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
-}
-
-.counter-warning {
-  color: var(--color-warning) !important;
-  font-weight: bold;
-}
-
-.counter-error {
-  color: var(--color-error) !important;
-  font-weight: bold;
-}
-
-.info-text {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
 }
