@@ -1,234 +1,327 @@
 /**
- * REGEXHELPER v4.0
- * Button Styles
+ * ═══════════════════════════════════════════════════════════════════
+ *                    REGEXHELPER v4.0
+ *                   BUTTONS STYLES
+ *              ВСЕ СТИЛИ КНОПОК
+ * ═══════════════════════════════════════════════════════════════════
+ * 
+ * Версия: 2.0 DARK THEME
+ * Дата: 14.02.2026
+ * Соответствует: Design_Brief_v2.0.txt
  */
 
-/* ===== BASE BUTTON ===== */
+/* ═══════════════════════════════════════════════════════════════
+   BASE BUTTON
+   ═══════════════════════════════════════════════════════════════ */
 
-.btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-s);
-    height: var(--button-height);
-    padding: 0 var(--space-l);
-    border: none;
-    border-radius: var(--radius-sm);
-    font-family: var(--font-primary);
-    font-size: var(--font-size-body);
-    font-weight: var(--font-weight-medium);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    white-space: nowrap;
-    user-select: none;
+button {
+  font-family: var(--font-main);
+  cursor: pointer;
+  border: none;
+  outline: none;
+  transition: var(--transition-fast);
+  user-select: none;
 }
 
-.btn:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
-.btn:focus-visible {
-    outline: 2px solid var(--color-border-focus);
-    outline-offset: 2px;
+/* ═══════════════════════════════════════════════════════════════
+   PRIMARY BUTTON
+   ═══════════════════════════════════════════════════════════════ */
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: var(--color-bg-page);
+  height: var(--button-height);
+  padding: 0 24px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-fast);
 }
 
-/* ===== PRIMARY BUTTON ===== */
-
-.btn--primary {
-    background: var(--color-primary);
-    color: var(--color-bg-page);
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--color-primary-hover);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
 }
 
-.btn--primary:hover:not(:disabled) {
-    background: var(--color-primary-hover);
+.btn-primary:active:not(:disabled) {
+  background-color: var(--color-primary-active);
+  transform: translateY(0);
 }
 
-.btn--primary:active:not(:disabled) {
-    background: var(--color-primary-active);
+.btn-primary:disabled {
+  background-color: var(--color-border);
+  color: var(--color-text-tertiary);
+  box-shadow: none;
 }
 
-.btn--primary:disabled {
-    background: var(--color-border-default);
-    color: var(--color-text-tertiary);
+/* Large variant */
+.btn-primary-lg {
+  height: var(--button-height-lg);
+  padding: 0 32px;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
 }
 
-/* ===== SECONDARY BUTTON ===== */
+/* ═══════════════════════════════════════════════════════════════
+   SECONDARY BUTTON
+   ═══════════════════════════════════════════════════════════════ */
 
-.btn--secondary {
-    background: transparent;
-    color: var(--color-primary);
-    border: 1px solid var(--color-primary);
+.btn-secondary {
+  background-color: transparent;
+  color: var(--color-primary);
+  height: var(--button-height);
+  padding: 0 24px;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  transition: var(--transition-fast);
 }
 
-.btn--secondary:hover:not(:disabled) {
-    background: rgba(0, 212, 255, 0.1);
+.btn-secondary:hover:not(:disabled) {
+  background-color: rgba(0, 212, 255, 0.1);
+  transform: translateY(-2px);
 }
 
-.btn--secondary:active:not(:disabled) {
-    background: rgba(0, 212, 255, 0.2);
+.btn-secondary:active:not(:disabled) {
+  background-color: rgba(0, 212, 255, 0.2);
+  transform: translateY(0);
 }
 
-/* ===== DANGER BUTTON ===== */
-
-.btn--danger {
-    background: var(--color-error);
-    color: var(--color-text-primary);
+.btn-secondary:disabled {
+  border-color: var(--color-border);
+  color: var(--color-text-tertiary);
 }
 
-.btn--danger:hover:not(:disabled) {
-    background: var(--color-error-hover);
+/* ═══════════════════════════════════════════════════════════════
+   DANGER BUTTON
+   ═══════════════════════════════════════════════════════════════ */
+
+.btn-danger {
+  background-color: var(--color-error);
+  color: #ffffff;
+  height: var(--button-height);
+  padding: 0 24px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  transition: var(--transition-fast);
 }
 
-.btn--danger:active:not(:disabled) {
-    background: var(--color-error-active);
+.btn-danger:hover:not(:disabled) {
+  background-color: var(--color-error-hover);
+  box-shadow: 0 4px 8px rgba(255, 68, 68, 0.3);
+  transform: translateY(-2px);
 }
 
-/* ===== DANGER OUTLINE ===== */
-
-.btn--danger-outline {
-    background: transparent;
-    color: var(--color-error);
-    border: 1px solid var(--color-error);
+.btn-danger:active:not(:disabled) {
+  background-color: var(--color-error-active);
+  transform: translateY(0);
 }
 
-.btn--danger-outline:hover:not(:disabled) {
-    background: rgba(255, 68, 68, 0.1);
+/* Danger Secondary (outlined) */
+.btn-danger-secondary {
+  background-color: transparent;
+  color: var(--color-error);
+  height: var(--button-height);
+  padding: 0 24px;
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  transition: var(--transition-fast);
 }
 
-.btn--danger-outline:active:not(:disabled) {
-    background: rgba(255, 68, 68, 0.2);
+.btn-danger-secondary:hover:not(:disabled) {
+  background-color: rgba(255, 68, 68, 0.1);
+  transform: translateY(-2px);
 }
 
-/* ===== ICON BUTTON ===== */
-
-.btn--icon {
-    width: 32px;
-    height: 32px;
-    padding: 0;
-    background: transparent;
-    color: var(--color-text-primary);
+.btn-danger-secondary:active:not(:disabled) {
+  background-color: rgba(255, 68, 68, 0.2);
+  transform: translateY(0);
 }
 
-.btn--icon:hover:not(:disabled) {
-    background: rgba(255, 255, 255, 0.1);
+/* ═══════════════════════════════════════════════════════════════
+   ICON BUTTON
+   ═══════════════════════════════════════════════════════════════ */
+
+.btn-icon {
+  width: var(--icon-button-size);
+  height: var(--icon-button-size);
+  min-width: var(--icon-button-size);
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  background-color: transparent;
+  color: var(--color-text-white);
+  font-size: var(--font-size-lg);
+  border: 1px solid var(--color-border);
+  transition: var(--transition-fast);
 }
 
-.btn--icon:active:not(:disabled) {
-    background: rgba(255, 255, 255, 0.15);
+.btn-icon:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: var(--color-border-hover);
+  transform: scale(1.05);
 }
 
-/* ===== BUTTON SIZES ===== */
-
-.btn--lg {
-    height: var(--button-height-lg);
-    padding: 0 var(--space-xl);
-    font-size: var(--font-size-large);
-    font-weight: var(--font-weight-semibold);
+.btn-icon:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
-.btn--sm {
-    height: 32px;
-    padding: 0 var(--space-m);
-    font-size: var(--font-size-small);
+/* Help Button (круглая с primary border) */
+.btn-help {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  background: transparent;
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-full);
+  font-size: 14px;
+  font-weight: var(--font-weight-bold);
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-base);
 }
 
-/* ===== BUTTON ICONS ===== */
-
-.btn__icon {
-    font-size: 16px;
-    line-height: 1;
+.btn-help:hover {
+  background: var(--color-primary);
+  color: var(--color-bg-page);
+  transform: scale(1.1);
 }
 
-.btn__text {
-    line-height: 1;
+/* Icon button variants */
+.btn-icon-sm {
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px;
+  font-size: 14px !important;
 }
 
-.btn__dropdown-icon {
-    font-size: 10px;
-    margin-left: var(--space-xs);
+.btn-icon-danger {
+  background-color: transparent;
+  color: var(--color-error);
+  border: 1px solid var(--color-error);
 }
 
-/* ===== BUTTON STATES ===== */
-
-.btn--loading {
-    position: relative;
-    color: transparent;
-    pointer-events: none;
+.btn-icon-danger:hover:not(:disabled) {
+  background-color: var(--color-error);
+  color: #ffffff;
+  border-color: var(--color-error);
 }
 
-.btn--loading::after {
-    content: '';
-    position: absolute;
-    width: 16px;
-    height: 16px;
-    border: 2px solid currentColor;
-    border-top-color: transparent;
-    border-radius: 50%;
-    animation: btn-spin 0.6s linear infinite;
+/* ═══════════════════════════════════════════════════════════════
+   BUTTON SIZES
+   ═══════════════════════════════════════════════════════════════ */
+
+.btn-sm {
+  height: 32px;
+  padding: 0 16px;
+  font-size: var(--font-size-sm);
 }
 
-@keyframes btn-spin {
-    to { transform: rotate(360deg); }
+.btn-lg {
+  height: var(--button-height-lg);
+  padding: 0 32px;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
 }
 
-.btn--success {
-    background: var(--color-success) !important;
-    color: var(--color-bg-page) !important;
+/* ═══════════════════════════════════════════════════════════════
+   BUTTON GROUP
+   ═══════════════════════════════════════════════════════════════ */
+
+.button-group {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: center;
 }
 
-.btn--error {
-    background: var(--color-error) !important;
-    color: var(--color-text-primary) !important;
+.button-group-compact {
+  gap: var(--spacing-sm);
 }
 
-/* ===== DROPDOWN ===== */
+/* ═══════════════════════════════════════════════════════════════
+   BUTTON STATES
+   ═══════════════════════════════════════════════════════════════ */
 
-.dropdown {
-    position: relative;
+/* Loading state */
+.btn-loading {
+  position: relative;
+  pointer-events: none;
+  opacity: 0.7;
 }
 
-.dropdown__menu {
-    position: absolute;
-    top: calc(100% + var(--space-xs));
-    right: 0;
-    min-width: 120px;
-    background: var(--color-bg-card);
-    border: 1px solid var(--color-border-default);
-    border-radius: var(--radius-sm);
-    box-shadow: var(--shadow-md);
-    list-style: none;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-8px);
-    transition: all var(--transition-fast);
-    z-index: var(--z-dropdown);
+.btn-loading::after {
+  content: "";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
 }
 
-.dropdown__menu[aria-expanded="true"] {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
+@keyframes spin {
+  to {
+    transform: translateY(-50%) rotate(360deg);
+  }
 }
 
-.dropdown__item {
-    display: block;
-    width: 100%;
-    padding: var(--space-s) var(--space-m);
-    background: transparent;
-    border: none;
-    color: var(--color-text-primary);
-    font-family: var(--font-primary);
-    font-size: var(--font-size-body);
-    text-align: left;
-    cursor: pointer;
-    transition: background var(--transition-fast);
+/* Success state (временный) */
+.btn-success {
+  background-color: var(--color-success) !important;
+  color: var(--color-bg-page) !important;
+  border-color: var(--color-success) !important;
 }
 
-.dropdown__item:hover {
-    background: rgba(255, 255, 255, 0.05);
+/* Error state (временный) */
+.btn-error {
+  background-color: var(--color-error) !important;
+  color: #ffffff !important;
+  border-color: var(--color-error) !important;
 }
 
-.dropdown__item:active {
-    background: rgba(255, 255, 255, 0.1);
+/* ═══════════════════════════════════════════════════════════════
+   BLOCK BUTTON
+   ═══════════════════════════════════════════════════════════════ */
+
+.btn-block {
+  width: 100%;
+  justify-content: center;
 }
