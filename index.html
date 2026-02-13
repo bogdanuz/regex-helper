@@ -4,595 +4,248 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="RegexHelper v4.0 - Инструмент для конвертации триггеров в регулярные выражения">
-    <meta name="keywords" content="regex, регулярные выражения, конвертер, триггеры, Avito">
+    <meta name="keywords" content="regex, регулярные выражения, конвертер триггеров, JavaScript">
     <meta name="author" content="RegexHelper Team">
-    <title>RegexHelper v4.0 - Конвертер триггеров в Regex</title>
-
-    <!-- RegexHelper v4.0 CSS -->
-<link rel="stylesheet" href="css/common.css">
-<link rel="stylesheet" href="css/converter.css">
-<link rel="stylesheet" href="css/panels.css">
-<link rel="stylesheet" href="css/modals.css">
-<link rel="stylesheet" href="css/history.css">
-<link rel="stylesheet" href="css/tester.css">
-<link rel="stylesheet" href="css/case-converter.css">
-<link rel="stylesheet" href="css/responsive.css">
-<link rel="stylesheet" href="css/toast.css">
+    <title>RegexHelper v4.0 - Конвертер триггеров</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="images/favicon/favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon/favicon.ico">
+    
+    <!-- Open Graph (for social media) -->
+    <meta property="og:title" content="RegexHelper v4.0">
+    <meta property="og:description" content="Мощный инструмент для конвертации триггеров в регулярные выражения">
+    <meta property="og:image" content="images/logo.png">
+    <meta property="og:type" content="website">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/buttons.css">
+    <link rel="stylesheet" href="css/inputs.css">
+    <link rel="stylesheet" href="css/header.css">
+    <link rel="stylesheet" href="css/linkedTriggers.css">
+    <link rel="stylesheet" href="css/simpleTriggers.css">
+    <link rel="stylesheet" href="css/outputPanel.css">
+    <link rel="stylesheet" href="css/history.css">
+    <link rel="stylesheet" href="css/modals.css">
+    <link rel="stylesheet" href="css/footer.css">
 </head>
 <body>
-    <!-- ══════════════════════════════════════════════════════════ -->
     <!-- HEADER -->
-    <!-- ══════════════════════════════════════════════════════════ -->
-    <header class="main-header">
-        <div class="header-container">
-            <!-- Logo -->
-            <div class="logo">
-                <h1>RegexHelper</h1>
-                <span class="version">v4.0</span>
+    <header class="header" role="banner">
+        <div class="header__container">
+            <div class="header__logo">
+                <img src="images/logo.png" alt="RegexHelper Logo" class="header__logo-img">
             </div>
-
-            <!-- Navigation -->
-            <nav class="main-nav">
-                <a href="#converter" class="nav-link active">Конвертер</a>
-                <a href="#visualizer" class="nav-link disabled">
-                    Визуализатор <span class="badge">Скоро</span>
-                </a>
-                <a href="#case-converter" class="nav-link disabled">
-                    Регистр <span class="badge">Скоро</span>
-                </a>
-                <a href="#tester" class="nav-link disabled">
-                    Тестер <span class="badge">Скоро</span>
-                </a>
-                <a href="#reverse-converter" class="nav-link disabled">
-                    Обратный конвертер <span class="badge">Скоро</span>
-                </a>
-                <a href="#history" class="nav-link">История</a>
+            
+            <nav class="header__nav" role="navigation">
+                <div class="header__dropdown">
+                    <button class="header__dropdown-btn" aria-label="Инструменты" aria-haspopup="true" aria-expanded="false">
+                        Инструменты
+                        <span class="header__dropdown-icon">▼</span>
+                    </button>
+                    <ul class="header__dropdown-menu" role="menu">
+                        <li role="menuitem">
+                            <a href="#" class="header__dropdown-item active">☑ Конвертер</a>
+                        </li>
+                        <li role="menuitem">
+                            <a href="#" class="header__dropdown-item">○ Tester</a>
+                        </li>
+                        <li role="menuitem">
+                            <a href="#" class="header__dropdown-item">○ Visualizer</a>
+                        </li>
+                        <li role="menuitem">
+                            <a href="#" class="header__dropdown-item">○ Case Converter</a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <button class="btn btn--secondary" id="btn-handbook" aria-label="Справочник">
+                    <span class="btn__icon">📖</span>
+                    <span class="btn__text">Справочник</span>
+                </button>
+                
+                <button class="btn btn--icon" id="btn-help" aria-label="Помощь" title="Инструкции по использованию">
+                    <span>?</span>
+                </button>
+                
+                <button class="btn btn--danger-outline" id="btn-reset-all" aria-label="Сбросить всё" title="⚠️ Очистить все триггеры и параметры">
+                    <span class="btn__icon">🗑️</span>
+                    <span class="btn__text">Сбросить всё</span>
+                </button>
             </nav>
-
-            <!-- Actions -->
-            <div class="header-actions">
-                <button class="btn-icon" id="btnRegulations" title="Regex-справочник" aria-label="Открыть справочник по регулярным выражениям">
-                    📖
-                </button>
-                <button class="btn-icon" id="btnWiki" title="Помощь" aria-label="Открыть справку по сайту">
-                    ℹ️
-                </button>
-                <button class="btn-primary" id="btnResetAll">
-                    Сбросить всё
-                </button>
-            </div>
         </div>
     </header>
 
-    <!-- ══════════════════════════════════════════════════════════ -->
     <!-- MAIN CONTENT -->
-    <!-- ══════════════════════════════════════════════════════════ -->
-    <main class="main-content">
-
-        <!-- ════════════════════════════════════════════════════ -->
-        <!-- СЕКЦИЯ: КОНВЕРТЕР -->
-        <!-- ════════════════════════════════════════════════════ -->
-        <section class="converter-section" id="converter">
-            <div class="section-header">
-                <h2>Конвертер триггеров → Regex</h2>
-                <p class="section-description">
-                    Преобразуйте текстовые триггеры в регулярные выражения с поддержкой групп, подгрупп и оптимизаций
-                </p>
-            </div>
-
-            <!-- ════════════════════════════════════════════════ -->
-            <!-- ПАНЕЛЬ 1: ТРИГГЕРЫ -->
-            <!-- ════════════════════════════════════════════════ -->
-            <div class="panel panel-accordion active" id="panelInput" data-panel="input">
-                <div class="panel-header">
-                    <h3>
-                        <span class="panel-number">1</span>
-                        <span class="panel-title">Триггеры</span>
-                    </h3>
-                    <button class="btn-help" data-help="panel-input" title="Справка по панели Триггеры" aria-label="Открыть справку">
-                        ?
+    <main class="main" role="main">
+        <div class="main__container">
+            
+            <!-- ПАНЕЛЬ СВЯЗАННЫХ ТРИГГЕРОВ -->
+            <section class="panel linked-triggers" aria-labelledby="linked-triggers-title">
+                <div class="panel__header">
+                    <h2 class="panel__title" id="linked-triggers-title">
+                        <span class="panel__icon">🔗</span>
+                        Связанные триггеры
+                    </h2>
+                    <button class="btn btn--secondary btn--sm" id="btn-add-group">
+                        <span class="btn__icon">+</span>
+                        Добавить группу
                     </button>
                 </div>
-
-                <div class="panel-body">
-
-                    <!-- Режимы связи групп -->
-                    <div class="connection-modes">
-                        <h4 class="subsection-title">Режим связи групп:</h4>
-                        <div class="radio-group">
-                            <label class="radio-label">
-                                <input type="radio" name="connectionMode" value="individual" id="modeIndividual" checked>
-                                <span>Индивидуальные параметры</span>
-                            </label>
-
-                            <label class="radio-label radio-with-select">
-                                <input type="radio" name="connectionMode" value="common" id="modeCommon">
-                                <span>Общий параметр:</span>
-                                <select id="commonDistance" class="distance-select" disabled>
-                                    <option value=".{1,7}">до 7 символов (.{1,7})</option>
-                                    <option value=".{1,10}" selected>до 10 символов (.{1,10})</option>
-                                    <option value=".{0,30}">до 30 символов (.{0,30})</option>
-                                    <option value=".+">любое расстояние (.+)</option>
-                                    <option value="[\s\S]+">любое вкл. перенос ([\s\S]+)</option>
-                                    <option value="[^\n]+">в одной строке ([^\n]+)</option>
-                                    <option value="custom">✏️ Свой параметр...</option>
-                                </select>
-                            </label>
-
-                            <label class="radio-label">
-                                <input type="radio" name="connectionMode" value="alternation" id="modeAlternation">
-                                <span>Альтернация (объединить через |)</span>
-                            </label>
-                        </div>
-
-                        <!-- Custom distance input (показывается при выборе "Свой параметр") -->
-                        <div id="customDistanceInput" class="custom-input" style="display: none;">
-                            <label for="customDistanceValue">Введите regex расстояния:</label>
-                            <input type="text" id="customDistanceValue" placeholder="Например: .{5,20}" class="custom-distance-input">
-                        </div>
+                
+                <div class="linked-triggers__content" id="linked-triggers-container">
+                    <!-- Группы будут добавляться динамически через JS -->
+                    <div class="linked-triggers__empty">
+                        <p>Нажмите "Добавить группу", чтобы создать связанные триггеры</p>
                     </div>
-
-                    <hr class="divider">
-
-                    <!-- Связанные триггеры -->
-                    <div class="accordion-section active" id="linkedTriggersSection">
-                        <div class="accordion-header">
-                            <button class="accordion-toggle" aria-expanded="true">
-                                <span class="accordion-icon">▼</span>
-                                <h4>Связанные триггеры</h4>
-                            </button>
-                        </div>
-                        <div class="accordion-body">
-                            <p class="section-hint">
-                                💡 Связанные триггеры объединяются в группы с параметрами расстояния между ними
-                            </p>
-
-                            <div id="linkedGroupsContainer" class="linked-groups-container">
-                                <!-- Группы добавляются динамически через JS -->
-                                <!-- Template будет в JS -->
-                            </div>
-
-                            <button class="btn-add" id="btnAddGroup">
-                                <span class="btn-icon-inline">➕</span>
-                                Добавить группу
-                            </button>
-                        </div>
-                    </div>
-
-                    <hr class="divider">
-
-                    <!-- Простые триггеры -->
-                    <div class="accordion-section active" id="simpleTriggersSection">
-                        <div class="accordion-header">
-                            <button class="accordion-toggle" aria-expanded="true">
-                                <span class="accordion-icon">▼</span>
-                                <h4>Простые триггеры</h4>
-                            </button>
-                        </div>
-                        <div class="accordion-body">
-                            <p class="section-hint">
-                                💡 Простые триггеры объединяются через | (альтернация) без параметров расстояния
-                            </p>
-
-                            <div class="textarea-wrapper">
-                                <textarea 
-                                    id="simpleTriggersInput" 
-                                    class="triggers-textarea"
-                                    placeholder="Введите триггеры (каждый с новой строки)&#10;Например:&#10;дрон&#10;беспилотник&#10;квадрокоптер"
-                                    rows="8"
-                                ></textarea>
-                                <button class="btn-clear-inline" data-target="simpleTriggersInput" title="Очистить поле" aria-label="Очистить">
-                                    ❌
-                                </button>
-                            </div>
-
-                            <div class="panel-actions">
-                                <button class="btn-secondary" id="btnClearSimple">
-                                    Очистить простые триггеры
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
-            </div>
+            </section>
 
-            <!-- ════════════════════════════════════════════════ -->
-            <!-- ПАНЕЛЬ 2: ОПТИМИЗАЦИИ (TYPE 1-6) -->
-            <!-- ════════════════════════════════════════════════ -->
-            <div class="panel panel-accordion active" id="panelOptimizations" data-panel="optimizations">
-                <div class="panel-header">
-                    <h3>
-                        <span class="panel-number">2</span>
-                        <span class="panel-title">Оптимизации (Type 1-6)</span>
-                    </h3>
-                    <button class="btn-help" data-help="panel-optimizations" title="Справка по оптимизациям" aria-label="Открыть справку">
-                        ?
-                    </button>
-                </div>
-
-                <div class="panel-body">
-                    <p class="panel-hint">
-                        ❓ Глобальные настройки — применяются ко всем триггерам по умолчанию. 
-                        Вы можете переопределить их для каждого триггера отдельно (через ⚙️ Настройки).
-                    </p>
-
-                    <!-- Type 1: Вариации (лат ↔ кир) -->
-                    <div class="optimization-item">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="type1Checkbox" class="optimization-checkbox">
-                            <span class="optimization-title">Type 1: Вариации (лат ↔ кир)</span>
-                        </label>
-                        <p class="optimization-description">
-                            Автоматически создаёт варианты с латиницей и кириллицей (c → [cс], a → [aа])
-                        </p>
-                    </div>
-
-                    <!-- Type 2: Общий корень -->
-                    <div class="optimization-item">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="type2Checkbox" class="optimization-checkbox">
-                            <span class="optimization-title">Type 2: Общий корень</span>
-                        </label>
-                        <p class="optimization-description">
-                            Выносит общий префикс за скобки (кот, коты → кот(|ы))
-                        </p>
-                    </div>
-
-                    <!-- Type 4: Автосклонение -->
-                    <div class="optimization-item">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="type4Checkbox" class="optimization-checkbox">
-                            <span class="optimization-title">Type 4: Автосклонение (русские существительные)</span>
-                        </label>
-                        <p class="optimization-description">
-                            Генерирует все падежные формы слова (дрон → дрон.{2,15} для всех падежей)
-                        </p>
-                    </div>
-
-                    <!-- Type 5: Опциональный символ -->
-                    <div class="optimization-item">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="type5Checkbox" class="optimization-checkbox">
-                            <span class="optimization-title">Type 5: Опциональный символ</span>
-                        </label>
-                        <p class="optimization-description">
-                            Делает каждый символ опциональным (кот → к?о?т?)
-                        </p>
-                    </div>
-
-                    <!-- Type 6: Префикс -->
-                    <div class="optimization-item">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="type6Checkbox" class="optimization-checkbox">
-                            <span class="optimization-title">Type 6: Префикс</span>
-                        </label>
-                        <p class="optimization-description">
-                            Создаёт regex на основе префикса (дет → дет\w+ или дет(и|ьми|ками))
-                        </p>
-
-                        <!-- Type 6 Modes (показывается при включении Type 6) -->
-                        <div id="type6Modes" class="type6-modes" style="display: none;">
-
-                            <!-- Режим: Любой префикс -->
-                            <div class="type6-mode-group">
-                                <label class="radio-label">
-                                    <input type="radio" name="type6Mode" value="wildcard" id="type6ModeWildcard" checked>
-                                    <span>Любой префикс</span>
-                                </label>
-
-                                <div id="wildcardOptions" class="type6-wildcard-options" style="display: none;">
-                                    <p class="mode-hint">Выберите какие символы могут идти после префикса:</p>
-                                    <label class="checkbox-label-inline">
-                                        <input type="checkbox" id="wildcardCyrillic" checked>
-                                        <span>Кириллица (а-яё)</span>
-                                    </label>
-                                    <label class="checkbox-label-inline">
-                                        <input type="checkbox" id="wildcardLatin" checked>
-                                        <span>Латиница (a-z)</span>
-                                    </label>
-                                    <label class="checkbox-label-inline">
-                                        <input type="checkbox" id="wildcardDigits">
-                                        <span>Цифры (0-9)</span>
-                                    </label>
-                                    <label class="checkbox-label-inline">
-                                        <input type="checkbox" id="wildcardAny">
-                                        <span>Любые символы (.)</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <!-- Режим: Точный префикс -->
-                            <div class="type6-mode-group">
-                                <label class="radio-label">
-                                    <input type="radio" name="type6Mode" value="exact" id="type6ModeExact">
-                                    <span>Точный префикс</span>
-                                </label>
-
-                                <div id="exactOptions" class="type6-exact-options" style="display: none;">
-                                    <p class="mode-hint">
-                                        Настройки будут применены индивидуально к каждому триггеру 
-                                        (выберите триггеры и нажмите ⚙️ в простых триггерах)
-                                    </p>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- ════════════════════════════════════════════════ -->
-            <!-- ПАНЕЛЬ 3: РЕЗУЛЬТАТ -->
-            <!-- ════════════════════════════════════════════════ -->
-            <div class="panel panel-accordion active" id="panelResult" data-panel="result">
-                <div class="panel-header">
-                    <h3>
-                        <span class="panel-number">3</span>
-                        <span class="panel-title">Результат</span>
-                    </h3>
-                    <button class="btn-help" data-help="panel-result" title="Справка по результату" aria-label="Открыть справку">
-                        ?
-                    </button>
-                </div>
-
-                <div class="panel-body">
-                    <div class="result-container">
-                        <label for="regexOutput" class="result-label">Регулярное выражение</label>
-                        <div class="textarea-wrapper">
-                            <textarea 
-                                id="regexOutput" 
-                                class="result-textarea"
-                                placeholder="Результат появится здесь после конвертации&#10;&#10;Вы можете редактировать regex вручную после конвертации"
-                                rows="6"
-                            ></textarea>
-                            <button class="btn-clear-inline" data-target="regexOutput" title="Очистить результат" aria-label="Очистить">
-                                ❌
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="result-actions">
-                        <button class="btn-primary btn-large" id="btnConvert">
-                            <span class="btn-icon-inline">⚙️</span>
-                            Конвертировать
+            <!-- ПАНЕЛЬ ПРОСТЫХ ТРИГГЕРОВ -->
+            <section class="panel simple-triggers" aria-labelledby="simple-triggers-title">
+                <div class="panel__header">
+                    <h2 class="panel__title" id="simple-triggers-title">
+                        <span class="panel__icon">📝</span>
+                        Простые триггеры
+                    </h2>
+                    <div class="panel__actions">
+                        <button class="btn btn--secondary btn--sm" id="btn-settings">
+                            <span class="btn__icon">⚙️</span>
+                            Настройки параметров
                         </button>
-                        <button class="btn-secondary" id="btnCopy">
-                            <span class="btn-icon-inline">📋</span>
-                            Копировать
-                        </button>
-                        <button class="btn-secondary" id="btnExport">
-                            <span class="btn-icon-inline">💾</span>
-                            Экспорт
-                        </button>
-                        <button class="btn-secondary" id="btnClearResult">
-                            Очистить результат
+                        <button class="btn btn--danger-outline btn--sm" id="btn-clear-simple">
+                            <span class="btn__icon">🗑️</span>
+                            Очистить
                         </button>
                     </div>
                 </div>
-            </div>
-
-        </section>
-
-        <!-- ════════════════════════════════════════════════════ -->
-        <!-- СЕКЦИЯ: ИСТОРИЯ -->
-        <!-- ════════════════════════════════════════════════════ -->
-        <section class="history-section" id="history">
-            <div class="section-header">
-                <h2>История конвертаций</h2>
-                <button class="btn-secondary" id="btnClearHistory">
-                    <span class="btn-icon-inline">🗑️</span>
-                    Очистить историю
-                </button>
-            </div>
-
-            <div class="history-info">
-                <p class="history-count">
-                    Всего записей: <span id="historyCount">0</span> / 100
-                </p>
-            </div>
-
-            <div id="historyContainer" class="history-container">
-                <!-- История добавляется динамически через JS -->
-                <div class="history-empty">
-                    <p>📋 История пуста</p>
-                    <p class="history-empty-hint">
-                        Конвертируйте триггеры, и результаты появятся здесь
+                
+                <div class="simple-triggers__content">
+                    <textarea 
+                        class="input input--textarea simple-triggers__textarea"
+                        id="simple-triggers-input"
+                        placeholder="Введите триггеры (каждый с новой строки). Макс. 1000 триггеров"
+                        aria-label="Ввод простых триггеров"
+                    ></textarea>
+                    <p class="simple-triggers__hint">
+                        <span class="hint-icon">ℹ️</span>
+                        Автосохранение (каждые 500 мс)
                     </p>
                 </div>
-            </div>
-        </section>
+            </section>
 
+            <!-- ПАНЕЛЬ ВЫВОДА -->
+            <section class="panel output-panel" aria-labelledby="output-title">
+                <div class="panel__header">
+                    <h2 class="panel__title" id="output-title">
+                        <span class="panel__icon">✨</span>
+                        Результат
+                    </h2>
+                    <div class="panel__actions">
+                        <button class="btn btn--icon" id="btn-expand-output" aria-label="Развернуть результат" title="Развернуть на весь экран">
+                            <span>🔍</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="output-panel__content">
+                    <div class="output-panel__result">
+                        <textarea 
+                            class="input input--textarea output-panel__textarea"
+                            id="output-result"
+                            placeholder="Здесь появится regex-выражение"
+                            readonly
+                            aria-label="Результат конвертации"
+                        ></textarea>
+                    </div>
+                    
+                    <div class="output-panel__actions">
+                        <button class="btn btn--primary btn--lg" id="btn-convert" aria-label="Конвертировать триггеры в regex">
+                            <span class="btn__icon">⚡</span>
+                            <span class="btn__text">Конвертировать</span>
+                        </button>
+                        
+                        <button class="btn btn--secondary" id="btn-copy" aria-label="Копировать результат">
+                            <span class="btn__icon">📋</span>
+                            <span class="btn__text">Копировать</span>
+                        </button>
+                        
+                        <div class="dropdown">
+                            <button class="btn btn--secondary" id="btn-export" aria-label="Экспорт" aria-haspopup="true" aria-expanded="false">
+                                <span class="btn__icon">💾</span>
+                                <span class="btn__text">Экспорт</span>
+                                <span class="btn__dropdown-icon">▼</span>
+                            </button>
+                            <ul class="dropdown__menu" role="menu">
+                                <li role="menuitem">
+                                    <button class="dropdown__item" data-format="txt">TXT</button>
+                                </li>
+                                <li role="menuitem">
+                                    <button class="dropdown__item" data-format="json">JSON</button>
+                                </li>
+                                <li role="menuitem">
+                                    <button class="dropdown__item" data-format="csv">CSV</button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- СЕКЦИЯ ИСТОРИИ -->
+            <section class="history" aria-labelledby="history-title">
+                <div class="history__header">
+                    <h2 class="history__title" id="history-title">
+                        <span class="history__icon">📚</span>
+                        История конвертаций
+                    </h2>
+                </div>
+                
+                <div class="history__grid" id="history-grid">
+                    <!-- Карточки истории будут добавляться динамически -->
+                    <div class="history__empty">
+                        <p>История пуста. Выполните первую конвертацию.</p>
+                    </div>
+                </div>
+                
+                <div class="history__footer">
+                    <button class="btn btn--secondary" id="btn-show-all-history" aria-label="Показать всю историю">
+                        Показать всё...
+                    </button>
+                </div>
+            </section>
+
+        </div>
     </main>
 
-    <!-- ══════════════════════════════════════════════════════════ -->
     <!-- FOOTER -->
-    <!-- ══════════════════════════════════════════════════════════ -->
-    <footer class="main-footer">
-        <div class="footer-container">
-            <p class="footer-text">
-                © RegexHelper 2026 · Pet-project · 
-                Built with <a href="https://claude.ai" target="_blank" rel="noopener noreferrer">Claude AI</a>
+    <footer class="footer" role="contentinfo">
+        <div class="footer__container">
+            <p class="footer__copyright">
+                RegexHelper v4.0 © 2026
             </p>
-            <p class="footer-version">
-                Version 4.0.0 · <a href="#" id="footerChangelog">Changelog</a>
+            <p class="footer__description">
+                Мощный инструмент для работы с регулярными выражениями
             </p>
+            <div class="footer__links">
+                <a href="#" class="footer__link">Документация</a>
+                <a href="#" class="footer__link">GitHub</a>
+                <a href="#" class="footer__link">Обратная связь</a>
+            </div>
         </div>
     </footer>
 
-    <!-- ══════════════════════════════════════════════════════════ -->
-    <!-- MODALS -->
-    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- MODALS (будут добавлены в следующих модулях) -->
+    <div id="modal-container"></div>
 
-    <!-- Confirm Modal -->
-    <div id="confirmModal" class="modal" role="dialog" aria-labelledby="confirmModalTitle" aria-hidden="true">
-        <div class="modal-overlay"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="confirmModalTitle">⚠️ Подтверждение</h3>
-                <button class="btn-close" data-close="confirmModal" aria-label="Закрыть">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p id="confirmMessage"></p>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-primary" id="btnConfirmYes">Да</button>
-                <button class="btn-secondary" id="btnConfirmNo">Нет</button>
-                <button class="btn-secondary" id="btnConfirmSkip" style="display: none;">
-                    Да, не спрашивать 5 минут
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Regulations Modal (Regex справочник) -->
-    <div id="regulationsModal" class="modal modal-large" role="dialog" aria-labelledby="regulationsModalTitle" aria-hidden="true">
-        <div class="modal-overlay"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="regulationsModalTitle">📖 Regex-справочник</h3>
-                <button class="btn-close" data-close="regulationsModal" aria-label="Закрыть">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="regulations-content">
-                    <!-- Контент будет загружаться через JS -->
-                    <p>Загрузка справочника...</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Wiki Modal (Помощь) -->
-    <div id="wikiModal" class="modal modal-large" role="dialog" aria-labelledby="wikiModalTitle" aria-hidden="true">
-        <div class="modal-overlay"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="wikiModalTitle">ℹ️ Помощь</h3>
-                <button class="btn-close" data-close="wikiModal" aria-label="Закрыть">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="wiki-sidebar">
-                    <nav class="wiki-nav">
-                        <!-- Навигация по разделам вики -->
-                        <ul>
-                            <li><a href="#wiki-intro" class="wiki-link active">Введение</a></li>
-                            <li><a href="#wiki-converter" class="wiki-link">Конвертер</a></li>
-                            <li><a href="#wiki-visualizer" class="wiki-link">Визуализатор</a></li>
-                            <li><a href="#wiki-tester" class="wiki-link">Тестер</a></li>
-                            <li><a href="#wiki-history" class="wiki-link">История</a></li>
-                            <li><a href="#wiki-faq" class="wiki-link">FAQ</a></li>
-                        </ul>
-                    </nav>
-                </div>
-                <div class="wiki-content">
-                    <!-- Контент будет загружаться через JS -->
-                    <p>Загрузка справки...</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Panel Help Modal (Справка по панели) -->
-    <div id="panelHelpModal" class="modal" role="dialog" aria-labelledby="panelHelpModalTitle" aria-hidden="true">
-        <div class="modal-overlay"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="panelHelpModalTitle">❓ Справка по панели</h3>
-                <button class="btn-close" data-close="panelHelpModal" aria-label="Закрыть">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div id="panelHelpContent">
-                    <!-- Контент зависит от того, какая кнопка ? была нажата -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Export Modal -->
-    <div id="exportModal" class="modal" role="dialog" aria-labelledby="exportModalTitle" aria-hidden="true">
-        <div class="modal-overlay"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="exportModalTitle">💾 Экспорт регулярного выражения</h3>
-                <button class="btn-close" data-close="exportModal" aria-label="Закрыть">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p>Выберите формат экспорта:</p>
-                <div class="export-options">
-                    <button class="btn-export btn-export-txt" data-format="txt">
-                        <span class="export-icon">📄</span>
-                        <span class="export-title">TXT</span>
-                        <span class="export-description">Обычный текстовый файл</span>
-                    </button>
-                    <button class="btn-export btn-export-csv" data-format="csv">
-                        <span class="export-icon">📊</span>
-                        <span class="export-title">CSV</span>
-                        <span class="export-description">Для таблиц Excel</span>
-                    </button>
-                    <button class="btn-export btn-export-json" data-format="json">
-                        <span class="export-icon">📦</span>
-                        <span class="export-title">JSON</span>
-                        <span class="export-description">Структурированные данные</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- History Details Modal -->
-    <div id="historyDetailsModal" class="modal modal-large" role="dialog" aria-labelledby="historyDetailsModalTitle" aria-hidden="true">
-        <div class="modal-overlay"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="historyDetailsModalTitle">📊 Детали регулярного выражения</h3>
-                <button class="btn-close" data-close="historyDetailsModal" aria-label="Закрыть">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div id="historyDetailsContent">
-                    <!-- Контент загружается динамически -->
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-primary" id="btnHistoryCopy">
-                    <span class="btn-icon-inline">📋</span>
-                    Копировать
-                </button>
-                <button class="btn-secondary" id="btnHistoryExport">
-                    <span class="btn-icon-inline">💾</span>
-                    Скачать
-                </button>
-                <button class="btn-secondary" id="btnHistoryImport">
-                    <span class="btn-icon-inline">📥</span>
-                    Импорт в конвертер
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Group Settings Modal -->
-    <div id="groupSettingsModal" class="modal" role="dialog" aria-labelledby="groupSettingsModalTitle" aria-hidden="true">
-        <div class="modal-overlay"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="groupSettingsModalTitle">⚙️ Настройки группы</h3>
-                <button class="btn-close" data-close="groupSettingsModal" aria-label="Закрыть">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div id="groupSettingsContent">
-                    <!-- Контент загружается динамически в зависимости от группы -->
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-primary" id="btnSaveGroupSettings">Сохранить</button>
-                <button class="btn-secondary" id="btnCancelGroupSettings">Отмена</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ══════════════════════════════════════════════════════════ -->
-    <!-- JAVASCRIPT (ES6 Modules) -->
-    <!-- ══════════════════════════════════════════════════════════ -->
-    <script type="module" src="js-new/main.js"></script>
+    <!-- JavaScript -->
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>
