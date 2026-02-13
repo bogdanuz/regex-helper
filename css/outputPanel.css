@@ -1,0 +1,225 @@
+/**
+ * REGEXHELPER v4.0
+ * Output Panel Styles
+ * Module 3C: Result Display and Actions
+ */
+
+/* ===== OUTPUT PANEL ===== */
+
+.output-panel {
+    /* Base panel styles inherited from base.css */
+}
+
+.output-panel__content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-m);
+}
+
+/* ===== RESULT TEXTAREA ===== */
+
+.output-panel__result {
+    position: relative;
+}
+
+.output-panel__textarea {
+    min-height: 150px;
+    max-height: 300px;
+    padding: var(--space-m);
+    background: var(--color-bg-page);
+    border: 2px solid var(--color-primary);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-large);
+    color: var(--color-success);
+    line-height: var(--line-height-relaxed);
+    resize: vertical;
+}
+
+.output-panel__textarea::placeholder {
+    color: var(--color-text-tertiary);
+    font-style: italic;
+}
+
+.output-panel__textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.1);
+}
+
+/* Empty state */
+.output-panel__textarea:placeholder-shown {
+    border-style: dashed;
+}
+
+/* ===== REGEX SYNTAX HIGHLIGHTING (optional enhancement) ===== */
+
+.output-panel__textarea--highlighted {
+    /* For future: we can add syntax highlighting with contenteditable div */
+}
+
+/* Syntax colors (when implemented) */
+.regex-group {
+    color: var(--color-primary);
+}
+
+.regex-quantifier {
+    color: var(--color-warning);
+}
+
+.regex-special {
+    color: var(--color-info);
+}
+
+.regex-character-class {
+    color: var(--color-success);
+}
+
+/* ===== ACTION BUTTONS ===== */
+
+.output-panel__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-m);
+    flex-wrap: wrap;
+}
+
+/* Convert Button (Primary, Large) */
+.output-panel__actions .btn--primary.btn--lg {
+    flex-shrink: 0;
+}
+
+/* Other buttons */
+.output-panel__actions .btn--secondary {
+    flex-shrink: 0;
+}
+
+/* Export dropdown */
+.output-panel__actions .dropdown {
+    flex-shrink: 0;
+}
+
+/* ===== BUTTON STATES (for Convert button) ===== */
+
+/* Loading state */
+.btn--convert-loading {
+    position: relative;
+    pointer-events: none;
+}
+
+.btn--convert-loading .btn__text {
+    opacity: 0;
+}
+
+.btn--convert-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 3px solid var(--color-bg-page);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Success state (temporary, 2 seconds) */
+.btn--convert-success {
+    background: var(--color-success) !important;
+    pointer-events: none;
+}
+
+.btn--convert-success .btn__icon::before {
+    content: '✓';
+}
+
+/* Error state (temporary, 2 seconds) */
+.btn--convert-error {
+    background: var(--color-error) !important;
+    pointer-events: none;
+}
+
+.btn--convert-error .btn__icon::before {
+    content: '✕';
+}
+
+/* ===== OUTPUT STATS (optional) ===== */
+
+.output-panel__stats {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-s) var(--space-m);
+    background: rgba(0, 255, 136, 0.05);
+    border: 1px solid rgba(0, 255, 136, 0.2);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-small);
+}
+
+.output-panel__stat {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.output-panel__stat-icon {
+    font-size: 14px;
+}
+
+.output-panel__stat-label {
+    color: var(--color-text-secondary);
+}
+
+.output-panel__stat-value {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-success);
+}
+
+/* ===== COPY NOTIFICATION ===== */
+
+.output-panel__copy-notification {
+    position: absolute;
+    top: var(--space-s);
+    right: var(--space-s);
+    padding: var(--space-s) var(--space-m);
+    background: var(--color-success);
+    color: var(--color-bg-page);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-medium);
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+    transition: all var(--transition-normal);
+}
+
+.output-panel__copy-notification--visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ===== RESPONSIVE ===== */
+
+@media (max-width: 1599px) {
+    .output-panel__actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .output-panel__actions .btn,
+    .output-panel__actions .dropdown {
+        width: 100%;
+    }
+}
+
+@media (max-width: 1279px) {
+    .output-panel__textarea {
+        font-size: var(--font-size-body);
+    }
+}
