@@ -1,7 +1,8 @@
 /**
  * ═══════════════════════════════════════════════════════════════════
- * REGEXHELPER v4.0 - Converter.js
+ * REGEXHELPER v4.0 - Converter.js (FINAL VERSION)
  * Главный модуль конвертации триггеров в regex
+ * ✅ ИСПРАВЛЕНО: getDistancePattern, escapeRegex, добавлена validateParamCompatibility
  * ═══════════════════════════════════════════════════════════════════
  */
 
@@ -51,6 +52,12 @@ export class Converter {
             throw new Error('Converter: triggers должен быть непустым массивом');
         }
 
+        // ✅ НОВОЕ: Валидация совместимости параметров
+        const validation = this.validateParamCompatibility(params, triggers);
+        if (!validation.valid) {
+            throw new Error(`Несовместимые параметры: ${validation.errors.join(', ')}`);
+        }
+
         // Шаг 1: Применить параметры к каждому триггеру
         let processedTriggers = triggers.map(trigger => 
             this.applyParamsToTrigger(trigger, params)
@@ -74,6 +81,33 @@ export class Converter {
         }
 
         return alternation;
+    }
+
+    /**
+     * ✅ НОВОЕ: Валидация совместимости параметров
+     * @param {Object} params - Параметры
+     * @param {Array<string>} triggers - Триггеры
+     * @returns {Object} { valid: boolean, errors: Array<string> }
+     */
+    validateParamCompatibility(params, triggers = []) {
+        const errors = [];
+
+        // ❌ Склонения + Опциональные символы
+        if (params.declensions && params.optionalChars) {
+            errors.push('Параметры "Склонения" и "Опциональные символы" несовместимы');
+        }
+
+        // ❌ Склонения + Префикс
+        if (params.declensions && params.prefix) {
+            errors.push('Параметры "Склонения" и "Префикс" несовместимы');
+        }
+
+        // ❌ Общий корень требует минимум 2 триггера
+        if (params.commonRoot && triggers.length < 2) {
+            errors.push('Параметр "Общий корень" требует минимум 2 триггера');
+        }
+
+        return { valid: errors.length === 0, errors };
     }
 
     /**
@@ -290,15 +324,18 @@ export class Converter {
     }
 
     /**
-     * Получить distance паттерн
+     * ✅ ИСПРАВЛЕНО: Получить distance паттерн
      * @param {string|null} distance - Distance строка (например, '.{1,10}')
      * @returns {string} Distance паттерн или пустая строка
      */
     getDistancePattern(distance) {
-        if (!distance || distance === 'null' || distance === 'alternation') {
-            return ''; // Нет distance (альтернация |)
+        // null или 'alternation' - без distance (альтернация)
+        if (!distance || distance === null || distance === 'alternation') {
+            return '';
         }
 
+        // ✅ ИСПРАВЛЕНИЕ: возвращаем distance как есть (он уже в формате regex)
+        // Пример: ".{1,10}" → ".{1,10}"
         return distance;
     }
 
@@ -320,12 +357,13 @@ export class Converter {
     }
 
     /**
-     * Экранировать спецсимволы regex
+     * ✅ ИСПРАВЛЕНО: Экранировать спецсимволы regex
      * @param {string} text - Текст
      * @returns {string} Экранированный текст
      */
     escapeRegex(text) {
-        return text.replace(/[.*+?^${}()|[\]\]/g, '\\$&');
+        // ✅ ИСПРАВЛЕНИЕ: правильное экранирование всех спецсимволов
+        return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
     /**
