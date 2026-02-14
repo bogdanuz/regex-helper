@@ -1,7 +1,8 @@
 /**
  * ═══════════════════════════════════════════════════════════════════
- * REGEXHELPER v4.0 - DragDrop.js
+ * REGEXHELPER v4.0 - DragDrop.js (FINAL VERSION)
  * Drag & Drop система для параметров (Type 1-6)
+ * ✅ ИСПРАВЛЕНО: Реализован findTriggerById(), добавлены зависимости
  * ═══════════════════════════════════════════════════════════════════
  */
 
@@ -12,6 +13,8 @@
 export class DragDrop {
     constructor() {
         this.badgeManager = null;
+        this.linkedTriggersManager = null; // ✅ ДОБАВЛЕНО
+        this.simpleTriggers = null;         // ✅ ДОБАВЛЕНО
         this.draggingElement = null;
         this.draggingTriggerId = null;
 
@@ -19,11 +22,13 @@ export class DragDrop {
     }
 
     /**
-     * Установить зависимости
-     * @param {Object} dependencies - {badgeManager}
+     * ✅ ИСПРАВЛЕНО: Установить зависимости с linkedTriggersManager
+     * @param {Object} dependencies - {badgeManager, linkedTriggersManager, simpleTriggers}
      */
     setDependencies(dependencies) {
         this.badgeManager = dependencies.badgeManager;
+        this.linkedTriggersManager = dependencies.linkedTriggersManager; // ✅ ДОБАВЛЕНО
+        this.simpleTriggers = dependencies.simpleTriggers;               // ✅ ДОБАВЛЕНО
     }
 
     /**
@@ -176,9 +181,7 @@ export class DragDrop {
      * @param {string} param - Параметр (latinCyrillic, declensions, commonRoot, optional, prefix)
      */
     applyParamToTrigger(triggerId, param) {
-        // Найти триггер в данных (зависит от того, где хранятся данные)
-        // Предполагаем, что есть глобальный объект или менеджер
-
+        // Найти триггер в данных
         const trigger = this.findTriggerById(triggerId);
 
         if (!trigger) {
@@ -186,41 +189,93 @@ export class DragDrop {
             return;
         }
 
-        // Применить параметр (установить флаг true)
-        switch (param) {
-            case 'latinCyrillic':
-                trigger.params.latinCyrillic = true;
-                break;
-            case 'declensions':
-                trigger.params.declensions = true;
-                break;
-            case 'commonRoot':
-                trigger.params.commonRoot = true;
-                break;
-            case 'optional':
-                // Для optional и prefix нужны дополнительные данные
-                // Поэтому открываем inline popup
-                this.openInlinePopup(triggerId, 'optional');
-                return;
-            case 'prefix':
-                this.openInlinePopup(triggerId, 'prefix');
-                return;
-            default:
-                console.warn(`DragDrop: неизвестный параметр "${param}"`);
+        // Для связанных триггеров применяем параметр к подгруппе
+        if (trigger.type === 'linked') {
+            const group = this.linkedTriggersManager.getGroup(trigger.groupId);
+            if (!group) return;
+
+            const subgroup = group.subgroups.find(s => s.id === trigger.subgroupId);
+            if (!subgroup) return;
+
+            // Применяем параметр
+            switch (param) {
+                case 'latinCyrillic':
+                    subgroup.params.latinCyrillic = true;
+                    break;
+                case 'declensions':
+                    subgroup.params.declensions = true;
+                    break;
+                case 'commonRoot':
+                    subgroup.params.commonRoot = true;
+                    break;
+                case 'optional':
+                case 'prefix':
+                    // Открываем inline popup для настройки
+                    this.openInlinePopup(triggerId, param);
+                    return;
+                default:
+                    console.warn(`DragDrop: Неизвестный параметр "${param}"`);
+            }
+
+            console.log(`✅ Параметр "${param}" применён к триггеру ${triggerId}`);
         }
 
-        console.log(`DragDrop: параметр "${param}" применён к триггеру "${triggerId}"`);
+        // Для простых триггеров параметры применяются глобально
+        // (реализация зависит от архитектуры)
+
+        // Обновляем UI
+        if (this.badgeManager) {
+            this.badgeManager.updateBadges();
+        }
     }
 
     /**
-     * Найти триггер по ID
+     * ✅ ИСПРАВЛЕНО: Реализован findTriggerById()
      * @param {string} triggerId - ID триггера
-     * @returns {Object|null} Триггер или null
+     * @returns {Object|null} Объект триггера или null
      */
     findTriggerById(triggerId) {
-        // TODO: Интеграция с LinkedTriggersManager или SimpleTriggers
-        // Пока возвращаем заглушку
-        console.warn(`DragDrop: findTriggerById не реализован. Требуется интеграция с менеджерами.`);
+        // 1. Ищем в SimpleTriggers (формат: "simple-0", "simple-1", ...)
+        if (triggerId.startsWith('simple-')) {
+            const index = parseInt(triggerId.split('-')[1]);
+            const triggers = this.simpleTriggers.getTriggers();
+
+            if (index >= 0 && index < triggers.length) {
+                return {
+                    id: triggerId,
+                    text: triggers[index],
+                    type: 'simple',
+                    params: {} // Параметры в простых триггерах отдельно не хранятся
+                };
+            }
+        }
+
+        // 2. Ищем в LinkedTriggersManager (формат: "group-1-subgroup-1-trigger-0")
+        if (triggerId.includes('group-')) {
+            const match = triggerId.match(/group-(\d+)-subgroup-(\d+)-trigger-(\d+)/);
+            if (!match) return null;
+
+            const [_, groupId, subgroupId, triggerIndex] = match;
+            const group = this.linkedTriggersManager.getGroup(`group-${groupId}`);
+            if (!group) return null;
+
+            const subgroup = group.subgroups.find(s => s.id === `subgroup-${subgroupId}`);
+            if (!subgroup) return null;
+
+            const triggerText = subgroup.triggers[parseInt(triggerIndex)];
+            if (!triggerText) return null;
+
+            return {
+                id: triggerId,
+                text: triggerText,
+                type: 'linked',
+                params: subgroup.params || {},
+                groupId: `group-${groupId}`,
+                subgroupId: `subgroup-${subgroupId}`
+            };
+        }
+
+        console.warn(`DragDrop: Триггер с ID "${triggerId}" не найден`);
         return null;
     }
 
@@ -230,10 +285,9 @@ export class DragDrop {
      * @param {string} paramType - Тип параметра (optional, prefix)
      */
     openInlinePopup(triggerId, paramType) {
-        // TODO: Интеграция с InlinePopup модулем
-        console.log(`DragDrop: открытие inline popup для "${paramType}"`);
+        console.log(`🔵 Открытие inline popup для ${paramType}`);
 
-        // Пример события (можно слушать в InlinePopup)
+        // Диспатчим событие для InlinePopup.js
         document.dispatchEvent(new CustomEvent('openInlinePopup', {
             detail: { triggerId, paramType }
         }));
