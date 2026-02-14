@@ -546,3 +546,17 @@ select {
 .gap-m { gap: var(--spacing-m); }
 .gap-l { gap: var(--spacing-l); }
 
+/* ─────────────────────────────────────────────────────────────────
+   PAGE WRAPPER (фикс растягивания на 100%)
+   ───────────────────────────────────────────────────────────────── */
+
+.page-wrapper {
+    width: 100%;
+    min-width: 1024px;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+
