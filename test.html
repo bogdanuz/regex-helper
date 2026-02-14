@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RegexHelper v4.0 — Автотесты</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/common.css">
+    <style>
+        /* Специфичные стили для test.html */
+        body {
+            padding: 40px;
+            background: #0A0E1A;
+        }
+
+        .test-header {
+            margin-bottom: 32px;
+        }
+
+        .test-header h1 {
+            font-size: 32px;
+            color: #FFFFFF;
+            margin-bottom: 16px;
+        }
+
+        .test-controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .test-summary {
+            background: #121827;
+            border: 1px solid #2D3748;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .summary-item {
+            text-align: center;
+        }
+
+        .summary-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .summary-value.passed { color: #00FF88; }
+        .summary-value.failed { color: #FF4444; }
+        .summary-value.total { color: #00D4FF; }
+        .summary-value.coverage { color: #FFD700; }
+
+        .summary-label {
+            font-size: 14px;
+            color: #A0AEC0;
+        }
+
+        .test-results {
+            background: #121827;
+            border: 1px solid #2D3748;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .test-results h2 {
+            font-size: 20px;
+            color: #FFFFFF;
+            margin-bottom: 16px;
+        }
+
+        .test-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .test-table th {
+            background: #1A2332;
+            color: #A0AEC0;
+            font-weight: 600;
+            font-size: 13px;
+            text-align: left;
+            padding: 12px;
+            border-bottom: 2px solid #2D3748;
+        }
+
+        .test-table td {
+            padding: 12px;
+            border-bottom: 1px solid #2D3748;
+            color: #FFFFFF;
+            font-size: 14px;
+        }
+
+        .test-table tr:hover {
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .test-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .test-status.passed {
+            background: rgba(0, 255, 136, 0.15);
+            color: #00FF88;
+        }
+
+        .test-status.failed {
+            background: rgba(255, 68, 68, 0.15);
+            color: #FF4444;
+        }
+
+        .test-status.pending {
+            background: rgba(255, 215, 0, 0.15);
+            color: #FFD700;
+        }
+
+        .test-output {
+            background: #121827;
+            border: 1px solid #2D3748;
+            border-radius: 8px;
+            padding: 24px;
+        }
+
+        .test-output h2 {
+            font-size: 20px;
+            color: #FFFFFF;
+            margin-bottom: 16px;
+        }
+
+        .console-output {
+            background: #0A0E1A;
+            border: 1px solid #2D3748;
+            border-radius: 4px;
+            padding: 16px;
+            font-family: 'Fira Code', monospace;
+            font-size: 13px;
+            color: #00FF88;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+
+        .console-output .log-error {
+            color: #FF4444;
+        }
+
+        .console-output .log-warning {
+            color: #FFD700;
+        }
+
+        .console-output .log-info {
+            color: #00D4FF;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="test-header">
+        <h1>🧪 RegexHelper v4.0 — Автотесты</h1>
+        <p style="color: #A0AEC0; font-size: 14px;">
+            Автоматическое тестирование всех модулей конвертера
+        </p>
+    </div>
+
+    <!-- Кнопки запуска тестов -->
+    <div class="test-controls">
+        <button class="btn-primary" id="btn-run-all">▶ Запустить все тесты</button>
+        <button class="btn-secondary" id="btn-run-unit">Unit Tests</button>
+        <button class="btn-secondary" id="btn-run-integration">Integration Tests</button>
+        <button class="btn-secondary" id="btn-run-ui">UI Tests</button>
+        <button class="btn-secondary" id="btn-run-e2e">E2E Tests</button>
+        <button class="btn-secondary btn-danger" id="btn-clear">🗑️ Очистить</button>
+    </div>
+
+    <!-- Сводка -->
+    <div class="test-summary">
+        <h2 style="font-size: 18px; color: #FFFFFF; margin-bottom: 16px;">📊 Сводка тестирования</h2>
+        <div class="summary-grid">
+            <div class="summary-item">
+                <div class="summary-value passed" id="summary-passed">0</div>
+                <div class="summary-label">Пройдено</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value failed" id="summary-failed">0</div>
+                <div class="summary-label">Провалено</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value total" id="summary-total">0</div>
+                <div class="summary-label">Всего</div>
+            </div>
+            <div class="summary-item">
+                <div class="summary-value coverage" id="summary-coverage">0%</div>
+                <div class="summary-label">Покрытие</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Таблица результатов -->
+    <div class="test-results">
+        <h2>📋 Результаты тестов</h2>
+        <table class="test-table">
+            <thead>
+                <tr>
+                    <th style="width: 40%;">Тест</th>
+                    <th style="width: 15%;">Модуль</th>
+                    <th style="width: 15%;">Тип</th>
+                    <th style="width: 15%;">Статус</th>
+                    <th style="width: 15%;">Время (мс)</th>
+                </tr>
+            </thead>
+            <tbody id="test-results-tbody">
+                <tr>
+                    <td colspan="5" style="text-align: center; color: #A0AEC0;">
+                        Нажмите "Запустить все тесты" для начала
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Консоль вывода -->
+    <div class="test-output">
+        <h2>💻 Консоль вывода</h2>
+        <div class="console-output" id="console-output">
+RegexHelper v4.0 Test Runner
+════════════════════════════════════════════════════════════════════
+Готов к запуску тестов...
+
+Доступные модули:
+  • Unit Tests (converter, params, utils)
+  • Integration Tests (linked triggers, simple triggers)
+  • UI Tests (modals, drag&drop, badges)
+  • E2E Tests (полные сценарии)
+
+Нажмите "Запустить все тесты" или выберите конкретный модуль.
+════════════════════════════════════════════════════════════════════
+        </div>
+    </div>
+
+    <!-- JavaScript для тестов (будет в ЧАТе 3+) -->
+    <!-- <script type="module" src="js/tests/testRunner.js"></script> -->
+
+</body>
+</html>
