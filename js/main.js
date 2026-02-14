@@ -1,30 +1,30 @@
 /**
  * ═══════════════════════════════════════════════════════════════════
- * REGEXHELPER v4.0 - main.js (FINAL VERSION)
+ * REGEXHELPER v4.0 - main.js (FIXED VERSION - Правильные импорты)
  * Точка входа приложения RegexHelper v4.0
  * Инициализация всех модулей и глобальных обработчиков
- * ✅ ДОБАВЛЕНО: checkScreenResolution() для responsive
+ * ✅ ИСПРАВЛЕНО: Все импорты приведены в соответствие с экспортами
  * ═══════════════════════════════════════════════════════════════════
  */
 
 // ============================================================================
-// ИМПОРТЫ МОДУЛЕЙ
+// ИМПОРТЫ МОДУЛЕЙ (✅ ИСПРАВЛЕНО: именованные импорты вместо default)
 // ============================================================================
 
 // Менеджеры основных функций
-import LinkedTriggersManager from './modules/LinkedTriggersManager.js';
-import BadgeManager from './modules/BadgeManager.js';
-import DistanceSelector from './modules/DistanceSelector.js';
-import SimpleTriggers from './modules/SimpleTriggers.js';
+import { LinkedTriggersManager } from './modules/LinkedTriggersManager.js';
+import { BadgeManager } from './modules/BadgeManager.js';
+import { DistanceSelector } from './modules/DistanceSelector.js';
+import { SimpleTriggers } from './modules/SimpleTriggers.js';
 import { Converter } from './modules/Converter.js';
-import OutputManager from './modules/OutputManager.js';
+import { OutputManager } from './modules/OutputManager.js';
 
 // UI модули
 import { DragDrop } from './ui/DragDrop.js';
-import InlinePopupManager from './ui/InlinePopup.js';
-import ModalManager from './ui/Modals.js';
-import NotificationManager from './ui/Notifications.js';
-import TooltipManager from './ui/Tooltips.js';
+import { InlinePopupManager } from './ui/InlinePopup.js';
+import { ModalManager } from './ui/Modals.js';
+import { NotificationManager } from './ui/Notifications.js';
+import { TooltipManager } from './ui/Tooltips.js';
 
 // Утилиты
 import * as Validation from './utils/validation.js';
@@ -32,8 +32,8 @@ import * as Escape from './utils/escape.js';
 import * as Storage from './utils/storage.js';
 
 // Менеджеры истории и экспорта
-import HistoryManager from './modules/HistoryManager.js';
-import ExportManager from './modules/ExportManager.js';
+import { HistoryManager } from './modules/HistoryManager.js';
+import { ExportManager } from './modules/ExportManager.js';
 
 // Параметры
 import * as LatinCyrillic from './params/LatinCyrillic.js';
@@ -78,7 +78,7 @@ class RegexHelperApp {
         try {
             console.log('🚀 RegexHelper v4.0 запускается...');
 
-            // ✅ НОВОЕ: Проверка разрешения экрана
+            // ✅ Проверка разрешения экрана
             this.checkScreenResolution();
 
             // Слушаем изменение размера окна
@@ -232,8 +232,8 @@ class RegexHelperApp {
         this.dragDropManager = new DragDrop();
         this.dragDropManager.setDependencies({
             badgeManager: this.badgeManager,
-            linkedTriggersManager: this.linkedTriggersManager, // ✅ ДОБАВЛЕНО
-            simpleTriggers: this.simpleTriggers                // ✅ ДОБАВЛЕНО
+            linkedTriggersManager: this.linkedTriggersManager,
+            simpleTriggers: this.simpleTriggers
         });
 
         // 5. История и экспорт
@@ -642,5 +642,5 @@ if (document.readyState === 'loading') {
     window.RegexHelper = new RegexHelperApp();
 }
 
-// Экспорт класса для импорта в других модулях
+// Экспорт класса для импорта в других модулях (если понадобится)
 export default RegexHelperApp;
