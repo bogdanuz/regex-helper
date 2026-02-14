@@ -1,0 +1,476 @@
+/* ═══════════════════════════════════════════════════════════════════
+   REGEXHELPER v4.0 - CONVERTER.CSS
+   100vh layout, панели, группы, подгруппы, триггеры, distance
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────────────────────────
+   HEADER (Шапка сайта)
+   ───────────────────────────────────────────────────────────────── */
+
+.main-header {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-header);
+    background: rgba(18, 24, 39, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--color-border-default);
+    box-shadow: var(--shadow-medium);
+}
+
+.header-container {
+    max-width: 1600px;
+    margin: 0 auto;
+    height: 64px;
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    gap: 32px;
+}
+
+/* Логотип */
+.logo-link {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
+.logo-img {
+    height: 40px;
+    width: auto;
+}
+
+/* Навигация */
+.header-nav {
+    flex: 1;
+    display: flex;
+    gap: 8px;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: var(--color-text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: var(--radius-small);
+    transition: all var(--transition-fast);
+    position: relative;
+}
+
+.nav-link:hover:not(.disabled) {
+    color: var(--color-primary);
+    background: rgba(0, 212, 255, 0.1);
+}
+
+.nav-link.active {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -17px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--color-primary);
+}
+
+.nav-link.disabled {
+    color: #6B7280;
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Кнопки в header */
+.header-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   100VH LAYOUT - CONVERTER SECTION
+   ───────────────────────────────────────────────────────────────── */
+
+#converter-section {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.converter-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 24px 40px;
+    overflow: hidden;
+    max-width: 1600px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   ПАНЕЛИ (общие стили)
+   ───────────────────────────────────────────────────────────────── */
+
+.panel {
+    background: var(--color-bg-panel);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-medium);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.panel-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--color-border-default);
+    background: rgba(26, 35, 50, 0.5);
+}
+
+.panel-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.panel-hint {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    margin-top: 4px;
+}
+
+.panel-body {
+    flex: 1;
+    padding: 20px 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.panel-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: auto;
+    padding-top: 16px;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   ПАНЕЛЬ "СВЯЗАННЫЕ ТРИГГЕРЫ" (40%)
+   ───────────────────────────────────────────────────────────────── */
+
+.linked-triggers-panel {
+    flex: 0 0 40%;
+    min-height: 0;
+}
+
+.groups-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Группа */
+.group {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-medium);
+    padding: 16px;
+}
+
+.group-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--color-border-default);
+}
+
+.group-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    flex: 1;
+}
+
+.group-number {
+    color: var(--color-primary);
+}
+
+.group-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.subgroups-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Подгруппа */
+.subgroup {
+    background: rgba(26, 35, 50, 0.5);
+    border-left: 3px solid var(--color-primary);
+    border-radius: var(--radius-small);
+    padding: 12px;
+    margin-left: 16px;
+}
+
+.subgroup-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.subgroup-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    flex: 1;
+}
+
+.subgroup-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Триггеры */
+.triggers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.trigger-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.trigger-input {
+    flex: 1;
+    height: 36px;
+    font-family: 'Fira Code', monospace;
+    font-size: 13px;
+    padding: 8px 12px;
+}
+
+.trigger-input:focus {
+    border-color: var(--color-primary);
+}
+
+/* Кнопки добавления */
+.btn-add-group,
+.btn-add-subgroup,
+.btn-add-trigger {
+    width: 100%;
+    justify-content: center;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   DISTANCE SELECTOR (расстояние между подгруппами)
+   ───────────────────────────────────────────────────────────────── */
+
+.distance-selector {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--color-border-default);
+}
+
+.distance-selector label {
+    display: block;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    margin-bottom: 8px;
+}
+
+.distance-dropdown {
+    width: 100%;
+    height: 36px;
+    font-size: 13px;
+}
+
+/* Custom distance поля (мин/макс) */
+.distance-custom {
+    margin-top: 12px;
+    padding: 12px;
+    background: rgba(0, 212, 255, 0.05);
+    border: 1px solid rgba(0, 212, 255, 0.2);
+    border-radius: var(--radius-small);
+    display: grid;
+    grid-template-columns: auto 80px auto 80px;
+    gap: 8px;
+    align-items: center;
+}
+
+.distance-custom label {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    margin: 0;
+}
+
+.distance-custom input {
+    height: 32px;
+}
+
+.distance-hint {
+    grid-column: 1 / -1;
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    margin: 8px 0 0 0;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   ПАНЕЛЬ "ПРОСТЫЕ ТРИГГЕРЫ" (25%)
+   ───────────────────────────────────────────────────────────────── */
+
+.simple-triggers-panel {
+    flex: 0 0 25%;
+    min-height: 0;
+}
+
+.simple-triggers-textarea {
+    flex: 1;
+    min-height: 150px;
+    resize: none;
+    font-family: 'Fira Code', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.hint-dragdrop {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: rgba(0, 212, 255, 0.05);
+    border-left: 3px solid var(--color-primary);
+    border-radius: var(--radius-small);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   ПАНЕЛЬ "ВЫВОД РЕЗУЛЬТАТА" (35%)
+   ───────────────────────────────────────────────────────────────── */
+
+.output-panel {
+    flex: 0 0 35%;
+    min-height: 0;
+}
+
+.output-textarea {
+    flex: 1;
+    min-height: 150px;
+    resize: none;
+    font-family: 'Fira Code', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    background: var(--color-bg-page);
+    color: var(--color-success);
+}
+
+.output-textarea:focus {
+    border-color: var(--color-success);
+    box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
+}
+
+.output-actions {
+    display: grid;
+    grid-template-columns: auto auto auto auto 1fr;
+    gap: 12px;
+}
+
+.output-actions .btn-to-history {
+    justify-self: end;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   BADGES CONTAINER (в группах/подгруппах)
+   ───────────────────────────────────────────────────────────────── */
+
+.badges-container {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+/* Badge стили в badges.css */
+
+/* ─────────────────────────────────────────────────────────────────
+   FOOTER (подвал сайта)
+   ───────────────────────────────────────────────────────────────── */
+
+.main-footer {
+    background: var(--color-bg-panel);
+    border-top: 1px solid var(--color-border-default);
+    padding: 20px 40px;
+}
+
+.footer-container {
+    max-width: 1600px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.footer-text {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+}
+
+.footer-links {
+    display: flex;
+    gap: 24px;
+}
+
+.footer-link {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+.footer-link:hover {
+    color: var(--color-primary);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   STATES & INTERACTIONS
+   ───────────────────────────────────────────────────────────────── */
+
+/* Drag over state */
+.drag-over {
+    background: rgba(0, 212, 255, 0.1);
+    border-color: var(--color-primary);
+}
+
+/* Focus within group/subgroup */
+.group:focus-within,
+.subgroup:focus-within {
+    border-color: var(--color-border-hover);
+}
+
+/* Empty state */
+.groups-container:empty::after {
+    content: 'Нажмите "+ Добавить группу", чтобы начать';
+    display: block;
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--color-text-tertiary);
+    font-size: 14px;
+}
+
