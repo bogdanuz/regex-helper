@@ -20,14 +20,11 @@
 }
 
 .header-container {
-    max-width: 1600px;
-    margin: 0 auto; /* Контент центрирован */
     height: 64px;
     padding: 0 40px;
     display: flex;
     align-items: center;
     gap: 32px;
-    width: 100%; /* Добавлено */
 }
 
 /* Логотип */
@@ -109,9 +106,7 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
-    max-width: 1600px;
-    margin: 0 auto;
-    width: 100%;
+    padding: 0 40px;
 }
 
 /* ─────────────────────────────────────────────────────────────────
@@ -425,10 +420,8 @@
 }
 
 .footer-container {
-    max-width: 1600px;
-    margin: 0 auto;
-    width: 100%;
-    text-align: center; /* Центрирование */
+    text-align: center;
+    padding: 0 40px;
 }
 
 .footer-text {
