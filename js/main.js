@@ -21,10 +21,10 @@ import { OutputManager } from './modules/OutputManager.js';
 
 // UI модули
 import { DragDrop } from './ui/DragDrop.js';
-import { InlinePopupManager } from './ui/InlinePopup.js';
+import InlinePopupManager from './ui/InlinePopup.js';
 import { ModalManager } from './ui/Modals.js';
 import { NotificationManager } from './ui/Notifications.js';
-import { TooltipManager } from './ui/Tooltips.js';
+import TooltipManager from './ui/Tooltips.js';
 
 // Утилиты
 import * as Validation from './utils/validation.js';
