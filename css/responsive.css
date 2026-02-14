@@ -8,17 +8,8 @@
    ───────────────────────────────────────────────────────────────── */
 
 @media (min-width: 1920px) {
-    body {
-        max-width: 1600px;
-        margin: 0 auto;
-    }
-    
     .history-grid {
         grid-template-columns: repeat(3, 1fr);
-    }
-    
-    .groups-container {
-        /* Максимум комфорта на больших экранах */
     }
 }
 
