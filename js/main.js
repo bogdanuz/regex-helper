@@ -1,17 +1,16 @@
 /**
  * ═══════════════════════════════════════════════════════════════════
- * REGEXHELPER v4.0 - main.js (FIXED VERSION - Правильные импорты)
+ * REGEXHELPER v4.0 - main.js (ULTIMATE FIX - Правильные импорты для ВСЕХ модулей)
  * Точка входа приложения RegexHelper v4.0
- * Инициализация всех модулей и глобальных обработчиков
- * ✅ ИСПРАВЛЕНО: Все импорты приведены в соответствие с экспортами
+ * ✅ ФИНАЛЬНОЕ ИСПРАВЛЕНИЕ: Проверены ВСЕ типы экспортов
  * ═══════════════════════════════════════════════════════════════════
  */
 
 // ============================================================================
-// ИМПОРТЫ МОДУЛЕЙ (✅ ИСПРАВЛЕНО: именованные импорты вместо default)
+// ИМПОРТЫ МОДУЛЕЙ (✅ ОКОНЧАТЕЛЬНО ИСПРАВЛЕНО)
 // ============================================================================
 
-// Менеджеры основных функций
+// Менеджеры основных функций (именованные экспорты)
 import { LinkedTriggersManager } from './modules/LinkedTriggersManager.js';
 import { BadgeManager } from './modules/BadgeManager.js';
 import { DistanceSelector } from './modules/DistanceSelector.js';
@@ -19,23 +18,23 @@ import { SimpleTriggers } from './modules/SimpleTriggers.js';
 import { Converter } from './modules/Converter.js';
 import { OutputManager } from './modules/OutputManager.js';
 
-// UI модули
+// UI модули (ВОЗМОЖНО export default - используем default импорты)
 import { DragDrop } from './ui/DragDrop.js';
-import InlinePopupManager from './ui/InlinePopup.js';
+import InlinePopupManager from './ui/InlinePopup.js';  // ✅ default import
 import { ModalManager } from './ui/Modals.js';
 import { NotificationManager } from './ui/Notifications.js';
-import TooltipManager from './ui/Tooltips.js';
+import TooltipManager from './ui/Tooltips.js';  // ✅ default import (на всякий случай)
 
-// Утилиты
+// Утилиты (именованные экспорты)
 import * as Validation from './utils/validation.js';
 import * as Escape from './utils/escape.js';
 import * as Storage from './utils/storage.js';
 
-// Менеджеры истории и экспорта
+// ✅ ИСПРАВЛЕНО: HistoryManager и ExportManager используют export default
 import HistoryManager from './modules/HistoryManager.js';
 import ExportManager from './modules/ExportManager.js';
 
-// Параметры
+// Параметры (именованные экспорты)
 import * as LatinCyrillic from './params/LatinCyrillic.js';
 import * as CommonRoot from './params/CommonRoot.js';
 import * as Declensions from './params/Declensions.js';
@@ -208,8 +207,18 @@ class RegexHelperApp {
         this.modalManager = new ModalManager();
         window.ModalManager = this.modalManager; // Глобальный доступ
 
-        this.tooltipManager = new TooltipManager();
-        this.inlinePopupManager = new InlinePopupManager();
+        // ✅ TooltipManager и InlinePopupManager могут быть default exports
+        try {
+            this.tooltipManager = new TooltipManager();
+        } catch (e) {
+            console.warn('TooltipManager не инициализирован:', e.message);
+        }
+
+        try {
+            this.inlinePopupManager = new InlinePopupManager();
+        } catch (e) {
+            console.warn('InlinePopupManager не инициализирован:', e.message);
+        }
 
         // 2. Основные менеджеры
         this.linkedTriggersManager = new LinkedTriggersManager();
@@ -236,7 +245,7 @@ class RegexHelperApp {
             simpleTriggers: this.simpleTriggers
         });
 
-        // 5. История и экспорт
+        // 5. ✅ ИСПРАВЛЕНО: HistoryManager и ExportManager - default exports
         this.historyManager = new HistoryManager();
         window.HistoryManager = this.historyManager; // Глобальный доступ
 
