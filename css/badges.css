@@ -1,0 +1,188 @@
+/* ═══════════════════════════════════════════════════════════════════
+   REGEXHELPER v4.0 - BADGES.CSS
+   Badge system для отображения активных параметров (5 типов)
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────────────────────────
+   BADGE (базовые стили)
+   ───────────────────────────────────────────────────────────────── */
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    user-select: none;
+    white-space: nowrap;
+}
+
+.badge:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.2);
+}
+
+.badge:active {
+    transform: translateY(0);
+}
+
+/* Badge icon */
+.badge-icon {
+    font-size: 14px;
+    line-height: 1;
+}
+
+.badge-text {
+    line-height: 1;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   BADGE ТИПЫ (по параметрам) - 5 ЦВЕТОВ
+   ───────────────────────────────────────────────────────────────── */
+
+/* 1. Латиница/Кириллица - Cyan (#00D4FF) */
+.badge-latin-cyrillic {
+    background: rgba(0, 212, 255, 0.15);
+    border: 1px solid var(--color-badge-latin);
+    color: var(--color-badge-latin);
+}
+
+.badge-latin-cyrillic:hover {
+    background: rgba(0, 212, 255, 0.25);
+    box-shadow: 0 0 8px rgba(0, 212, 255, 0.3);
+}
+
+/* 2. Склонения - Green (#00FF88) */
+.badge-declensions {
+    background: rgba(0, 255, 136, 0.15);
+    border: 1px solid var(--color-badge-declensions);
+    color: var(--color-badge-declensions);
+}
+
+.badge-declensions:hover {
+    background: rgba(0, 255, 136, 0.25);
+    box-shadow: 0 0 8px rgba(0, 255, 136, 0.3);
+}
+
+/* 3. Общий корень - Orange (#FF9500) */
+.badge-common-root {
+    background: rgba(255, 149, 0, 0.15);
+    border: 1px solid var(--color-badge-root);
+    color: var(--color-badge-root);
+}
+
+.badge-common-root:hover {
+    background: rgba(255, 149, 0, 0.25);
+    box-shadow: 0 0 8px rgba(255, 149, 0, 0.3);
+}
+
+/* 4. Опциональные символы - Gold (#FFD700) */
+.badge-optional {
+    background: rgba(255, 215, 0, 0.15);
+    border: 1px solid var(--color-badge-optional);
+    color: var(--color-badge-optional);
+}
+
+.badge-optional:hover {
+    background: rgba(255, 215, 0, 0.25);
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+}
+
+/* 5. Префикс - Purple (#A78BFA) */
+.badge-prefix {
+    background: rgba(167, 139, 250, 0.15);
+    border: 1px solid var(--color-badge-prefix);
+    color: var(--color-badge-prefix);
+}
+
+.badge-prefix:hover {
+    background: rgba(167, 139, 250, 0.25);
+    box-shadow: 0 0 8px rgba(167, 139, 250, 0.3);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   BADGE В КОНТЕЙНЕРАХ
+   ───────────────────────────────────────────────────────────────── */
+
+/* Badges container в группах/подгруппах */
+.group-header .badges-container,
+.subgroup-header .badges-container {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+/* Пустой контейнер (без badge) */
+.badges-container:empty {
+    display: none;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   BADGE АНИМАЦИИ
+   ───────────────────────────────────────────────────────────────── */
+
+/* Появление badge */
+@keyframes badgeAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.badge {
+    animation: badgeAppear 0.2s ease;
+}
+
+/* Удаление badge */
+@keyframes badgeDisappear {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+}
+
+.badge.removing {
+    animation: badgeDisappear 0.2s ease forwards;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   BADGE В МОДАЛЬНЫХ ОКНАХ (предпросмотр)
+   ───────────────────────────────────────────────────────────────── */
+
+.modal-badge-preview {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    padding: 12px;
+    background: rgba(26, 35, 50, 0.5);
+    border-radius: var(--radius-small);
+    margin-top: 12px;
+}
+
+.modal-badge-preview .badge {
+    cursor: default;
+    pointer-events: none;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   BADGE TOOLTIPS (дополнительно)
+   ───────────────────────────────────────────────────────────────── */
+
+.badge[title] {
+    position: relative;
+}
+
+/* Tooltip будет добавлен через JS или браузерный title */
+
