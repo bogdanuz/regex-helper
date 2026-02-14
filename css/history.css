@@ -8,8 +8,7 @@
    ───────────────────────────────────────────────────────────────── */
 
 #history-section {
-    min-height: 100vh;
-    padding: 48px 40px;
+    padding: 48px 40px 24px 40px; /* Верх 48px, низ 24px */
     background: var(--color-bg-page);
 }
 
