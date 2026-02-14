@@ -84,8 +84,6 @@
 
 html {
     scroll-behavior: smooth;
-    width: 100%; /* ← ДОБАВЛЕНО */
-    overflow-x: hidden; /* ← ДОБАВЛЕНО: скрыть горизонтальный скролл */
 }
 
 body {
@@ -94,10 +92,10 @@ body {
     line-height: 1.5;
     color: var(--color-text-primary);
     background: var(--color-bg-page);
-    width: 100%; /* ← ДОБАВЛЕНО */
-    min-width: 1024px; /* ← ДОБАВЛЕНО: минимальная ширина проекта */
-    overflow-y: auto;
-    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+    min-width: 1024px;
+    overflow-x: hidden; /* Убираем горизонтальный скролл */
 }
 
 /* ─────────────────────────────────────────────────────────────────
