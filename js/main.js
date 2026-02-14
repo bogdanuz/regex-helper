@@ -32,8 +32,8 @@ import * as Escape from './utils/escape.js';
 import * as Storage from './utils/storage.js';
 
 // Менеджеры истории и экспорта
-import { HistoryManager } from './modules/HistoryManager.js';
-import { ExportManager } from './modules/ExportManager.js';
+import HistoryManager from './modules/HistoryManager.js';
+import ExportManager from './modules/ExportManager.js';
 
 // Параметры
 import * as LatinCyrillic from './params/LatinCyrillic.js';
