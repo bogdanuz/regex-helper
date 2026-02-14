@@ -8,7 +8,7 @@
    ───────────────────────────────────────────────────────────────── */
 
 #history-section {
-    padding: 48px 40px 24px 40px; /* Верх 48px, низ 24px */
+    padding: 112px 40px 24px 40px; /* ← ИЗМЕНЕНО: 112px сверху (64px header + 48px отступ) */
     background: var(--color-bg-page);
 }
 
