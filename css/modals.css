@@ -1,302 +1,394 @@
-/**
- * ═══════════════════════════════════════════════════════════════════
- *                    REGEXHELPER v4.0
- *                   MODALS & OVERLAYS
- *              ВСЕ СТИЛИ МОДАЛЬНЫХ ОКОН
- * ═══════════════════════════════════════════════════════════════════
- * 
- * Версия: 2.0 DARK THEME
- * Дата: 14.02.2026
- * Соответствует: Design_Brief_v2.0.txt
- */
+/* ═══════════════════════════════════════════════════════════════════
+   REGEXHELPER v4.0 - MODALS.CSS
+   Модальные окна, overlay, inline popup, drag & drop зоны
+   ═══════════════════════════════════════════════════════════════════ */
 
-/* ═══════════════════════════════════════════════════════════════
-   MODAL OVERLAY (затемнение фона)
-   ═══════════════════════════════════════════════════════════════ */
+/* ─────────────────────────────────────────────────────────────────
+   MODAL OVERLAY
+   ───────────────────────────────────────────────────────────────── */
 
 .modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(10, 14, 26, 0.8);
-  z-index: var(--z-index-modal-overlay);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  visibility: hidden;
-  transition: var(--transition-base);
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: var(--z-modal);
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    overflow-y: auto;
 }
 
 .modal-overlay.active {
-  opacity: 1;
-  visibility: visible;
+    display: flex;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   MODAL CONTAINER (основной контейнер модалки)
-   ═══════════════════════════════════════════════════════════════ */
-
-.modal {
-  background-color: var(--color-bg-panel);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  max-width: 800px;
-  max-height: 90vh;
-  width: 90%;
-  display: flex;
-  flex-direction: column;
-  z-index: var(--z-index-modal);
-  transform: scale(0.95);
-  opacity: 0;
-  transition: var(--transition-base);
+/* Modal появление */
+@keyframes modalAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
 }
 
 .modal-overlay.active .modal {
-  transform: scale(1);
-  opacity: 1;
+    animation: modalAppear 0.3s ease;
 }
 
-/* Modal sizes */
-.modal-sm {
-  max-width: 500px;
+/* ─────────────────────────────────────────────────────────────────
+   MODAL WINDOW
+   ───────────────────────────────────────────────────────────────── */
+
+.modal {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-large);
+    box-shadow: var(--shadow-large);
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
 }
 
-.modal-md {
-  max-width: 800px;
+.modal-large {
+    max-width: 900px;
 }
 
-.modal-lg {
-  max-width: 900px;
+.modal-extra-large {
+    max-width: 1200px;
 }
 
-.modal-xl {
-  max-width: 1200px;
-}
-
-/* ═══════════════════════════════════════════════════════════════
+/* ─────────────────────────────────────────────────────────────────
    MODAL HEADER
-   ═══════════════════════════════════════════════════════════════ */
+   ───────────────────────────────────────────────────────────────── */
 
 .modal-header {
-  background-color: var(--color-bg-card);
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--color-border);
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-shrink: 0;
+    padding: 24px;
+    border-bottom: 1px solid var(--color-border-default);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .modal-title {
-  font-size: var(--font-size-2xl);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-white);
-  margin: 0;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.modal-close {
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
-  padding: 0;
-  background-color: transparent;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  color: var(--color-text-muted);
-  font-size: 20px;
-  font-weight: var(--font-weight-bold);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: var(--transition-fast);
+.btn-close-modal {
+    font-size: 20px;
+    color: var(--color-text-secondary);
 }
 
-.modal-close:hover {
-  background-color: var(--color-error);
-  border-color: var(--color-error);
-  color: #ffffff;
+/* ─────────────────────────────────────────────────────────────────
+   MODAL TABS
+   ───────────────────────────────────────────────────────────────── */
+
+.modal-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--color-border-default);
+    padding: 0 24px;
 }
 
-/* ═══════════════════════════════════════════════════════════════
+.tab-btn {
+    background: transparent;
+    color: var(--color-text-secondary);
+    border: none;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all var(--transition-fast);
+}
+
+.tab-btn:hover {
+    color: var(--color-text-primary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.tab-btn.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+}
+
+/* ─────────────────────────────────────────────────────────────────
    MODAL BODY
-   ═══════════════════════════════════════════════════════════════ */
+   ───────────────────────────────────────────────────────────────── */
 
 .modal-body {
-  padding: var(--spacing-lg);
-  overflow-y: auto;
-  max-height: calc(90vh - 140px);
-  flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
 }
 
-/* Custom scrollbar for modal body */
-.modal-body::-webkit-scrollbar {
-  width: 8px;
+.modal-scrollable {
+    max-height: 60vh;
 }
 
-.modal-body::-webkit-scrollbar-track {
-  background: var(--color-bg-card);
+.tab-content {
+    display: none;
 }
 
-.modal-body::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: var(--radius-sm);
+.tab-content.active {
+    display: block;
 }
 
-.modal-body::-webkit-scrollbar-thumb:hover {
-  background: var(--color-border-hover);
+.modal-hint {
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    margin-bottom: 16px;
 }
 
-/* ═══════════════════════════════════════════════════════════════
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   DROP ZONES (для drag & drop параметров)
+   ───────────────────────────────────────────────────────────────── */
+
+.drop-zones {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.drop-zone {
+    background: var(--color-bg-page);
+    border: 2px dashed var(--color-border-default);
+    border-radius: var(--radius-medium);
+    padding: 16px;
+    min-height: 120px;
+    transition: all var(--transition-fast);
+}
+
+.drop-zone:hover {
+    border-color: var(--color-border-hover);
+    background: rgba(0, 212, 255, 0.03);
+}
+
+.drop-zone.drag-over {
+    border-color: var(--color-primary);
+    background: rgba(0, 212, 255, 0.1);
+    border-style: solid;
+}
+
+.drop-zone-header {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.drop-zone-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.drop-zone-empty {
+    font-size: 13px;
+    color: var(--color-text-tertiary);
+    text-align: center;
+    padding: 16px;
+}
+
+.drop-zone-hint {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    font-style: italic;
+}
+
+/* Триггеры в drop zone */
+.drop-zone .trigger-item {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-small);
+    padding: 8px;
+    font-family: 'Fira Code', monospace;
+    font-size: 12px;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   TRIGGERS LIST В МОДАЛКЕ
+   ───────────────────────────────────────────────────────────────── */
+
+.triggers-list-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 200px;
+}
+
+.triggers-empty {
+    text-align: center;
+    color: var(--color-text-tertiary);
+    padding: 48px 24px;
+}
+
+/* ─────────────────────────────────────────────────────────────────
    MODAL FOOTER
-   ═══════════════════════════════════════════════════════════════ */
+   ───────────────────────────────────────────────────────────────── */
 
 .modal-footer {
-  background-color: var(--color-bg-card);
-  padding: 16px 24px;
-  border-top: 1px solid var(--color-border);
-  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--spacing-md);
-  flex-shrink: 0;
+    padding: 20px 24px;
+    border-top: 1px solid var(--color-border-default);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   MODAL CONTENT SECTIONS
-   ═══════════════════════════════════════════════════════════════ */
+/* ─────────────────────────────────────────────────────────────────
+   INLINE POPUP (для опциональных символов, префикса)
+   ───────────────────────────────────────────────────────────────── */
 
-.modal-section {
-  margin-bottom: var(--spacing-xl);
+.inline-popup {
+    position: absolute;
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-medium);
+    box-shadow: var(--shadow-large);
+    padding: 16px;
+    z-index: calc(var(--z-modal) + 10);
+    min-width: 320px;
+    max-width: 400px;
 }
 
-.modal-section:last-child {
-  margin-bottom: 0;
+.inline-popup-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--color-border-default);
 }
 
-.modal-section-header {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-md);
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-white);
+.inline-popup-header h4 {
+    font-size: 16px;
+    color: var(--color-text-primary);
 }
 
-.modal-section-hint {
-  background-color: rgba(0, 212, 255, 0.05);
-  border: 1px solid rgba(0, 212, 255, 0.2);
-  border-radius: var(--radius-sm);
-  padding: var(--spacing-md);
-  margin-bottom: var(--spacing-md);
-  font-size: 13px;
-  color: var(--color-primary);
-  line-height: 1.6;
+.inline-popup-body {
+    margin-bottom: 12px;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   DRAG & DROP ZONES (для модалки настроек)
-   ═══════════════════════════════════════════════════════════════ */
-
-.drag-drop-container {
-  display: flex;
-  gap: var(--spacing-md);
-  flex-wrap: wrap;
+.inline-popup-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
 }
 
-.drag-zone {
-  width: 180px;
-  min-height: 150px;
-  background-color: var(--color-bg-card);
-  border: 2px dashed var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-md);
-  transition: var(--transition-base);
+/* Char selection (чекбоксы для символов) */
+.char-selection {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin: 12px 0;
 }
 
-.drag-zone:hover {
-  border-color: var(--color-border-hover);
+.char-selection label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    background: var(--color-bg-page);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-small);
+    cursor: pointer;
+    transition: all var(--transition-fast);
 }
 
-.drag-zone.drag-over {
-  border-style: solid;
-  border-color: var(--color-primary);
-  background-color: rgba(0, 212, 255, 0.05);
+.char-selection label:hover {
+    border-color: var(--color-primary);
 }
 
-.drag-zone-header {
-  font-size: 13px;
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-white);
-  margin-bottom: var(--spacing-sm);
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.char-selection input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
 }
 
-.drag-zone-body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
+/* Popup preview */
+.popup-preview {
+    margin: 12px 0;
+    padding: 12px;
+    background: var(--color-bg-page);
+    border-radius: var(--radius-small);
 }
 
-/* Drag Item */
-.drag-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm);
-  background-color: rgba(0, 212, 255, 0.1);
-  border-left: 3px solid var(--color-primary);
-  border-radius: var(--radius-sm);
-  font-size: 13px;
-  color: var(--color-text-white);
-  cursor: move;
-  transition: var(--transition-fast);
+.popup-preview label {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    display: block;
+    margin-bottom: 4px;
 }
 
-.drag-item:hover {
-  background-color: rgba(0, 212, 255, 0.15);
+.popup-preview code {
+    color: var(--color-success);
+    font-size: 14px;
 }
 
-.drag-item.dragging {
-  opacity: 0.5;
-  cursor: grabbing;
+.popup-hint {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    margin-top: 8px;
 }
 
-.drag-item-text {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+/* Prefix modes */
+.prefix-modes {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 12px 0;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   ANIMATIONS
-   ═══════════════════════════════════════════════════════════════ */
-
-@keyframes modalFadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+.prefix-modes label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px;
+    background: var(--color-bg-page);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-small);
+    cursor: pointer;
 }
 
-.modal-overlay.active .modal {
-  animation: modalFadeIn 0.2s ease-out;
+.prefix-modes input[type="radio"] {
+    margin-right: 8px;
 }
+
+.mode-example {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    margin-left: 24px;
+    font-family: 'Fira Code', monospace;
+}
+
+.prefix-exact-input {
+    margin-top: 12px;
+}
+
+.prefix-exact-input textarea {
+    min-height: 80px;
+    font-family: 'Fira Code', monospace;
+}
+
+
